@@ -1,0 +1,1 @@
+# diagnostic feature scaffold
