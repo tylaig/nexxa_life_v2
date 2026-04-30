@@ -1,1 +1,0 @@
-# checklist feature scaffold
