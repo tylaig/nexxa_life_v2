@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata: Metadata = {
-  title: "Onboarding | nexxa_life",
-  description: "Entenda o ciclo do nexxa_life e prepare sua entrada no diagnóstico, plano e execução diária.",
+  title: "Onboarding | NexxaLife",
+  description: "Entenda o ciclo do NexxaLife e prepare sua entrada no diagnóstico, plano e execução diária.",
 }
 
 const steps = [
@@ -44,13 +44,13 @@ export default function OnboardingPage() {
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8 lg:p-10">
           <div className="max-w-3xl space-y-4">
             <div className="inline-flex rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-              Onboarding nexxa_life
+              Onboarding NexxaLife
             </div>
             <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
               Entenda o ciclo principal e entre no produto pelo caminho certo.
             </h1>
             <p className="text-sm leading-6 text-muted-foreground md:text-base">
-              O legado do nexxa_life trata o onboarding como a preparação para o fluxo diagnóstico → metas → tarefas → agenda → acompanhamento → relatórios. Nesta fase, a rota foi reintroduzida na raiz atual como uma superfície clara e compatível com o shell moderno.
+              O legado do NexxaLife trata o onboarding como a preparação para o fluxo diagnóstico → metas → tarefas → agenda → acompanhamento → relatórios. Nesta fase, a rota foi reintroduzida na raiz atual como uma superfície clara e compatível com o shell moderno.
             </p>
             <div className="flex flex-wrap gap-3 pt-2">
               <Button asChild className="rounded-xl">

@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "nexxa_life — sistema operacional de evolução pessoal",
+  title: "NexxaLife — sistema operacional de evolução pessoal",
   description:
-    "nexxa_life é o sistema operacional de evolução pessoal com diagnóstico, planejamento, execução diária e leitura contínua de evolução.",
+    "NexxaLife é o sistema operacional de evolução pessoal com diagnóstico, planejamento, execução diária e leitura contínua de evolução.",
   generator: "v0.app",
 }
 

@@ -5,8 +5,8 @@ import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
-  title: "Cadastro | nexxa_life",
-  description: "Crie sua conta no nexxa_life para iniciar diagnóstico, planejamento e execução diária.",
+  title: "Cadastro | NexxaLife",
+  description: "Crie sua conta no NexxaLife para iniciar diagnóstico, planejamento e execução diária.",
 }
 
 export default function SignupPage() {
@@ -14,9 +14,9 @@ export default function SignupPage() {
     <AuthShell
       eyebrow="Cadastro"
       title="Crie seu acesso e comece a transformar diagnóstico em plano executável."
-      description="Esta entrada substitui a antiga ausência de cadastro na raiz atual e se alinha ao recorte do legado: autenticação como parte do MVP, com onboarding e continuidade do ciclo nexxa_life."
+      description="Esta entrada substitui a antiga ausência de cadastro na raiz atual e se alinha ao recorte do legado: autenticação como parte do MVP, com onboarding e continuidade do ciclo NexxaLife."
       asideTitle="Cadastro já posicionado no domínio certo"
-      asideDescription="A tela foi criada como base honesta para a próxima onda funcional. A semântica, os CTAs e o discurso agora pertencem ao produto nexxa_life, não ao contexto anterior da plataforma." 
+      asideDescription="A tela foi criada como base honesta para a próxima onda funcional. A semântica, os CTAs e o discurso agora pertencem ao produto NexxaLife, não ao contexto anterior da plataforma."
       highlights={[
         "Criar conta com foco em continuidade do ciclo pessoal",
         "Preparar a entrada para onboarding guiado",
@@ -101,7 +101,7 @@ export default function SignupPage() {
         <label className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
           <input type="checkbox" required className="mt-1" />
           <span>
-            Concordo com os termos, política de privacidade e consentimento inicial de uso de dados para operar o ciclo nexxa_life.
+            Concordo com os termos, política de privacidade e consentimento inicial de uso de dados para operar o ciclo NexxaLife.
           </span>
         </label>
 

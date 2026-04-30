@@ -18,15 +18,14 @@
 - seguir a auditoria/layout loop nas superfícies P0 restantes
 
 ## Rodada atual concluída
-- `/reports` revisado visualmente
-- hero reorganizado com panorama de leitura e próxima ação recomendada
-- KPIs mantidos acima da dobra e quick signals convertidos em bloco mais legível
-- charts receberam cabeçalho contextual, cards-resumo por aba e melhor responsividade-base
-- insights guiados separados como leitura acionável ao lado do monitoramento temporal
-- classificação da página: `REAL` com dados de leitura ainda `MOCK`
+- branding visível da plataforma começou a migrar de `nexxa_life` para `NexxaLife` em metadata, topbars, sidebar e superfícies de auth
+- navegação de `Integrações` foi alinhada para a rota real publicada `/apps`
+- aliases compatíveis de `/integrations/*` foram criados para apontar para a base real atual
+- auditoria de páginas ausentes e coexistência publicada em `docs/implementation/nexxalife-missing-pages-and-routing-audit.md`
+- identificadas como ausentes do legado portado: landing pública real em `/` e superfície dedicada de `Testes`
 
 ## Próxima página automática
-- `/agenda`
+- `/checklist`
 
 ## Regra operacional
 Basta responder `ok` para seguir a próxima página do loop.

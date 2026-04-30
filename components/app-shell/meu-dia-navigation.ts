@@ -58,7 +58,7 @@ export const accordionSections: NavSection[] = [
     icon: Sparkles,
     children: [
       { href: "/academy", label: "Academia", icon: BookOpen },
-      { href: "/integrations", label: "Integrações", icon: Sparkles },
+      { href: "/apps", label: "Integrações", icon: Sparkles },
       { href: "/news", label: "News", icon: FileText },
       { href: "/marketplace", label: "Marketplace", icon: Store },
     ],

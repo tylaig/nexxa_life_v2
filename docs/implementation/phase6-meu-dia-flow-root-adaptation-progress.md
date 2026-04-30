@@ -88,9 +88,10 @@ Usar o contrato determinístico e a camada editorial recém-publicados como base
 - `/reports` evoluído com tabs reais + gráficos reais: concluído
 - `/reports` refinado visualmente para melhorar hierarquia entre KPIs, sinais rápidos, charts e insights guiados: concluído
 - `/agenda` evoluída com tabs reais e estados degradados explícitos: concluído
+- `/agenda` refinada visualmente para melhorar ritmo da timeline, contraste e clareza dos estados degradados: concluído
 - `/dashboard` evoluído com painel analítico tabulado: concluído
 - `/dashboard` refinado visualmente para melhorar leitura acima da dobra, jornada prioritária e resumo operacional: concluído
 - loop operacional contínuo criado em `docs/implementation/phase6-meu-dia-ok-loop.md`: concluído
 
 ## Resultado esperado da próxima macro-rodada
-Aplicar a mesma auditoria visual e hierárquica em `/agenda`, revisando densidade da timeline, contraste e qualidade dos estados degradados antes de avançar para `/checklist`.
+Aplicar a mesma auditoria visual e hierárquica em `/checklist`, reforçando progressão entre períodos, destaque da tarefa foco e equilíbrio entre resumo e execução.

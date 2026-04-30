@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 
 export const dashboardHero = {
-  kicker: "Dashboard nexxa_life",
+  kicker: "Dashboard NexxaLife",
   title: "Seu centro de clareza, execução e evolução.",
   description:
     "Acompanhe seu diagnóstico, organize o checklist, distribua a agenda, revise metas e mantenha o diário e os relatórios conectados no mesmo workspace oficial.",

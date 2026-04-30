@@ -5,8 +5,8 @@ import { AuthShell } from "@/components/auth/auth-shell"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
-  title: "Login | nexxa_life",
-  description: "Acesse sua área do nexxa_life para retomar diagnóstico, plano, execução e evolução.",
+  title: "Login | NexxaLife",
+  description: "Acesse sua área do NexxaLife para retomar diagnóstico, plano, execução e evolução.",
 }
 
 export default function LoginPage() {
@@ -14,9 +14,9 @@ export default function LoginPage() {
     <AuthShell
       eyebrow="Login"
       title="Entre para retomar seu sistema pessoal com clareza e continuidade."
-      description="A entrada do nexxa_life foi retematizada para o ciclo principal do produto: diagnóstico, metas, checklist, agenda, reflexão e relatórios no mesmo workspace oficial."
+      description="A entrada do NexxaLife foi retematizada para o ciclo principal do produto: diagnóstico, metas, checklist, agenda, reflexão e relatórios no mesmo workspace oficial."
       asideTitle="Uma entrada alinhada ao MVP real"
-      asideDescription="Nos documentos do legado, cadastro/login fazem parte do núcleo do MVP. Esta superfície já abandona o posicionamento anterior de CRM/commerce e passa a refletir o produto nexxa_life."
+      asideDescription="Nos documentos do legado, cadastro/login fazem parte do núcleo do MVP. Esta superfície já abandona o posicionamento anterior de CRM/commerce e passa a refletir o produto NexxaLife."
       highlights={[
         "Retomar rapidamente o ponto atual do seu ciclo",
         "Manter acesso ao dashboard, agenda e relatórios",
@@ -27,7 +27,7 @@ export default function LoginPage() {
         <>
           Ainda não possui conta?{" "}
           <Link href="/signup" className="font-medium text-primary hover:underline">
-            Criar acesso ao nexxa_life
+            Criar acesso ao NexxaLife
           </Link>
           .
         </>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         </div>
 
         <Button type="submit" className="h-11 w-full rounded-xl">
-          Entrar no nexxa_life
+          Entrar no NexxaLife
         </Button>
 
         <Button type="button" variant="outline" className="h-11 w-full rounded-xl">

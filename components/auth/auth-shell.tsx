@@ -55,7 +55,7 @@ export function AuthShell({
         <aside className="rounded-3xl border border-border/70 bg-gradient-to-br from-card via-card to-primary/5 p-6 shadow-sm md:p-8 lg:p-10">
           <div className="flex items-center justify-between gap-3">
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs">
-              Ciclo nexxa_life
+              Ciclo NexxaLife
             </Badge>
             <Button asChild variant="ghost" size="sm" className="rounded-full">
               <Link href="/dashboard">
@@ -92,7 +92,7 @@ export function AuthShell({
             <div className="rounded-2xl border border-border bg-background/70 p-5">
               <div className="text-xs uppercase tracking-wide text-muted-foreground">Posicionamento do MVP</div>
               <p className="mt-3 text-sm leading-6 text-foreground">
-                Transformar diagnóstico pessoal em um plano executável com acompanhamento real, seguindo o recorte central documentado do legado nexxa_life flow.
+                Transformar diagnóstico pessoal em um plano executável com acompanhamento real, seguindo o recorte central documentado do legado NexxaLife flow.
               </p>
             </div>
           </div>

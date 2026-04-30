@@ -20,7 +20,7 @@ Até a decisão final de naming, esta matriz usa rotas curtas em inglês para a 
 | `/Relatorio` | Relatórios | leitura histórica / síntese | `/reports` | catalog + detail | `components/meu-dia/meu-dia-reports-view.tsx` | P1 | REAL_SHELL_PORT |
 | `/AdminDashboard` | Framework Admin | governança estrutural | `/framework-admin` | admin studio | `components/meu-dia/meu-dia-framework-admin-view.tsx` | P1 | REAL_SHELL_PORT |
 | `/Academia` | Academia | educação / trilhas | `/academy` | library / learning workspace | `components/meu-dia/meu-dia-academy-view.tsx` | P2 | REAL_SHELL_PORT |
-| `/Integracoes` | Integrações | ecossistema / conexões | `/integrations` ou fusão em `/apps` | catalog + detail + config | adaptar `components/apps/*` | P1 | PARTIAL_REUSE |
+| `/Integracoes` | Integrações | ecossistema / conexões | `/apps` (+ aliases `/integrations/*`) | catalog + detail + config | adaptar `components/apps/*` | P1 | REAL_REUSE_WITH_ALIASES |
 | `/News` | News | feed contextual | `/news` | feed / insights workspace | `components/meu-dia/meu-dia-news-view.tsx` | P1 | REAL_SHELL_PORT |
 | `/Marketplace` | Marketplace | ofertas / addons | `/marketplace` | catalog workspace | `components/meu-dia/meu-dia-marketplace-view.tsx` | P2 | REAL_SHELL_PORT |
 | `/Testes` | Comportamentais | QA/dev/internal | `/labs/behavioral-tests` | internal tool surface | `components/labs/behavioral-tests-view.tsx` | P3 | MISSING |

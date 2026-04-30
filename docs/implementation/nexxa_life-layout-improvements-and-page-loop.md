@@ -9,10 +9,12 @@ Consolidar um plano único para:
 
 ## Convenção de naming do projeto
 A partir desta rodada, o nome oficial do produto na base atual deve ser:
-- `nexxa_life`
+- `NexxaLife` nas superfícies visíveis da plataforma
+- `nexxa_life` apenas quando necessário em identificadores técnicos provisórios
 
 Regras:
 - substituir referências de marca antigas em superfícies ativas da raiz
+- preferir `NexxaLife` em títulos, metadata, headings, labels e navegação
 - evitar novos usos de `Meu Dia`, `MeuDia.AI`, `Onda` ou `nexxalife`
 - preservar o legado apenas quando fizer parte de documentação histórica em `old/meu-dia-flow`
 
@@ -104,8 +106,9 @@ Regras:
 
 #### `/agenda`
 - [x] tabs reais
-- [ ] evoluir estados bloqueados para cards mais orientativos
-- [ ] revisar contraste e ritmo visual da timeline
+- [x] evoluídos os estados bloqueados para cards mais orientativos
+- [x] revisado contraste e ritmo visual da timeline
+- status atual: `REAL` com `Semana/Mês/Ano` ainda em estado degradado explícito
 
 #### `/checklist`
 - [ ] validar progressão visual entre períodos

@@ -5,7 +5,7 @@ import { checklistHero } from "@/components/meu-dia/checklist-content"
 export default function ChecklistPage() {
   return (
     <>
-      <AppTopbar title="Checklist nexxa_life" subtitle={checklistHero.description} />
+      <AppTopbar title="Checklist NexxaLife" subtitle={checklistHero.description} />
       <NexxaLifeChecklistView />
     </>
   )

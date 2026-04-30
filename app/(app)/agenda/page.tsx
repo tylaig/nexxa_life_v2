@@ -5,7 +5,7 @@ import { NexxaLifeAgendaView } from "@/components/meu-dia/meu-dia-agenda-view"
 export default function AgendaPage() {
   return (
     <>
-      <AppTopbar title="Agenda nexxa_life" subtitle={agendaHero.description} />
+      <AppTopbar title="Agenda NexxaLife" subtitle={agendaHero.description} />
       <NexxaLifeAgendaView />
     </>
   )

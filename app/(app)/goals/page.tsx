@@ -5,7 +5,7 @@ import { NexxaLifeGoalsView } from "@/components/meu-dia/meu-dia-goals-view"
 export default function GoalsPage() {
   return (
     <>
-      <AppTopbar title="Metas nexxa_life" subtitle={goalsHero.description} />
+      <AppTopbar title="Metas NexxaLife" subtitle={goalsHero.description} />
       <NexxaLifeGoalsView />
     </>
   )

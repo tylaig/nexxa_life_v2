@@ -57,7 +57,7 @@ describe("nexxa_life navigation taxonomy", () => {
 
     expect(navigation.accordionSections[2].children.map((item) => item.href)).toEqual([
       "/academy",
-      "/integrations",
+      "/apps",
       "/news",
       "/marketplace",
     ])

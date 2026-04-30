@@ -4,7 +4,7 @@ import { dashboardHero, dashboardPrimaryCards, dashboardQuickLinks } from "@/com
 
 describe("nexxa_life dashboard content", () => {
   it("reframes dashboard as a personal execution workspace", () => {
-    expect(dashboardHero.kicker).toBe("Dashboard nexxa_life")
+    expect(dashboardHero.kicker).toBe("Dashboard NexxaLife")
     expect(dashboardHero.title).toBe("Seu centro de clareza, execução e evolução.")
     expect(dashboardHero.description).toContain("diagnóstico")
     expect(dashboardHero.description).toContain("checklist")
