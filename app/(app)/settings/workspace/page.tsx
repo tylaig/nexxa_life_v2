@@ -85,12 +85,12 @@ export default function SettingsWorkspacePage() {
 
   return (
     <>
-      <AppTopbar title="Configurações" subtitle="Centro administrativo unificado do workspace" />
+      <AppTopbar title="Configurações" subtitle="Centro administrativo complementar do workspace NexxaLife" />
       <PageContainer>
-        <AppBreadcrumbs items={[{ label: "Configurações" }]} />
+        <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Configurações" }]} />
         <PageHeader
           title="Configurações"
-          description="Identidade, equipe, dados de contato, segurança e billing do workspace em uma superfície unificada."
+          description="Administração complementar do workspace NexxaLife com identidade, equipe, dados, segurança e billing em uma superfície unificada."
           actions={
             <div className="flex gap-2">
               <Button size="sm" className="gap-2" onClick={() => notifyPlanned("Alterações gerais de configurações")}>Salvar alterações</Button>

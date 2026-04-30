@@ -64,9 +64,10 @@ Regras:
 - [ ] padronizar tom institucional da aplicação raiz
 
 #### `app/(app)/page.tsx`
-- [ ] decidir se permanece como home herdada ou redireciona para `/dashboard`
-- [ ] evitar colisão semântica entre home herdada e dashboard nexxa_life
-- [ ] documentar status final da rota no loop
+- [x] decidido redirecionamento para `/dashboard`
+- [x] evitada colisão semântica entre home herdada e dashboard NexxaLife
+- [x] status final da rota documentado no loop
+- status atual: `REAL` como entrypoint autenticado técnico com redirect
 
 #### `components/app-shell/app-sidebar.tsx`
 - [x] grupo principal retematizado
@@ -134,17 +135,12 @@ Regras:
 #### `/academy`, `/news`, `/marketplace`, `/framework-admin`
 - [x] `framework-admin` revisado para maior consistência visual com o restante do núcleo
 - [x] `framework-admin` validado para comunicar com mais clareza seu papel administrativo no produto
-- [ ] revisar `academy`
+- [x] `academy` revisada para maior consistência visual e clareza de papel
 - [x] `news` revisado para maior consistência visual e clareza editorial
-- [ ] revisar `marketplace`
+- [x] `marketplace` revisado para maior consistência visual e clareza de papel
 
 ### 4. Rotas herdadas
 Essas superfícies precisam de auditoria e decisão de coexistência ou reclassificação:
-- `/analytics`
-- `/apps/*`
-- `/ai-studio/*`
-- `/knowledge/*`
-- `/settings/*`
 - `/contacts`
 - `/inbox`
 - `/campaigns/*`
@@ -155,6 +151,44 @@ Essas superfícies precisam de auditoria e decisão de coexistência ou reclassi
 - `/storage`
 - `/logs`
 - `/audience`
+
+#### `/analytics`
+- [x] auditado como superfície herdada em conflito com `/dashboard` e `/reports`
+- [x] decidido redirecionamento para `/dashboard`
+- [x] removida duplicação conceitual de analytics dedicado no fluxo principal NexxaLife
+- status atual: `REAL` como rota técnica herdada com redirect
+
+#### `/apps`
+- [x] auditado como base oficial de Integrações
+- [x] topbar e superfície principal alinhadas para comunicar conectividade operacional em vez de App Store genérica
+- [x] compatibilidade com `/integrations/*` mantida apenas por aliases
+- status atual: `REAL`
+
+#### `/ai-studio`
+- [x] auditado como hub complementar de inteligência
+- [x] reforçado o papel de governança de agentes, bindings e knowledge
+- [x] evitada competição semântica com `/dashboard` ao posicionar a página como camada complementar
+- status atual: `REAL`
+
+#### `/knowledge`
+- [x] auditado como infraestrutura complementar de grounding e retrieval
+- [x] topbar, breadcrumb e hero alinhados para comunicar papel estrutural dentro do NexxaLife
+- [x] mantida a coexistência com `/ai-studio` sem absorção total no hub de agentes
+- status atual: `REAL`
+
+#### `/settings`
+- [x] auditado como centro administrativo complementar do workspace
+- [x] breadcrumb e descrição alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre administração e fluxo operacional principal
+- status atual: `REAL`
+
+### 5. Landing pública e home herdada
+#### `/`
+- [x] deixou de redirecionar automaticamente para `/dashboard`
+- [x] ganhou landing pública inicial com posicionamento visível de `NexxaLife`
+- [x] reduzida a colisão semântica entre entrada pública e shell autenticado
+- [ ] aprofundar narrativa comercial, prova social e CTA institucional em rodada futura
+- status atual: `REAL` em versão inicial
 
 Para cada uma, registrar:
 - relevância no produto atual

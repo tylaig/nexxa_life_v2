@@ -42,10 +42,10 @@ export function AiStudioShellView() {
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "AI Studio" }]} />
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "AI Studio" }]} />
       <PageHeader
         title="AI Studio"
-        description="Superfície unificada para apresentar agentes, integrações, conhecimento conectado e postura operacional do workspace de IA."
+        description="Hub complementar para agentes, integrações, conhecimento conectado e governança da malha de IA dentro do ecossistema NexxaLife."
         actions={
           <>
             <Button variant="outline" size="sm" className="gap-2" asChild>
@@ -64,29 +64,86 @@ export function AiStudioShellView() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Agentes live" value={String(liveAgents.length)} hint={`${agents.length} total`} icon={Bot} />
-        <StatCard label="Conversas IA · 30d" value={agents.reduce((s, a) => s + a.conversations30d, 0).toLocaleString("pt-BR")} icon={MessageSquare} />
-        <StatCard label="CSAT médio" value={avgCsat.toFixed(1).replace(".", ",")} hint="performance consolidada" icon={Star} />
-        <StatCard label="Workspace" value={activeWorkspace.name} hint="ambiente ativo" icon={Building2} />
-      </div>
+      <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <Card className="overflow-hidden border-border/80 bg-gradient-to-br from-card via-card to-primary/5">
+          <CardContent className="space-y-6 p-6 md:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-2xl space-y-3">
+                <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                  Governança de IA
+                </Badge>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                    Organize agentes, bindings e conhecimento sem competir com o fluxo principal do NexxaLife.
+                  </h2>
+                  <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                    O AI Studio deve funcionar como hub complementar: ele governa a camada de inteligência, enquanto dashboard,
+                    relatórios e execução diária seguem como centro operacional principal do produto.
+                  </p>
+                </div>
+              </div>
 
-      <div className="mt-6 rounded-2xl border border-[var(--status-pending-bg)] bg-[var(--status-pending-bg)]/60 px-4 py-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <AlertTriangle className="h-4 w-4 text-[var(--status-pending)]" />
-              AI Studio precisa comunicar postura operacional, não só catálogo de agentes
+              <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                  <div className="mt-2 text-sm font-semibold text-foreground">Hub de inteligência complementar</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    Aqui a prioridade é governar malha de IA, não substituir a leitura executiva central do NexxaLife.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border bg-background/70 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
+                  <div className="mt-2 text-sm font-semibold text-foreground">AI Studio → apps → knowledge → operação</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    O valor surge quando agentes, contexto e integrações melhoram a operação em vez de virarem silo paralelo.
+                  </p>
+                </div>
+              </div>
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Priorize clareza entre agentes em produção, shadow testing, bindings ativos e lacunas de governança antes de expandir a malha.
-            </p>
+
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <StatCard label="Agentes live" value={String(liveAgents.length)} hint={`${agents.length} total`} icon={Bot} />
+              <StatCard label="Conversas IA · 30d" value={agents.reduce((s, a) => s + a.conversations30d, 0).toLocaleString("pt-BR")} icon={MessageSquare} />
+              <StatCard label="CSAT médio" value={avgCsat.toFixed(1).replace(".", ",")} hint="performance consolidada" icon={Star} />
+              <StatCard label="Workspace" value={activeWorkspace.name} hint="ambiente ativo" icon={Building2} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-[var(--status-pending-bg)] bg-[var(--status-pending-bg)]/60 px-4 py-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <AlertTriangle className="h-4 w-4 text-[var(--status-pending)]" />
+                  AI Studio precisa comunicar postura operacional, não só catálogo de agentes
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Priorize clareza entre agentes em produção, shadow testing, bindings ativos e lacunas de governança antes de expandir a malha.
+                </p>
+              </div>
+              <div className="rounded-full border border-border bg-background/80 px-3 py-1 text-xs text-muted-foreground">
+                {liveAgents.length} live · {shadowAgents.length} shadow
+              </div>
+            </div>
           </div>
-          <div className="rounded-full border border-border bg-background/80 px-3 py-1 text-xs text-muted-foreground">
-            {liveAgents.length} live · {shadowAgents.length} shadow
-          </div>
+
+          <Card className="border-border/80">
+            <CardHeader>
+              <CardTitle>Leitura da coexistência</CardTitle>
+              <CardDescription>Como esta superfície se posiciona no ecossistema atual.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
+              <p>
+                AI Studio não deve disputar o papel de dashboard do NexxaLife. Sua função é governar agentes, contexto e readiness técnica da camada de IA.
+              </p>
+              <p>
+                Quando a leitura exigir execução do dia, metas ou acompanhamento histórico, o fluxo principal continua em dashboard, agenda, checklist e relatórios.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      </section>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="overflow-hidden">

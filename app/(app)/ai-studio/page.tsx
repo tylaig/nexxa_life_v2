@@ -6,7 +6,7 @@ export default function AiStudioPage() {
     <>
       <AppTopbar
         title="AI Studio"
-        subtitle="Hub visual dos agentes, integrações ativas, knowledge e postura operacional da malha de IA"
+        subtitle="Hub de agentes, knowledge e integrações que complementa a operação principal do NexxaLife"
       />
       <AiStudioHubView />
     </>

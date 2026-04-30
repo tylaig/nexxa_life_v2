@@ -55,27 +55,94 @@ export function IntegrationsListView() {
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "App Store" }]} />
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Integrações" }]} />
       <PageHeader
-        title="App Store & Conexões"
-        description="Catálogo de aplicativos, provedores e ferramentas conectadas que expandem as capacidades do seu workspace e agentes de IA."
+        title="Integrações"
+        description="Base oficial de apps, providers e conexões operacionais que expandem o NexxaLife sem depender da taxonomia antiga de App Store."
         actions={
           <>
-            <Button asChild variant="outline" size="sm" className="gap-2"><Link href="/apps/providers"><FolderTree className="h-3.5 w-3.5" />Configurar Providers</Link></Button>
-            <Button asChild size="sm" className="gap-2"><Link href="/apps/new"><Plus className="h-3.5 w-3.5" />Adicionar App</Link></Button>
+            <Button asChild variant="outline" size="sm" className="gap-2"><Link href="/apps/providers"><FolderTree className="h-3.5 w-3.5" />Configurar providers</Link></Button>
+            <Button asChild size="sm" className="gap-2"><Link href="/apps/new"><Plus className="h-3.5 w-3.5" />Adicionar integração</Link></Button>
           </>
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Instalados" value={String(items.length)} hint="apps conectados" icon={AppWindow} />
-        <StatCard label="Healthy" value={String(items.filter((item) => item.healthStatus === "validated").length)} hint="operando sem erros" icon={ShieldCheck} />
-        <StatCard label="Tools" value={String(integrationMockCatalog.reduce((sum, item) => sum + item.tools.length, 0))} hint="ações reutilizáveis" icon={Wrench} />
-        <StatCard label="Providers" value={String(integrationMockCatalog.length)} hint="catálogo nativo" icon={Plug} />
-      </div>
+      <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-3">
+              <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                Conectividade operacional
+              </Badge>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                  Centralize integrações como infraestrutura de contexto, actions e ativação do sistema.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                  Esta superfície existe para publicar a base real de Integrações em <span className="font-medium text-foreground">/apps</span>,
+                  enquanto os aliases <span className="font-medium text-foreground">/integrations/*</span> seguem apenas como compatibilidade.
+                </p>
+              </div>
+            </div>
 
+            <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Conectores, providers e ativação futura</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  A função principal aqui é estruturar conectividade confiável para apps, agentes, automações e webhooks.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Compatibilidade</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">`/apps` é a base oficial</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  Rotas em `/integrations/*` permanecem como aliases herdados para docs antigos e links compatíveis.
+                </p>
+              </div>
+            </div>
+          </div>
 
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatCard label="Instalados" value={String(items.length)} hint="integrações conectadas" icon={AppWindow} />
+            <StatCard label="Healthy" value={String(items.filter((item) => item.healthStatus === "validated").length)} hint="operando sem erros" icon={ShieldCheck} />
+            <StatCard label="Tools" value={String(integrationMockCatalog.reduce((sum, item) => sum + item.tools.length, 0))} hint="ações reutilizáveis" icon={Wrench} />
+            <StatCard label="Providers" value={String(integrationMockCatalog.length)} hint="catálogo nativo" icon={Plug} />
+          </div>
+        </div>
 
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-border/80 bg-card p-5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <GaugeCircle className="h-4 w-4 text-primary" />
+              Leitura operacional
+            </div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Use esta área para distinguir o que já está instalado, o que ainda está em descoberta e quais providers precisam de configuração estrutural antes da ativação.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border/80 bg-card p-5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Webhook className="h-4 w-4 text-primary" />
+              Próxima conexão
+            </div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Integrações bem estruturadas alimentam apps, webhooks, agents e automations. O valor aqui está menos no catálogo e mais na readiness operacional.
+            </p>
+          </div>
+
+          {error ? (
+            <div className="rounded-2xl border border-[var(--status-pending-bg)] bg-[var(--status-pending-bg)]/60 p-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 font-semibold text-foreground">
+                <AlertTriangle className="h-4 w-4 text-[var(--status-pending)]" />
+                Atenção ao carregamento
+              </div>
+              <p className="mt-2 leading-6">{error}</p>
+            </div>
+          ) : null}
+        </div>
+      </section>
 
       <Tabs value={tab} onValueChange={setTab} className="mt-6">
         <NavTabsList className="mb-6">

@@ -60,8 +60,56 @@
 - prioridade editorial, destaque e guardrails ficaram mais separados e legíveis
 - classificação da página: `REAL` com curadoria e sinais ainda `MOCK`
 
+- `/academy` revisada visualmente
+- breadcrumb ajustado para `NexxaLife`
+- hero reorganizado para comunicar aprendizagem aplicada em vez de acervo genérico
+- recomendações e trilhas ficaram mais separadas e legíveis
+- classificação da página: `REAL` com trilhas e recomendações ainda `MOCK`
+
+- `/marketplace` revisada visualmente
+- breadcrumb ajustado para `NexxaLife`
+- hero reorganizado para comunicar curadoria de apoio contextual em vez de catálogo genérico
+- match prioritário, categorias e especialistas ficaram mais separados e legíveis
+- classificação da página: `REAL` com especialistas e encaixes ainda `MOCK`
+
+- `/` revisada e implementada como landing pública inicial
+- rota raiz deixou de redirecionar imediatamente para `/dashboard`
+- hero público passou a comunicar posicionamento oficial de `NexxaLife`
+- colisão semântica com o shell autenticado foi reduzida
+- classificação da página: `REAL` em versão inicial
+
+- `/(app)` home herdada revisada
+- rota passou a redirecionar para `/dashboard`
+- duplicação semântica com a home pública e com o dashboard foi removida
+- classificação da rota: `REAL` como entrypoint autenticado técnico com redirect
+
+- `/analytics` revisada
+- rota passou a redirecionar para `/dashboard`
+- duplicação semântica com analytics já absorvido no dashboard foi removida
+- classificação da rota: `REAL` como rota técnica herdada com redirect
+
+- `/apps` revisada
+- topbar e hero passaram a comunicar Integrações como base oficial de conectividade do NexxaLife
+- `/integrations/*` foi reafirmado como camada de compatibilidade, não como taxonomia principal
+- classificação da rota: `REAL`
+
+- `/ai-studio` revisada
+- topbar, breadcrumb e hero passaram a comunicar papel complementar ao núcleo NexxaLife
+- a superfície foi reforçada como hub de governança de IA, não como competidora do dashboard
+- classificação da rota: `REAL`
+
+- `/knowledge` revisada
+- topbar, breadcrumb e hero passaram a comunicar infraestrutura complementar de grounding do NexxaLife
+- a superfície foi mantida como camada estrutural de memória e retrieval, em coexistência com AI Studio
+- classificação da rota: `REAL`
+
+- `/settings` revisada via entrypoint administrativo em `/settings/workspace`
+- breadcrumb e descrição passaram a comunicar papel complementar ao workspace NexxaLife
+- a superfície foi reafirmada como camada administrativa, não concorrente do fluxo operacional principal
+- classificação da rota: `REAL`
+
 ## Próxima página automática
-- `/academy`
+- `/contacts`
 
 ## Regra operacional
 Basta responder `ok` para seguir a próxima página do loop.

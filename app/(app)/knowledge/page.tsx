@@ -4,7 +4,7 @@ import { KnowledgeOverviewView } from "@/components/knowledge/knowledge-overview
 export default function KnowledgePage() {
   return (
     <>
-      <AppTopbar title="Base de conhecimento" subtitle="Catálogo operacional com detalhe dedicado e retrieval observável" />
+      <AppTopbar title="Knowledge" subtitle="Infraestrutura de grounding e retrieval que complementa AI Studio e a operação do NexxaLife" />
       <KnowledgeOverviewView />
     </>
   )

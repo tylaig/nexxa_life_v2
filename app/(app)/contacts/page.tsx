@@ -6,7 +6,7 @@ export default function ContactsPage() {
     <>
       <AppTopbar
         title="Contatos"
-        subtitle="CRM unificado · Perfil 360, segmentos, LTV e ciclo de vida"
+        subtitle="CRM complementar para relacionamento, segmentação e contexto comercial conectado ao NexxaLife"
       />
       <ContactsView />
     </>

@@ -53,8 +53,9 @@ Por compatibilidade com docs legados e links antigos, foram criados aliases:
 - Marketplace -> `/marketplace`
 
 ### Existem no legado e ainda não possuem port dedicado equivalente
-- Landing pública legada -> hoje `/` apenas redireciona para `/dashboard`
-  - status: `MISSING` como landing pública real
+- Landing pública legada -> `/` agora possui uma landing pública inicial própria
+  - status: `REAL` em versão inicial
+  - observação: ainda precisa aprofundar prova social, narrativa comercial e eventual CTA institucional mais completo
 - Testes (`/Testes`) -> não existe port dedicado
   - status: `MISSING`
   - alvo sugerido: `/labs/behavioral-tests`
@@ -89,8 +90,22 @@ Estas rotas existem na base atual mas não pertencem diretamente ao núcleo lega
 - `/storage`
 - `/skills`
 
+### Decisões aplicadas nas rodadas recentes
+- `/apps` confirmado como base oficial publicada para Integrações
+- status: `REAL`
+- decisão: manter `/integrations/*` apenas como aliases compatíveis, sem competir com a taxonomia principal de `/apps`
+- observação: a UI principal foi alinhada para comunicar Integrações como infraestrutura operacional do NexxaLife, não como App Store genérica
+- `/ai-studio` confirmado como hub complementar de governança da camada de IA
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife sem competir com `/dashboard`; a superfície foi alinhada para comunicar papel complementar de agentes, bindings e knowledge
+- `/knowledge` confirmado como infraestrutura complementar de grounding e retrieval
+- status: `REAL`
+- decisão: manter coexistência com `/ai-studio` como camada estrutural de memória e observabilidade, sem absorção total no hub de agentes neste momento
+- `/settings/*` confirmado como centro administrativo complementar do workspace
+- status: `REAL`
+- decisão: manter como camada administrativa do NexxaLife, sem competir com dashboard, agenda, checklist ou relatórios
+
 ### Precisam de revisão semântica forte
-- `/analytics`
 - `/contacts`
 - `/inbox`
 - `/campaigns/*`
@@ -98,14 +113,21 @@ Estas rotas existem na base atual mas não pertencem diretamente ao núcleo lega
 - `/orders`
 - `/products`
 - `/audience`
-- `/(app)` home herdada
+
+### Decisões aplicadas nas rodadas recentes
+- `/(app)` home herdada deixou de competir semanticamente com `/dashboard`
+- status: `REAL` como rota técnica de entrada autenticada, com redirecionamento para `/dashboard`
+- decisão: manter sem conteúdo próprio por agora para evitar duplicação conceitual com a home autenticada principal
+- `/analytics` deixou de competir semanticamente com `/dashboard` e `/reports`
+- status: `REAL` como rota técnica herdada com redirecionamento para `/dashboard`
+- decisão: manter sem experiência própria enquanto o núcleo NexxaLife concentra leitura executiva no dashboard e leitura histórica em relatórios
 
 ### MISSING a partir do legado
 - landing pública NexxaLife real em `/`
 - superfície `/labs/behavioral-tests` ou equivalente para `Testes`
 
 ## Próximas análises sugeridas no loop
-1. `/academy`
+1. `/`
 2. inventário de páginas MISSING reais
 3. decisão sobre landing pública de `/`
 4. decisão sobre `Testes` / `labs`
