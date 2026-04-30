@@ -57,6 +57,7 @@ Preparar uma fundação limpa, rastreável e navegável para o novo NexxaLife se
 - [x] Criar rascunho de contratos em `lib/nexxalife/contracts/`
 - [x] Criar mapa inicial de rotas em `lib/nexxalife/routes.ts`
 - [x] Materializar host Next mínimo na raiz (`package.json`, `tsconfig.json`, `next.config.mjs`, `postcss.config.mjs`, `app/layout.tsx`, `app/globals.css`)
+- [x] Instalar dependências do host raiz e validar build/typecheck mínimos
 
 ## E. Primeira onda funcional planejada
 
@@ -89,7 +90,7 @@ A fase pode ser considerada concluída quando:
 
 ## Próxima macro-rodada sugerida
 
-1. instalar dependências e validar runtime real do host recém-materializado
-2. confirmar build/lint mínimos da superfície criada
-3. refinar consistência visual entre dashboard, onboarding, goals e checklist
-4. decidir próximo recorte: aprofundar onda 1 ou abrir diagnóstico/admin documental
+1. refinar consistência visual entre dashboard, onboarding, goals e checklist
+2. endurecer shell base (tema/toasts reais, primitives compartilhadas e navegação)
+3. decidir próximo recorte: aprofundar onda 1 ou abrir diagnóstico/admin documental
+4. preparar camada inicial de persistência/contratos evolutivos sem tocar no legado

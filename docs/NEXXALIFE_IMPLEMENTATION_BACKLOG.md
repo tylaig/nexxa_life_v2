@@ -62,7 +62,7 @@ Estados sugeridos para uso contínuo:
 | P2-02 | Recriar dashboard com summary cards e blocos operacionais | DONE | `app/(app)/nexxalife/page.tsx` |
 | P2-03 | Recriar objetivos/metas com contratos novos | DONE | `app/(app)/nexxalife/goals/page.tsx` |
 | P2-04 | Recriar checklist com tarefas controladas | DONE | `app/(app)/nexxalife/checklist/page.tsx` |
-| P2-05 | Validar consistência entre páginas da onda 1 | IN_PROGRESS | validação estrutural/documental concluída; falta validação de runtime/build |
+| P2-05 | Validar consistência entre páginas da onda 1 | DONE | runtime e build validados no host raiz; lint ajustado para `tsc --noEmit` |
 
 ---
 
