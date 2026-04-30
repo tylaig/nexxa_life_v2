@@ -6,7 +6,7 @@ export default function InboxPage() {
     <>
       <AppTopbar
         title="Inbox"
-        subtitle="Caixa unificada · WhatsApp Oficial, Webchat, Email, Instagram"
+        subtitle="Atendimento complementar e omnichannel conectado a contatos, campaigns e contexto operacional do NexxaLife"
       />
       <InboxApp />
     </>

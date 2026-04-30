@@ -141,7 +141,6 @@ Regras:
 
 ### 4. Rotas herdadas
 Essas superfícies precisam de auditoria e decisão de coexistência ou reclassificação:
-- `/contacts`
 - `/inbox`
 - `/campaigns/*`
 - `/automations/*`
@@ -180,6 +179,12 @@ Essas superfícies precisam de auditoria e decisão de coexistência ou reclassi
 - [x] auditado como centro administrativo complementar do workspace
 - [x] breadcrumb e descrição alinhados para comunicar relação com NexxaLife
 - [x] mantida a separação semântica entre administração e fluxo operacional principal
+- status atual: `REAL`
+
+#### `/contacts`
+- [x] auditado como CRM complementar e acionável
+- [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre relacionamento comercial e fluxo operacional principal
 - status atual: `REAL`
 
 ### 5. Landing pública e home herdada

@@ -108,8 +108,13 @@
 - a superfície foi reafirmada como camada administrativa, não concorrente do fluxo operacional principal
 - classificação da rota: `REAL`
 
+- `/contacts` revisada
+- topbar, breadcrumb e hero passaram a comunicar CRM complementar conectado ao NexxaLife
+- a superfície foi reafirmada como camada comercial/relacional, não concorrente do fluxo principal
+- classificação da rota: `REAL`
+
 ## Próxima página automática
-- `/contacts`
+- `/inbox`
 
 ## Regra operacional
 Basta responder `ok` para seguir a próxima página do loop.

@@ -18,6 +18,7 @@ import {
   List,
   CheckCircle2,
 } from "lucide-react"
+import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
 import { NextActionCard } from "@/components/app-shell/next-action-card"
 import { OperationalAlertBanner } from "@/components/app-shell/operational-alert-banner"
 import {
@@ -109,9 +110,10 @@ export function ContactsView() {
 
   return (
     <PageContainer>
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Contatos" }]} />
       <PageHeader
         title="Contatos"
-        description="Visão única de todos os clientes e leads, sincronizada com Shopify, WhatsApp e Klaviyo."
+        description="CRM complementar para relacionamento, segmentação e contexto comercial sem competir com o fluxo operacional principal do NexxaLife."
         actions={
           <>
             <Button
@@ -131,12 +133,50 @@ export function ContactsView() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Total de contatos" value="1.842" trend={{ value: "+12%", positive: true }} hint="vs. mês anterior" />
-        <StatCard label="Clientes ativos" value="1.214" trend={{ value: "+8%", positive: true }} />
-        <StatCard label="LTV médio" value="R$ 487" trend={{ value: "+R$ 32", positive: true }} />
-        <StatCard label="Opt-in WhatsApp" value="89%" hint="1.640 contatos" />
-      </div>
+      <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-3">
+              <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                Relacionamento e pipeline
+              </Badge>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                  Organize relacionamento, segmentos e sinais comerciais sem deslocar o centro operacional do NexxaLife.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                  Contatos funciona como camada complementar de CRM: ele ajuda a ler pessoas, contexto e oportunidade comercial,
+                  mas não substitui dashboard, agenda, checklist ou relatórios do fluxo principal.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">CRM complementar e acionável</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  A prioridade aqui é leitura de relacionamento, segmentos, risco e pipeline, não rotina operacional pessoal.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Contatos → campaigns → inbox</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  O valor desta superfície aparece quando segmentos e contexto alimentam atendimento, campanha e retenção com mais precisão.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatCard label="Total de contatos" value="1.842" trend={{ value: "+12%", positive: true }} hint="vs. mês anterior" />
+            <StatCard label="Clientes ativos" value="1.214" trend={{ value: "+8%", positive: true }} />
+            <StatCard label="LTV médio" value="R$ 487" trend={{ value: "+R$ 32", positive: true }} />
+            <StatCard label="Opt-in WhatsApp" value="89%" hint="1.640 contatos" />
+          </div>
+        </div>
+      </section>
 
       <OperationalAlertBanner
         className="mt-6"

@@ -106,7 +106,6 @@ Estas rotas existem na base atual mas não pertencem diretamente ao núcleo lega
 - decisão: manter como camada administrativa do NexxaLife, sem competir com dashboard, agenda, checklist ou relatórios
 
 ### Precisam de revisão semântica forte
-- `/contacts`
 - `/inbox`
 - `/campaigns/*`
 - `/automations/*`
@@ -121,6 +120,9 @@ Estas rotas existem na base atual mas não pertencem diretamente ao núcleo lega
 - `/analytics` deixou de competir semanticamente com `/dashboard` e `/reports`
 - status: `REAL` como rota técnica herdada com redirecionamento para `/dashboard`
 - decisão: manter sem experiência própria enquanto o núcleo NexxaLife concentra leitura executiva no dashboard e leitura histórica em relatórios
+- `/contacts` confirmado como CRM complementar e acionável
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife como camada comercial/relacional, sem absorção no fluxo operacional pessoal
 
 ### MISSING a partir do legado
 - landing pública NexxaLife real em `/`
