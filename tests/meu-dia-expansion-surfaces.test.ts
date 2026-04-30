@@ -5,7 +5,7 @@ describe("nexxa_life expansion surface contracts", () => {
     const module = await import("@/components/meu-dia/framework-admin-content")
 
     expect(module.frameworkAdminHero.kicker).toBe("Framework Admin")
-    expect(module.frameworkAdminHero.title).toBe("Governe a matriz estrutural que sustenta o diagnóstico nexxa_life.")
+    expect(module.frameworkAdminHero.title).toBe("Governe a matriz estrutural que sustenta o diagnóstico NexxaLife.")
     expect(module.frameworkAdminKpis.map((item) => item.label)).toEqual([
       "Eixos ativos",
       "Dimensões mapeadas",

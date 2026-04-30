@@ -111,25 +111,32 @@ Regras:
 - status atual: `REAL` com `Semana/Mês/Ano` ainda em estado degradado explícito
 
 #### `/checklist`
-- [ ] validar progressão visual entre períodos
-- [ ] reforçar destaque da tarefa foco
-- [ ] revisar equilíbrio entre cards resumo e tarefas
+- [x] validada progressão visual entre períodos
+- [x] reforçado o destaque da tarefa foco
+- [x] revisado o equilíbrio entre cards de resumo e tarefas
+- status atual: `REAL` com dados operacionais ainda `MOCK`
 
 #### `/diagnostic`
-- [ ] validar clareza do passo a passo e outputs esperados
-- [ ] revisar escaneabilidade da leitura por eixos
+- [x] validada a clareza do passo a passo e outputs esperados
+- [x] revisada a escaneabilidade da leitura por eixos
+- status atual: `REAL` com leitura diagnóstica ainda `MOCK`
 
 #### `/goals`
-- [ ] reforçar hierarquia eixo -> meta -> progresso
-- [ ] revisar densidade dos cards por eixo
+- [x] reforçada a hierarquia eixo -> meta -> progresso
+- [x] revisada a densidade dos cards por eixo
+- status atual: `REAL` com metas e progresso ainda `MOCK`
 
 #### `/journal`
-- [ ] revisar layout do editor/reflexão para evitar blocos muito homogêneos
-- [ ] validar CTA principal e feedback pós-registro
+- [x] revisado o layout do editor/reflexão para evitar blocos muito homogêneos
+- [x] validado CTA principal e feedback pós-registro em modo estrutural
+- status atual: `REAL` com reflexão e persistência ainda `MOCK`
 
 #### `/academy`, `/news`, `/marketplace`, `/framework-admin`
-- [ ] revisar consistência visual com o restante do núcleo
-- [ ] validar se cada página comunica claramente seu papel no produto
+- [x] `framework-admin` revisado para maior consistência visual com o restante do núcleo
+- [x] `framework-admin` validado para comunicar com mais clareza seu papel administrativo no produto
+- [ ] revisar `academy`
+- [x] `news` revisado para maior consistência visual e clareza editorial
+- [ ] revisar `marketplace`
 
 ### 4. Rotas herdadas
 Essas superfícies precisam de auditoria e decisão de coexistência ou reclassificação:

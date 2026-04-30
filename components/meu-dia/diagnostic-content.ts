@@ -4,7 +4,7 @@ export const diagnosticHero = {
   kicker: "Diagnóstico",
   title: "Transforme percepção em prioridade estratégica para o seu momento atual.",
   description:
-    "Uma entrada guiada para organizar contexto pessoal, mapear eixos críticos e produzir uma leitura acionável que conversa com metas, relatórios e o restante do ciclo nexxa_life.",
+    "Uma entrada guiada para organizar contexto pessoal, mapear eixos críticos e produzir uma leitura acionável que conversa com metas, relatórios e o restante do ciclo NexxaLife.",
 } as const
 
 export const diagnosticSteps = [

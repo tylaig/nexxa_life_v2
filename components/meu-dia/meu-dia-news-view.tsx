@@ -23,7 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export function NexxaLifeNewsView() {
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "News" }]} />
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "News" }]} />
       <PageHeader
         title={newsHero.title}
         description={newsHero.description}
@@ -39,14 +39,52 @@ export function NexxaLifeNewsView() {
         }
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
-        {newsKpis.map((item) => (
-          <StatCard key={item.label} label={item.label} value={item.value} hint={item.hint} icon={item.icon} />
-        ))}
-      </section>
+      <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <Card className="overflow-hidden border-border/80 bg-gradient-to-br from-card via-card to-primary/5">
+          <CardContent className="space-y-6 p-6 md:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="max-w-2xl space-y-3">
+                <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                  Camada editorial
+                </Badge>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                    Filtre ruído, encontre contexto e transforme leitura em próxima decisão útil.
+                  </h2>
+                  <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                    A função desta superfície é editorial: reduzir excesso de input e aproximar conteúdo do estado atual do seu sistema.
+                    Ela precisa deixar claro o que ler, por que ler e qual ação a leitura pode destravar.
+                  </p>
+                </div>
+              </div>
 
-      <section className="mt-6 grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <Card>
+              <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                  <div className="mt-2 text-sm font-semibold text-foreground">Curadoria orientada por contexto</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    A leitura precisa nascer conectada a prioridade, energia e momento do NexxaLife.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border bg-background/70 p-4">
+                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
+                  <div className="mt-2 text-sm font-semibold text-foreground">News → relatórios → ajustes de direção</div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    O feed só faz sentido quando melhora decisão, repertório e ação prática no ciclo atual.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {newsKpis.map((item) => (
+                <StatCard key={item.label} label={item.label} value={item.value} hint={item.hint} icon={item.icon} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/80">
           <CardHeader>
             <CardTitle>{newsSearchExperience.title}</CardTitle>
             <CardDescription>Monte seu recorte editorial para reduzir ruído e aumentar utilidade prática.</CardDescription>
@@ -77,8 +115,10 @@ export function NexxaLifeNewsView() {
             </div>
           </CardContent>
         </Card>
+      </section>
 
-        <Card>
+      <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+        <Card className="border-border/80">
           <CardHeader>
             <CardTitle>Prioridades editoriais</CardTitle>
             <CardDescription>Leituras mais úteis com base no estado atual do seu sistema pessoal.</CardDescription>
@@ -96,10 +136,31 @@ export function NexxaLifeNewsView() {
             ))}
           </CardContent>
         </Card>
+
+        <Card className="border-border/80 bg-gradient-to-br from-card via-card to-emerald-500/5">
+          <CardHeader>
+            <CardTitle>Leitura rápida</CardTitle>
+            <CardDescription>Sinais curtos para orientar o próximo clique e evitar consumo passivo.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {newsReadingInsights.map((item) => {
+              const Icon = item.icon
+              return (
+                <div key={item.title} className="rounded-2xl border border-border bg-background/70 p-4">
+                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="text-sm font-semibold text-foreground">{item.title}</div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
+                </div>
+              )
+            })}
+          </CardContent>
+        </Card>
       </section>
 
-      <section className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <Card>
+      <section className="mt-6 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <Card className="border-border/80">
           <CardHeader>
             <CardTitle>Destaque editorial</CardTitle>
             <CardDescription>Leitura de maior valor aplicado para o momento atual do ciclo.</CardDescription>
@@ -138,7 +199,7 @@ export function NexxaLifeNewsView() {
         </Card>
 
         <div className="space-y-4">
-          <Card>
+          <Card className="border-border/80">
             <CardHeader>
               <CardTitle>Biblioteca recente</CardTitle>
               <CardDescription>Leituras adicionais que já entram com semântica de curadoria, não de ruído.</CardDescription>
@@ -163,13 +224,13 @@ export function NexxaLifeNewsView() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border/80">
             <CardHeader>
-              <CardTitle>Leitura rápida</CardTitle>
-              <CardDescription>Sinais curtos para orientar o próximo clique e evitar consumo passivo.</CardDescription>
+              <CardTitle>Guardrails editoriais</CardTitle>
+              <CardDescription>Regras para a superfície continuar útil, contextual e menos genérica.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {newsReadingInsights.map((item) => {
+              {newsSurfaceGuardrails.map((item) => {
                 const Icon = item.icon
                 return (
                   <div key={item.title} className="rounded-2xl border border-border bg-background/60 p-4">
@@ -184,23 +245,6 @@ export function NexxaLifeNewsView() {
             </CardContent>
           </Card>
         </div>
-      </section>
-
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
-        {newsSurfaceGuardrails.map((item) => {
-          const Icon = item.icon
-          return (
-            <Card key={item.title}>
-              <CardHeader>
-                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <CardTitle>{item.title}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          )
-        })}
       </section>
 
       <div className="mt-6 flex justify-end">

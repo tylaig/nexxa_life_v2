@@ -6,7 +6,7 @@ export const newsHero = {
   kicker: "News",
   title: "Curadoria estratégica para transformar leitura em decisão, repertório e execução.",
   description:
-    "A superfície de News deixa de ser apenas uma lista de artigos e vira uma camada editorial do nexxa_life: sinal, contexto e leitura acionável para melhorar decisão, repertório e execução.",
+    "A superfície de News deixa de ser apenas uma lista de artigos e vira uma camada editorial do NexxaLife: sinal, contexto e leitura acionável para melhorar decisão, repertório e execução.",
 } as const
 
 export const newsKpis = [

@@ -105,7 +105,7 @@ Estas rotas existem na base atual mas não pertencem diretamente ao núcleo lega
 - superfície `/labs/behavioral-tests` ou equivalente para `Testes`
 
 ## Próximas análises sugeridas no loop
-1. `/checklist`
+1. `/academy`
 2. inventário de páginas MISSING reais
 3. decisão sobre landing pública de `/`
 4. decisão sobre `Testes` / `labs`
