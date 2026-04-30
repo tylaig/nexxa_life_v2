@@ -99,7 +99,7 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
   if (loading) {
     return (
       <PageContainer>
-        <AppBreadcrumbs items={[{ label: "Campaigns", href: "/campaigns" }, { label: "Detalhe" }]} />
+        <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Campaigns", href: "/campaigns" }, { label: "Detalhe" }]} />
         <PageHeader title="Campaign detail" description="Carregando campanha..." />
       </PageContainer>
     )
@@ -108,7 +108,7 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
   if (!item) {
     return (
       <PageContainer>
-        <AppBreadcrumbs items={[{ label: "Campaigns", href: "/campaigns" }, { label: "Não encontrada" }]} />
+        <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Campaigns", href: "/campaigns" }, { label: "Não encontrada" }]} />
         <PageHeader
           title="Campaign não encontrada"
           description={error ?? "Não foi possível localizar a campanha solicitada."}
@@ -131,10 +131,10 @@ export function CampaignDetailView({ campaignId }: { campaignId: string }) {
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Campaigns", href: "/campaigns" }, { label: item.name }]} />
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Campaigns", href: "/campaigns" }, { label: item.name }]} />
       <PageHeader
         title={item.name}
-        description="Inspeção operacional da campanha com status, metadados, performance resumida e relações principais."
+        description="Inspeção operacional da campanha como camada complementar de crescimento do NexxaLife, com status, performance e relações principais."
         actions={
           <>
             <Button asChild variant="outline" size="sm" className="gap-2">

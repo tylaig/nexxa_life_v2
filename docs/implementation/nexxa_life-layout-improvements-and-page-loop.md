@@ -141,15 +141,9 @@ Regras:
 
 ### 4. Rotas herdadas
 Essas superfícies precisam de auditoria e decisão de coexistência ou reclassificação:
-- `/inbox`
-- `/campaigns/*`
-- `/automations/*`
 - `/templates/*`
-- `/orders`
-- `/products`
 - `/storage`
 - `/logs`
-- `/audience`
 
 #### `/analytics`
 - [x] auditado como superfície herdada em conflito com `/dashboard` e `/reports`
@@ -185,6 +179,42 @@ Essas superfícies precisam de auditoria e decisão de coexistência ou reclassi
 - [x] auditado como CRM complementar e acionável
 - [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
 - [x] mantida a separação semântica entre relacionamento comercial e fluxo operacional principal
+- status atual: `REAL`
+
+#### `/inbox`
+- [x] auditado como cockpit complementar de atendimento omnichannel
+- [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre atendimento/triagem e fluxo operacional principal
+- status atual: `REAL`
+
+#### `/campaigns/*`
+- [x] auditado como camada complementar de outbound, retenção e recompra
+- [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre ativação comercial e fluxo operacional principal
+- status atual: `REAL`
+
+#### `/automations/*`
+- [x] auditado como camada complementar de orquestração operacional
+- [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre encadeamento operacional e fluxo principal
+- status atual: `REAL`
+
+#### `/orders`
+- [x] auditado como camada complementar de operação comercial e transacional
+- [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre fulfillment/risco/suporte e fluxo principal
+- status atual: `REAL`
+
+#### `/products`
+- [x] auditado como camada complementar de catálogo e oferta comercial
+- [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre portfólio digital/oferta e fluxo principal
+- status atual: `REAL`
+
+#### `/audience`
+- [x] auditado como camada complementar de segmentação e construção de públicos
+- [x] breadcrumb, topbar e hero alinhados para comunicar relação com NexxaLife
+- [x] mantida a separação semântica entre públicos/recortes e fluxo principal
 - status atual: `REAL`
 
 ### 5. Landing pública e home herdada

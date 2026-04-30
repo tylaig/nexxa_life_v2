@@ -4,7 +4,10 @@ import { ProductsView } from "@/components/products/products-view"
 export default function ProductsPage() {
   return (
     <>
-      <AppTopbar title="Produtos" subtitle="Gestão de catálogo, pedidos e distribuição de bens digitais" />
+      <AppTopbar
+        title="Produtos"
+        subtitle="Catálogo comercial complementar conectado a pedidos, campaigns, apps e distribuição digital do NexxaLife"
+      />
       <ProductsView />
     </>
   )

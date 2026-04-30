@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Boxes,
 } from "lucide-react"
+import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
 import { NextActionCard } from "@/components/app-shell/next-action-card"
 import { OperationalAlertBanner } from "@/components/app-shell/operational-alert-banner"
 import {
@@ -96,9 +97,10 @@ export function OrdersView() {
 
   return (
     <PageContainer>
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Pedidos" }]} />
       <PageHeader
         title="Pedidos"
-        description="Visão consolidada das operações: pagamentos, fulfillment e tickets abertos vinculados a cada pedido."
+        description="Operação comercial complementar para leitura transacional, fulfillment, risco e suporte sem competir com o fluxo principal do NexxaLife."
         actions={
           <>
             <Button variant="outline" size="sm" className="gap-2">
@@ -110,32 +112,70 @@ export function OrdersView() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard
-          label="Pedidos hoje"
-          value={`${orders.filter((o) => new Date(o.createdAt).toISOString().startsWith("2026-04-27")).length}`}
-          trend={{ value: "+18%", positive: true }}
-          icon={Package}
-        />
-        <StatCard
-          label="Receita hoje"
-          value={`R$ ${totalToday.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-          trend={{ value: "+R$ 2.4k", positive: true }}
-          icon={TrendingUp}
-        />
-        <StatCard
-          label="Aguardando envio"
-          value={`${orders.filter((o) => o.fulfillmentStatus === "unfulfilled" || o.fulfillmentStatus === "preparing").length}`}
-          hint="SLA médio: 6h"
-          icon={Clock}
-        />
-        <StatCard
-          label="Risco / Recusa"
-          value={`${orders.filter((o) => o.paymentStatus === "refused" || o.riskScore > 50).length}`}
-          hint="Auto-resgate ativo"
-          icon={ShieldAlert}
-        />
-      </div>
+      <section className="mb-4 grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-3">
+              <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                Fulfillment, risco e suporte transacional
+              </Badge>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                  Priorize exceções, bloqueios e andamento comercial sem deslocar o centro operacional principal do NexxaLife.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                  Pedidos funciona como camada complementar de operação comercial: conecta transação, pagamento, logística e suporte,
+                  enquanto dashboard, agenda, checklist e relatórios seguem como núcleo do fluxo principal.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Operação comercial complementar</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  A prioridade aqui é fulfillment, risco, recuperação e contexto transacional, não rotina operacional pessoal diária.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Pedidos → inbox → contatos</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  O valor cresce quando sinais de compra e risco alimentam atendimento, CRM e campanhas de retenção ou recuperação.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatCard
+              label="Pedidos hoje"
+              value={`${orders.filter((o) => new Date(o.createdAt).toISOString().startsWith("2026-04-27")).length}`}
+              trend={{ value: "+18%", positive: true }}
+              icon={Package}
+            />
+            <StatCard
+              label="Receita hoje"
+              value={`R$ ${totalToday.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+              trend={{ value: "+R$ 2.4k", positive: true }}
+              icon={TrendingUp}
+            />
+            <StatCard
+              label="Aguardando envio"
+              value={`${orders.filter((o) => o.fulfillmentStatus === "unfulfilled" || o.fulfillmentStatus === "preparing").length}`}
+              hint="SLA médio: 6h"
+              icon={Clock}
+            />
+            <StatCard
+              label="Risco / Recusa"
+              value={`${orders.filter((o) => o.paymentStatus === "refused" || o.riskScore > 50).length}`}
+              hint="Auto-resgate ativo"
+              icon={ShieldAlert}
+            />
+          </div>
+        </div>
+      </section>
 
       <OperationalAlertBanner
         className="mt-6"

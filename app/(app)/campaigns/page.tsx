@@ -6,7 +6,7 @@ export default function CampaignsPage() {
     <>
       <AppTopbar
         title="Campaigns"
-        subtitle="Catálogo outbound com busca, filtros, detalhe dedicado e editor full screen"
+        subtitle="Orquestração outbound complementar conectada a audiência, inbox, automations e contexto operacional do NexxaLife"
       />
       <CampaignsListView />
     </>

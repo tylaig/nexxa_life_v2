@@ -106,12 +106,7 @@ Estas rotas existem na base atual mas não pertencem diretamente ao núcleo lega
 - decisão: manter como camada administrativa do NexxaLife, sem competir com dashboard, agenda, checklist ou relatórios
 
 ### Precisam de revisão semântica forte
-- `/inbox`
-- `/campaigns/*`
-- `/automations/*`
-- `/orders`
-- `/products`
-- `/audience`
+- nenhuma no bloco atual; próximo foco deve migrar para `/templates/*`, `/storage` e `/logs`
 
 ### Decisões aplicadas nas rodadas recentes
 - `/(app)` home herdada deixou de competir semanticamente com `/dashboard`
@@ -123,6 +118,24 @@ Estas rotas existem na base atual mas não pertencem diretamente ao núcleo lega
 - `/contacts` confirmado como CRM complementar e acionável
 - status: `REAL`
 - decisão: manter coexistência com o núcleo NexxaLife como camada comercial/relacional, sem absorção no fluxo operacional pessoal
+- `/inbox` confirmado como cockpit complementar de atendimento omnichannel
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife como camada de triagem, ownership e contexto relacional/comercial, sem absorção no fluxo operacional pessoal
+- `/campaigns/*` confirmado como camada complementar de outbound, retenção e recompra
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife como superfície de ativação comercial conectada a audiência, inbox e automations, sem absorção no fluxo operacional pessoal
+- `/automations/*` confirmado como camada complementar de orquestração operacional
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife como superfície de encadeamento entre campaigns, inbox, apps e AI Studio, sem absorção no fluxo operacional pessoal
+- `/orders` confirmado como camada complementar de operação comercial e transacional
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife como superfície de fulfillment, risco, pagamento e suporte conectada a contatos, inbox e campanhas, sem absorção no fluxo operacional pessoal
+- `/products` confirmado como camada complementar de catálogo e oferta comercial
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife como superfície de portfólio digital conectada a orders, campaigns e apps, sem absorção no fluxo operacional pessoal
+- `/audience` confirmado como camada complementar de segmentação e construção de públicos
+- status: `REAL`
+- decisão: manter coexistência com o núcleo NexxaLife como superfície estrutural de públicos conectada a contacts, campaigns e orders, sem absorção no fluxo operacional pessoal
 
 ### MISSING a partir do legado
 - landing pública NexxaLife real em `/`

@@ -17,6 +17,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
+import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
 import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -99,9 +100,10 @@ export function CampaignsListView() {
 
   return (
     <PageContainer>
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Campaigns" }]} />
       <PageHeader
         title="Campanhas"
-        description="Catálogo operacional de campanhas outbound com busca, filtros, métricas resumidas e navegação dedicada para detalhe e edição."
+        description="Orquestração outbound complementar para ativação, retenção e recompra, conectada a audiência, inbox e automations sem competir com o fluxo principal do NexxaLife."
         actions={
           <>
             <Button variant="outline" size="sm" className="gap-2" onClick={() => void load()}>
@@ -118,12 +120,50 @@ export function CampaignsListView() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Campanhas" value={String(items.length)} hint="catálogo operacional" icon={Megaphone} />
-        <StatCard label="Rascunhos" value={String(draftCount)} hint="em preparação" icon={CircleDashed} />
-        <StatCard label="Agendadas" value={String(scheduledCount)} hint="com janela definida" icon={CalendarClock} />
-        <StatCard label="Ativas" value={String(liveCount)} hint={error ? "com atenção" : "conectado à API"} icon={PlayCircle} />
-      </div>
+      <section className="mb-4 grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-3">
+              <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                Ativação, retenção e recompra
+              </Badge>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                  Orquestre campanhas outbound com contexto de audiência sem deslocar o núcleo operacional do NexxaLife.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                  Campaigns funciona como camada complementar de crescimento e relacionamento: transforma segmentos, templates,
+                  canais e métricas em ação coordenada, enquanto dashboard, agenda, checklist e relatórios seguem como centro do fluxo principal.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Outbound complementar e acionável</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  A prioridade aqui é ativação, retenção, disparo e leitura de performance por segmento, não execução operacional pessoal.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Campaigns → inbox → automations</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  O valor cresce quando respostas, eventos e segmentos realimentam atendimento, automações e evolução contínua da audiência.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatCard label="Campanhas" value={String(items.length)} hint="catálogo operacional" icon={Megaphone} />
+            <StatCard label="Rascunhos" value={String(draftCount)} hint="em preparação" icon={CircleDashed} />
+            <StatCard label="Agendadas" value={String(scheduledCount)} hint="com janela definida" icon={CalendarClock} />
+            <StatCard label="Ativas" value={String(liveCount)} hint={error ? "com atenção" : "conectado à API"} icon={PlayCircle} />
+          </div>
+        </div>
+      </section>
 
       <div className="mt-6">
         <Tabs value={status} onValueChange={(v) => setStatus(v as StatusFilter)}>

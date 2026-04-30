@@ -106,10 +106,10 @@ export function AudienceView() {
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Audiência" }]} />
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Audiência" }]} />
       <PageHeader
         title="Audiência"
-        description="Construa e gerencie públicos, segmentos e filtros avançados para campanhas, automações e CRM."
+        description="Segmentação complementar para construir públicos, regras e recortes acionáveis conectados a contatos, campaigns e operação comercial sem competir com o fluxo principal do NexxaLife."
         actions={
           <>
             <Button variant="outline" size="sm" className="gap-2">
@@ -124,12 +124,50 @@ export function AudienceView() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 mb-2">
-        <StatCard label="Total de contatos" value="1.842" icon={Users} trend={{ value: "+12%", positive: true }} />
-        <StatCard label="Segmentos ativos" value={String(segments.length)} icon={Layers} />
-        <StatCard label="Audiências dinâmicas" value={String(segments.filter((s) => s.dynamic).length)} icon={Zap} />
-        <StatCard label="Cobertura por segmento" value="87%" icon={Target} hint="contatos em ≥1 segmento" />
-      </div>
+      <section className="mb-4 grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-3">
+              <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                Públicos, recortes e inteligência de segmentação
+              </Badge>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                  Estruture públicos e segmentos acionáveis sem deslocar o centro operacional principal do NexxaLife.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                  Audiência funciona como camada complementar de segmentação: transforma base de contatos, sinais comerciais e comportamento em recortes reutilizáveis,
+                  enquanto dashboard, agenda, checklist e relatórios permanecem como núcleo do fluxo principal.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Segmentação complementar e acionável</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  A prioridade aqui é construir públicos, regras e elegibilidade comercial, não rotina operacional pessoal diária.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Audiência → campaigns → contatos</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  O valor cresce quando segmentos alimentam CRM, campanhas, automações e leitura comercial com mais precisão e reuso.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 mt-6">
+            <StatCard label="Total de contatos" value="1.842" icon={Users} trend={{ value: "+12%", positive: true }} />
+            <StatCard label="Segmentos ativos" value={String(segments.length)} icon={Layers} />
+            <StatCard label="Audiências dinâmicas" value={String(segments.filter((s) => s.dynamic).length)} icon={Zap} />
+            <StatCard label="Cobertura por segmento" value="87%" icon={Target} hint="contatos em ≥1 segmento" />
+          </div>
+        </div>
+      </section>
 
       <Tabs defaultValue="segmentos" className="mt-6">
         <NavTabsList className="mb-6">

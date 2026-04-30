@@ -20,7 +20,7 @@ export function AutomationDetailView({ automationId }: { automationId: string })
   if (!automation) {
     return (
       <PageContainer>
-        <AppBreadcrumbs items={[{ label: "Automações", href: "/automations" }, { label: "Não encontrado" }]} />
+        <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Automações", href: "/automations" }, { label: "Não encontrado" }]} />
         <PageHeader title="Fluxo não encontrado" description="Não foi possível localizar a automação solicitada." actions={<Button asChild variant="outline" size="sm"><Link href="/automations">Voltar</Link></Button>} />
       </PageContainer>
     )
@@ -28,10 +28,10 @@ export function AutomationDetailView({ automationId }: { automationId: string })
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Automações", href: "/automations" }, { label: automation.name }]} />
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Automações", href: "/automations" }, { label: automation.name }]} />
       <PageHeader
         title={automation.name}
-        description="Inspeção operacional do fluxo com resumo, métricas, dependências e mapa visual reduzido."
+        description="Inspeção operacional do fluxo como camada complementar de orquestração do NexxaLife, com resumo, métricas, dependências e mapa visual reduzido."
         actions={
           <>
             <Button asChild variant="outline" size="sm" className="gap-2"><Link href="/automations"><ArrowLeft className="h-3.5 w-3.5" />Automações</Link></Button>

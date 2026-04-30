@@ -6,7 +6,7 @@ export default function AutomationsPage() {
     <>
       <AppTopbar
         title="Automações"
-        subtitle="Catálogo operacional com detalhe dedicado e builder full screen"
+        subtitle="Orquestração operacional complementar conectada a campaigns, apps, inbox e AI Studio dentro do ecossistema NexxaLife"
       />
       <AutomationsListView />
     </>

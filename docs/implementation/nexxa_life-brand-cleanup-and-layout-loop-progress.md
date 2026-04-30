@@ -113,8 +113,38 @@
 - a superfície foi reafirmada como camada comercial/relacional, não concorrente do fluxo principal
 - classificação da rota: `REAL`
 
+- `/inbox` revisada
+- topbar, breadcrumb e hero passaram a comunicar atendimento omnichannel complementar ao NexxaLife
+- a superfície foi reafirmada como cockpit de triagem, SLA, ownership e contexto relacional/comercial
+- classificação da rota: `REAL`
+
+- `/campaigns` revisada
+- topbar, breadcrumb e hero passaram a comunicar outbound complementar conectado ao NexxaLife
+- a superfície foi reafirmada como camada de ativação, retenção e recompra ligada a audiência, inbox e automations
+- classificação da rota: `REAL`
+
+- `/automations` revisada
+- topbar, breadcrumb e hero passaram a comunicar orquestração complementar conectada ao NexxaLife
+- a superfície foi reafirmada como camada de encadeamento entre campaigns, inbox, apps e AI Studio
+- classificação da rota: `REAL`
+
+- `/orders` revisada
+- topbar, breadcrumb e hero passaram a comunicar operação comercial complementar conectada ao NexxaLife
+- a superfície foi reafirmada como camada de fulfillment, risco, pagamento e suporte conectada a contatos, inbox e campanhas
+- classificação da rota: `REAL`
+
+- `/products` revisada
+- topbar, breadcrumb e hero passaram a comunicar catálogo comercial complementar conectado ao NexxaLife
+- a superfície foi reafirmada como camada de portfólio digital ligada a orders, campaigns e apps
+- classificação da rota: `REAL`
+
+- `/audience` revisada
+- topbar, breadcrumb e hero passaram a comunicar segmentação complementar conectada ao NexxaLife
+- a superfície foi reafirmada como camada estrutural de públicos ligada a contacts, campaigns e orders
+- classificação da rota: `REAL`
+
 ## Próxima página automática
-- `/inbox`
+- `/templates`
 
 ## Regra operacional
 Basta responder `ok` para seguir a próxima página do loop.

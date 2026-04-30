@@ -6,7 +6,7 @@ export default function OrdersPage() {
     <>
       <AppTopbar
         title="Pedidos"
-        subtitle="Operação de e-commerce · Sincronizado com Shopify, VTEX e WhatsApp Catalog"
+        subtitle="Operação comercial complementar conectada a contatos, inbox, campanhas e contexto transacional do NexxaLife"
       />
       <OrdersView />
     </>

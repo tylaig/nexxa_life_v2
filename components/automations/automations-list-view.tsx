@@ -15,6 +15,7 @@ import {
   Eye,
 } from "lucide-react"
 
+import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
 import { NextActionCard } from "@/components/app-shell/next-action-card"
 import { OperationalAlertBanner } from "@/components/app-shell/operational-alert-banner"
 import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
@@ -64,9 +65,10 @@ export function AutomationsListView() {
 
   return (
     <PageContainer>
+      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Automações" }]} />
       <PageHeader
         title="Automações"
-        description="Catálogo operacional de fluxos com busca, filtros, health resumido e navegação dedicada para detalhe e builder."
+        description="Orquestração operacional complementar para encadear campanhas, atendimento, integrações e IA sem competir com o fluxo principal do NexxaLife."
         actions={
           <>
             <Button variant="outline" size="sm" className="gap-2">
@@ -83,12 +85,50 @@ export function AutomationsListView() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Fluxos ativos" value={`${totalActive}`} hint={`${automations.length} total`} icon={Workflow} />
-        <StatCard label="Execuções hoje" value={totalRuns.toLocaleString("pt-BR")} trend={{ value: "+12%", positive: true }} icon={Activity} />
-        <StatCard label="Receita 30d" value={`R$ ${(totalRevenue / 1000).toFixed(1)}k`} trend={{ value: "+18%", positive: true }} icon={Zap} />
-        <StatCard label="Taxa média de sucesso" value="68%" hint="3 fluxos abaixo de 50%" icon={CheckCircle2} />
-      </div>
+      <section className="mb-4 grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card via-card to-primary/5 p-6 md:p-7">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-3">
+              <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+                Encadeamento operacional e inteligência aplicada
+              </Badge>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+                  Encadeie campanhas, eventos, integrações e IA sem deslocar o centro operacional principal do NexxaLife.
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+                  Automações funciona como camada complementar de orquestração: ela conecta triggers, handoffs, regras e dependências,
+                  enquanto dashboard, agenda, checklist e relatórios permanecem como núcleo do fluxo principal.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Orquestração complementar e acionável</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  A prioridade aqui é encadear execução, dependências e automação de impacto, não rotina operacional pessoal diária.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border bg-background/70 p-4">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
+                <div className="mt-2 text-sm font-semibold text-foreground">Automations → apps → AI Studio</div>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  O valor cresce quando canais, eventos, campanhas e agentes operam como malha coordenada em vez de fluxos isolados.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <StatCard label="Fluxos ativos" value={`${totalActive}`} hint={`${automations.length} total`} icon={Workflow} />
+            <StatCard label="Execuções hoje" value={totalRuns.toLocaleString("pt-BR")} trend={{ value: "+12%", positive: true }} icon={Activity} />
+            <StatCard label="Receita 30d" value={`R$ ${(totalRevenue / 1000).toFixed(1)}k`} trend={{ value: "+18%", positive: true }} icon={Zap} />
+            <StatCard label="Taxa média de sucesso" value="68%" hint="3 fluxos abaixo de 50%" icon={CheckCircle2} />
+          </div>
+        </div>
+      </section>
 
       <OperationalAlertBanner
         className="mt-6"
