@@ -110,6 +110,7 @@ export const checklistFocusCard = {
     title: "Preparar bloco profundo de trabalho",
     period: "Manhã",
     targetTime: "90 min",
+    linkedGoal: "Entrega principal da semana",
     guidance: "Feche o contexto, elimine ruído e transforme esta tarefa no principal movimento operacional do dia.",
     icon: Target,
   },

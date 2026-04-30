@@ -53,6 +53,8 @@ Criar uma solução de mercado que permita a marcas e operadores centralizar ate
 - `implementation/phase6-meu-dia-flow-root-adaptation-progress.md` — registro vivo da descoberta, mapeamento e execução da adaptação do domínio nexxa_life para a raiz atual
 - `implementation/phase6-meu-dia-flow-root-adaptation-gap-analysis.md` — gaps estruturais, de navegação, domínio e QA para completar a migração nexxa_life -> app raiz
 - `implementation/phase6-meu-dia-flow-route-mapping-matrix.md` — matriz operacional de mapeamento entre páginas legadas do nexxa_life flow, novas rotas da raiz e componentes-alvo do design atual
+- `implementation/phase7-nexxalife-product-entry-auth-audit-plan.md` — estudo product-owner da entrada pública, autenticação, onboarding, IA de rotas e planejamento completo de melhorias
+- `implementation/phase7-nexxalife-product-entry-auth-progress.md` — registro vivo da rodada de estudo e da priorização da implementação de auth/onboarding/proteção de rotas
 
 ## Público deste pacote
 

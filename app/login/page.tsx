@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { Suspense } from "react"
 
 import { AuthShell } from "@/components/auth/auth-shell"
-import { Button } from "@/components/ui/button"
+import { LoginForm } from "@/components/auth/login-form"
 
 export const metadata: Metadata = {
   title: "Login | NexxaLife",
@@ -20,7 +21,7 @@ export default function LoginPage() {
       highlights={[
         "Retomar rapidamente o ponto atual do seu ciclo",
         "Manter acesso ao dashboard, agenda e relatórios",
-        "Preparar a base para onboarding e autenticação final",
+        "Entrar com e-mail/senha ou Google no mesmo fluxo oficial",
         "Eliminar desalinhamento semântico com o produto legado",
       ]}
       footer={
@@ -33,45 +34,9 @@ export default function LoginPage() {
         </>
       }
     >
-      <form className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium" htmlFor="email">
-            E-mail
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            placeholder="voce@exemplo.com"
-            className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-sm font-medium" htmlFor="password">
-              Senha
-            </label>
-            <Link href="#" className="text-xs text-primary hover:underline">
-              Recuperar acesso
-            </Link>
-          </div>
-          <input
-            id="password"
-            type="password"
-            required
-            className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-
-        <Button type="submit" className="h-11 w-full rounded-xl">
-          Entrar no NexxaLife
-        </Button>
-
-        <Button type="button" variant="outline" className="h-11 w-full rounded-xl">
-          Continuar com Google
-        </Button>
-      </form>
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
     </AuthShell>
   )
 }

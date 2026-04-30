@@ -1,5 +1,17 @@
 import { CalendarDays, Clock3, LayoutList, Sparkles } from "lucide-react"
 
+export type AgendaItem = {
+  label: string
+  range: string
+  category: string
+  color: string
+}
+
+export type AgendaTimelineRow = {
+  time: string
+  items: AgendaItem[]
+}
+
 export const agendaHero = {
   kicker: "Agenda",
   title: "Visualize o dia com mais clareza e menos atrito para agir.",
@@ -16,7 +28,7 @@ export const agendaLegend = [
   { key: "amber", label: "Pessoal" },
 ] as const
 
-export const agendaTimeline = [
+export const agendaTimeline: AgendaTimelineRow[] = [
   { time: "05:00", items: [] },
   { time: "06:00", items: [] },
   { time: "07:00", items: [{ label: "Treino e mobilidade", range: "07:00 - 08:00", category: "Saúde / Estudo", color: "blue" }] },

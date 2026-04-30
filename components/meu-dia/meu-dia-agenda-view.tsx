@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export function NexxaLifeAgendaView() {
   const nextEvent = agendaTimeline.flatMap((row) => row.items.map((item) => ({ ...item, time: row.time }))).find(Boolean)
+  const upcomingItems = agendaTimeline.flatMap((row) => row.items).slice(0, 5)
   const ListIcon = agendaListHighlights.icon
 
   return (
@@ -180,10 +181,7 @@ export function NexxaLifeAgendaView() {
               <CardDescription>{agendaListHighlights.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {agendaTimeline
-                .flatMap((row) => row.items)
-                .slice(0, 5)
-                .map((item) => (
+              {upcomingItems.map((item) => (
                   <div key={item.label} className="rounded-xl border border-border bg-background/60 p-3 text-sm">
                     <div className="font-medium text-foreground">{item.label}</div>
                     <div className="mt-1 text-xs text-muted-foreground">{item.range}</div>

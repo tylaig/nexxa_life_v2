@@ -52,9 +52,9 @@ export function InboxApp() {
   const [dialogType, setDialogType] = React.useState<InboxDialogType>(null)
   const [focusMode, setFocusMode] = React.useState(false)
 
-  const unassignedCount = conversations.filter((item) => !item.owner).length
+  const unassignedCount = conversations.filter((item) => !item.assignee).length
   const escalatedCount = conversations.filter((item) => item.status === "escalated").length
-  const automationCount = conversations.filter((item) => item.status === "automation").length
+  const automationCount = conversations.filter((item) => item.status === "in_automation").length
   const priorityCount = conversations.filter((item) => item.priority === "urgent" || item.priority === "high").length
 
   React.useEffect(() => {

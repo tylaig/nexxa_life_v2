@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowRight, Brain, CheckSquare, FileBarChart2, Target } from "lucide-react"
 
+import { GoogleAuthButton } from "@/components/auth/google-auth-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -42,26 +43,44 @@ export default function OnboardingPage() {
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
         <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8 lg:p-10">
-          <div className="max-w-3xl space-y-4">
-            <div className="inline-flex rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-              Onboarding NexxaLife
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
+            <div className="max-w-3xl space-y-4">
+              <div className="inline-flex rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                Onboarding NexxaLife
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+                Entenda o ciclo principal e entre no produto pelo caminho certo.
+              </h1>
+              <p className="text-sm leading-6 text-muted-foreground md:text-base">
+                O legado do NexxaLife trata o onboarding como a preparação para o fluxo diagnóstico → metas → tarefas → agenda → acompanhamento → relatórios. Nesta fase, a rota foi reintroduzida na raiz atual como uma superfície clara e compatível com o shell moderno.
+              </p>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Button asChild className="rounded-xl">
+                  <Link href="/diagnostic">
+                    Iniciar pelo diagnóstico
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="rounded-xl">
+                  <Link href="/dashboard">Ir para dashboard</Link>
+                </Button>
+              </div>
             </div>
-            <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
-              Entenda o ciclo principal e entre no produto pelo caminho certo.
-            </h1>
-            <p className="text-sm leading-6 text-muted-foreground md:text-base">
-              O legado do NexxaLife trata o onboarding como a preparação para o fluxo diagnóstico → metas → tarefas → agenda → acompanhamento → relatórios. Nesta fase, a rota foi reintroduzida na raiz atual como uma superfície clara e compatível com o shell moderno.
-            </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Button asChild className="rounded-xl">
-                <Link href="/diagnostic">
-                  Iniciar pelo diagnóstico
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="rounded-xl">
-                <Link href="/dashboard">Ir para dashboard</Link>
-              </Button>
+
+            <div className="rounded-3xl border border-border bg-background/70 p-5 md:p-6">
+              <div className="space-y-2">
+                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Acesso rápido</div>
+                <h2 className="text-xl font-semibold tracking-tight">Entre com Google e siga para o onboarding funcional.</h2>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Use o Google para reduzir fricção no primeiro acesso. Se o provedor ainda não estiver configurado, mantenha o onboarding como guia e finalize pelo cadastro manual.
+                </p>
+              </div>
+              <div className="mt-5 space-y-3">
+                <GoogleAuthButton next="/dashboard" label="Continuar com Google" />
+                <Button asChild variant="outline" className="h-11 w-full rounded-xl">
+                  <Link href="/signup">Cadastrar com e-mail</Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

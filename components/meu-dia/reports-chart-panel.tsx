@@ -61,7 +61,7 @@ export function ReportsChartPanel() {
         </div>
 
         <ChartContainer config={reportsChartConfig} className="h-[280px] w-full aspect-auto md:h-[320px]">
-          <LineChart data={reportsWeeklySeries} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
+          <LineChart data={[...reportsWeeklySeries]} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis dataKey="day" axisLine={false} tickLine={false} dy={8} />
             <YAxis domain={[0, 100]} axisLine={false} tickLine={false} dx={-8} />
@@ -115,7 +115,7 @@ export function ReportsChartPanel() {
         </div>
 
         <ChartContainer config={reportsChartConfig} className="h-[280px] w-full aspect-auto md:h-[320px]">
-          <BarChart data={reportsComparisonSeries} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
+          <BarChart data={[...reportsComparisonSeries]} margin={{ top: 8, right: 8, left: -8, bottom: 8 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis dataKey="metric" axisLine={false} tickLine={false} dy={8} />
             <YAxis domain={[0, 100]} axisLine={false} tickLine={false} dx={-8} />
