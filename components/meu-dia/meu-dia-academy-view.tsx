@@ -14,10 +14,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function MeuDiaAcademyView() {
+export function NexxaLifeAcademyView() {
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Meu Dia", href: "/dashboard" }, { label: "Academia" }]} />
+      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "Academia" }]} />
       <PageHeader
         title={academyHero.title}
         description={academyHero.description}
@@ -43,7 +43,7 @@ export function MeuDiaAcademyView() {
         <Card>
           <CardHeader>
             <CardTitle>Trilhas disponíveis</CardTitle>
-            <CardDescription>Conteúdos estruturados para apoiar correções práticas no ciclo Meu Dia.</CardDescription>
+            <CardDescription>Conteúdos estruturados para apoiar correções práticas no ciclo nexxa_life.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
             {academyTracks.map((track) => {

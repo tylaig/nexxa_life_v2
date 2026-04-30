@@ -14,12 +14,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function MeuDiaDiagnosticView() {
+export function NexxaLifeDiagnosticView() {
   const ResultIcon = diagnosticResultPreview.icon
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Meu Dia", href: "/dashboard" }, { label: "Diagnóstico" }]} />
+      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "Diagnóstico" }]} />
       <PageHeader
         title={diagnosticHero.title}
         description={diagnosticHero.description}

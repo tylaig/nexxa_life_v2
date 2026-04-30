@@ -3,25 +3,19 @@ import { ArrowRight } from "lucide-react"
 
 import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
 import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
-import {
-  agendaHero,
-  agendaLegend,
-  agendaListHighlights,
-  agendaSummaryCards,
-  agendaTimeline,
-  agendaViewTabs,
-} from "@/components/meu-dia/agenda-content"
+import { AgendaViewTabs } from "@/components/meu-dia/agenda-view-tabs"
+import { agendaHero, agendaLegend, agendaListHighlights, agendaSummaryCards, agendaTimeline } from "@/components/meu-dia/agenda-content"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function MeuDiaAgendaView() {
+export function NexxaLifeAgendaView() {
   const nextEvent = agendaTimeline.flatMap((row) => row.items.map((item) => ({ ...item, time: row.time }))).find(Boolean)
   const ListIcon = agendaListHighlights.icon
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Meu Dia", href: "/dashboard" }, { label: "Agenda" }]} />
+      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "Agenda" }]} />
       <PageHeader
         title={agendaHero.title}
         description={agendaHero.description}
@@ -44,20 +38,27 @@ export function MeuDiaAgendaView() {
             <CardDescription>A experiência atual prioriza a leitura do dia, preservando espaço para expansões semanais e mensais.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {agendaViewTabs.map((tab, index) => (
-                <Badge key={tab} variant={index === 0 ? "default" : "outline"} className="rounded-full px-3 py-1">
-                  {tab}
-                </Badge>
-              ))}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {agendaLegend.map((item) => (
-                <Badge key={item.key} variant="secondary" className="rounded-full px-3 py-1">
-                  {item.label}
-                </Badge>
-              ))}
-            </div>
+            <AgendaViewTabs
+              primaryContent={
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {agendaLegend.map((item) => (
+                      <Badge key={item.key} variant="secondary" className="rounded-full px-3 py-1">
+                        {item.label}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    A visão diária é a superfície funcional prioritária nesta fase, em linha com o recorte de MVP e com a diretriz do legado para execução curta e clara.
+                  </p>
+                </div>
+              }
+              secondaryContent={
+                <div className="rounded-2xl border border-dashed border-border bg-background/60 p-4 text-sm text-muted-foreground">
+                  Esta visualização entra na próxima onda com dados reais e navegação temporal expandida. Por enquanto, a leitura operacional oficial permanece na aba Dia.
+                </div>
+              }
+            />
           </CardContent>
         </Card>
 

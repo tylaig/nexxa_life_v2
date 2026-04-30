@@ -46,7 +46,7 @@ const placeholders = [
   },
 ] as const
 
-describe("Meu Dia first-wave placeholders", () => {
+describe("nexxa_life first-wave placeholders", () => {
   it.each(placeholders)("exposes metadata for /$route", ({ route, expectedTitle, expectedDescription, module }) => {
     expect(module.route).toBe(`/${route}`)
     expect(module.title).toBe(expectedTitle)

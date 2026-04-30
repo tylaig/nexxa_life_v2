@@ -1,92 +1,77 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 import Link from "next/link"
-import { OndaLogo } from "@/components/inbox/onda-logo"
+
+import { AuthShell } from "@/components/auth/auth-shell"
+import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
-  title: "Login | Onda",
-  description: "Faça login no Onda Platform MVP",
+  title: "Login | nexxa_life",
+  description: "Acesse sua área do nexxa_life para retomar diagnóstico, plano, execução e evolução.",
 }
 
 export default function LoginPage() {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
-      
-      <div className="relative z-10 w-full max-w-[400px] p-6">
-        <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg">
-            <OndaLogo className="h-6 w-6" />
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">Bem-vindo de volta</h1>
-            <p className="text-sm text-muted-foreground">Insira suas credenciais para acessar seu workspace.</p>
-          </div>
+    <AuthShell
+      eyebrow="Login"
+      title="Entre para retomar seu sistema pessoal com clareza e continuidade."
+      description="A entrada do nexxa_life foi retematizada para o ciclo principal do produto: diagnóstico, metas, checklist, agenda, reflexão e relatórios no mesmo workspace oficial."
+      asideTitle="Uma entrada alinhada ao MVP real"
+      asideDescription="Nos documentos do legado, cadastro/login fazem parte do núcleo do MVP. Esta superfície já abandona o posicionamento anterior de CRM/commerce e passa a refletir o produto nexxa_life."
+      highlights={[
+        "Retomar rapidamente o ponto atual do seu ciclo",
+        "Manter acesso ao dashboard, agenda e relatórios",
+        "Preparar a base para onboarding e autenticação final",
+        "Eliminar desalinhamento semântico com o produto legado",
+      ]}
+      footer={
+        <>
+          Ainda não possui conta?{" "}
+          <Link href="/signup" className="font-medium text-primary hover:underline">
+            Criar acesso ao nexxa_life
+          </Link>
+          .
+        </>
+      }
+    >
+      <form className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="email">
+            E-mail
+          </label>
+          <input
+            id="email"
+            type="email"
+            required
+            placeholder="voce@exemplo.com"
+            className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          />
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <form className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="email">
-                Email Corporativo
-              </label>
-              <input
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                id="email"
-                placeholder="nome@empresa.com.br"
-                type="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect="off"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium leading-none" htmlFor="password">
-                  Senha
-                </label>
-                <Link href="#" className="text-xs text-primary hover:underline">
-                  Esqueceu a senha?
-                </Link>
-              </div>
-              <input
-                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                id="password"
-                type="password"
-                required
-              />
-            </div>
-            
-            <button
-              className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10"
-              type="submit"
-            >
-              Fazer Login
-            </button>
-          </form>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">Ou continue com</span>
-            </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <label className="text-sm font-medium" htmlFor="password">
+              Senha
+            </label>
+            <Link href="#" className="text-xs text-primary hover:underline">
+              Recuperar acesso
+            </Link>
           </div>
-
-          <button
-            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10"
-            type="button"
-          >
-            Google Workspace
-          </button>
+          <input
+            id="password"
+            type="password"
+            required
+            className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+          />
         </div>
-        
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Não possui uma conta? <Link href="#" className="font-medium text-primary hover:underline">Solicite acesso</Link>.
-        </p>
-      </div>
-    </div>
+
+        <Button type="submit" className="h-11 w-full rounded-xl">
+          Entrar no nexxa_life
+        </Button>
+
+        <Button type="button" variant="outline" className="h-11 w-full rounded-xl">
+          Continuar com Google
+        </Button>
+      </form>
+    </AuthShell>
   )
 }

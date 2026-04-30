@@ -1,10 +1,10 @@
-# Phase 6 — Meu Dia Flow -> Root App Adaptation Master Plan
+# Phase 6 — nexxa_life flow -> Root App Adaptation Master Plan
 
 > Objetivo: portar todas as páginas, capacidades e fluxos essenciais de `old/meu-dia-flow` para a aplicação raiz atual, preservando o design system, o app shell e os padrões de navegação já consolidados no app principal.
 
 ## 1. Contexto
 
-O repositório atual em `/home/tylaig/repo/nexxalifenew` já não está estruturado como um produto NexxaLife isolado em `/nexxalife`.
+O repositório atual em `/home/tylaig/repo/nexxa_lifenew` já não está estruturado como um produto nexxa_life isolado em `/nexxa_life`.
 
 Evidências observadas:
 - `app/page.tsx` redireciona para `/dashboard`
@@ -15,9 +15,9 @@ Evidências observadas:
 
 Logo, a adaptação correta não é recriar um produto paralelo. A direção correta é:
 1. usar a raiz atual como fundação visual e estrutural
-2. absorver o domínio do Meu Dia Flow como um novo conjunto de superfícies e fluxos
+2. absorver o domínio do nexxa_life flow como um novo conjunto de superfícies e fluxos
 3. reaproveitar o shell, topbar, sidebar, containers, cards, tabs e padrões de CTA já existentes
-4. substituir mocks e lacunas por módulos reais do domínio Meu Dia
+4. substituir mocks e lacunas por módulos reais do domínio nexxa_life
 
 ## 2. Problema a resolver
 
@@ -25,7 +25,7 @@ Hoje existe um desalinhamento entre:
 - o produto legado `old/meu-dia-flow`, orientado a gestão pessoal sistêmica
 - a aplicação raiz atual, orientada a operação omnichannel / CRM / AI commerce
 
-O pedido do usuário redefine a prioridade: a raiz atual deve passar a comportar todas as funções e páginas do Meu Dia Flow, mas sem regredir para o design antigo. O legado deve ser portado para o design atual.
+O pedido do usuário redefine a prioridade: a raiz atual deve passar a comportar todas as funções e páginas do nexxa_life flow, mas sem regredir para o design antigo. O legado deve ser portado para o design atual.
 
 ## 3. Inventário legado confirmado
 
@@ -77,7 +77,7 @@ Devem ser reaproveitados sempre que possível:
 - cards/tables/tabs do design atual
 - organização list-first / detail / studio já usada em Campaigns, Automations, Templates, Apps e AI Studio
 
-### 4.3 Preservar o domínio completo do Meu Dia
+### 4.3 Preservar o domínio completo do nexxa_life
 A adaptação não pode ser só cosmética. Precisamos portar:
 - páginas
 - entidades
@@ -88,17 +88,17 @@ A adaptação não pode ser só cosmética. Precisamos portar:
 - contratos de dados futuros
 
 ### 4.4 Evitar namespace transitório desnecessário
-Como a raiz atual já é o produto oficial, o melhor caminho é criar uma suíte coesa de domínio Meu Dia sob rotas estáveis da raiz, não como miniapp paralelo escondido.
+Como a raiz atual já é o produto oficial, o melhor caminho é criar uma suíte coesa de domínio nexxa_life sob rotas estáveis da raiz, não como miniapp paralelo escondido.
 
 ## 5. Mapa de adaptação legado -> alvo na raiz
 
 ### 5.1 Superfícies públicas / entrada
 - `Landing` -> revisar `app/page.tsx` depois da migração; hoje redireciona para `/dashboard`
-- `Login` -> manter em `/login`, mas adaptar o copy e fluxo ao produto Meu Dia
+- `Login` -> manter em `/login`, mas adaptar o copy e fluxo ao produto nexxa_life
 - `Cadastro` -> criar `/signup` ou manter `/cadastro` com alias; decidir depois da rodada de IA/naming
 - `Onboarding` -> criar `/onboarding` no padrão atual de shell mínimo ou tela focada
 
-### 5.2 Núcleo operacional Meu Dia
+### 5.2 Núcleo operacional nexxa_life
 - `Dashboard` -> reaproveitar `/dashboard`, migrando de analytics/commerce para visão executiva de vida
 - `Checklist` -> criar `/checklist`
 - `Agenda` -> criar `/agenda`
@@ -120,8 +120,8 @@ Como a raiz atual já é o produto oficial, o melhor caminho é criar uma suíte
 ## 6. Matriz de convergência com as rotas atuais
 
 ### 6.1 Rotas atuais que podem ser substituídas ou retematizadas
-- `/dashboard` -> forte candidata a virar Dashboard Meu Dia
-- `/apps` -> forte candidata a absorver Integrações do Meu Dia
+- `/dashboard` -> forte candidata a virar Dashboard nexxa_life
+- `/apps` -> forte candidata a absorver Integrações do nexxa_life
 - `/logs` -> pode sustentar `Testes`/observabilidade interna, mas não substitui páginas de usuário
 - `/settings/*` -> pode absorver configurações pessoais, notificações, preferências, conta e privacidade
 
@@ -136,15 +136,15 @@ Como a raiz atual já é o produto oficial, o melhor caminho é criar uma suíte
 - `/templates`
 - `/ai-studio`
 
-Essas rotas não precisam ser apagadas imediatamente, mas perdem prioridade de produto se a raiz virar oficialmente Meu Dia. Devem ser reclassificadas em uma das opções:
+Essas rotas não precisam ser apagadas imediatamente, mas perdem prioridade de produto se a raiz virar oficialmente nexxa_life. Devem ser reclassificadas em uma das opções:
 1. remover
 2. arquivar
 3. esconder do menu principal
-4. reaproveitar como capacidades internas do produto Meu Dia
+4. reaproveitar como capacidades internas do produto nexxa_life
 
 ### 6.3 Rotas atuais com maior potencial de reaproveitamento estrutural
 - `/dashboard` como visão executiva
-- `/ai-studio` como hub de IA contextual do Meu Dia
+- `/ai-studio` como hub de IA contextual do nexxa_life
 - `/apps` como integrações pessoais/ecossistema
 - `/settings/*` como administração, conta e preferências
 - `/storage` e `/logs` como superfícies técnicas internas
@@ -188,7 +188,7 @@ Entregáveis:
 
 ## Onda 1 — Shell e IA de navegação
 Objetivo:
-- reconfigurar sidebar e títulos globais para suportar o domínio Meu Dia
+- reconfigurar sidebar e títulos globais para suportar o domínio nexxa_life
 - introduzir as novas rotas placeholder honestas no design atual
 
 Entregáveis mínimos:
@@ -231,7 +231,7 @@ Objetivo:
 
 ## 9. Arquitetura de frontend recomendada para o port
 
-Para cada novo domínio Meu Dia, seguir o padrão já forte do app atual:
+Para cada novo domínio nexxa_life, seguir o padrão já forte do app atual:
 - list/overview view
 - detail/inspection view quando fizer sentido
 - create/edit/studio view para fluxos densos
@@ -257,17 +257,17 @@ Aplicação ao domínio:
 
 ## 11. Gaps críticos já identificados
 
-1. O app atual não possui nenhuma rota principal do ciclo Meu Dia (`/diagnostic`, `/agenda`, `/checklist`, `/journal`, `/reports`, `/academy`, `/marketplace`)
-2. O sidebar atual está totalmente alinhado ao produto omnichannel e não ao produto Meu Dia
+1. O app atual não possui nenhuma rota principal do ciclo nexxa_life (`/diagnostic`, `/agenda`, `/checklist`, `/journal`, `/reports`, `/academy`, `/marketplace`)
+2. O sidebar atual está totalmente alinhado ao produto omnichannel e não ao produto nexxa_life
 3. O dashboard atual (`components/home/home-overview-view.tsx`) é semanticamente inadequado ao domínio de vida pessoal
 4. Não existe ainda uma matriz oficial de mapeamento legado -> rota nova -> componente -> status
-5. Não existe ainda um contrato moderno do domínio Meu Dia desacoplado do storage legado
+5. Não existe ainda um contrato moderno do domínio nexxa_life desacoplado do storage legado
 
 ## 12. Critérios de sucesso
 
 A migração será considerada bem direcionada quando:
 - todas as páginas principais do legado existirem na raiz em rotas reais
-- o sidebar e a navegação refletirem o domínio Meu Dia
+- o sidebar e a navegação refletirem o domínio nexxa_life
 - o design antigo não for necessário para usar os fluxos
 - o ciclo `diagnóstico -> objetivos/metas -> tarefas -> agenda -> acompanhamento -> relatórios` estiver navegável na raiz
 - o legado `old/meu-dia-flow` puder deixar de ser referência operacional diária
@@ -275,6 +275,6 @@ A migração será considerada bem direcionada quando:
 ## 13. Próxima macro-rodada recomendada
 
 1. criar a matriz detalhada de mapeamento legado -> novo app
-2. reescrever a taxonomia do sidebar para o domínio Meu Dia
+2. reescrever a taxonomia do sidebar para o domínio nexxa_life
 3. criar as novas entrypoints placeholder honestas no shell atual
 4. começar pelo port de `Checklist`, `Agenda` e `ObjetivosMetas`, pois são os fluxos mais compatíveis com a linguagem de workspace já existente

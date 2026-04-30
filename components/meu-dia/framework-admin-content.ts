@@ -4,7 +4,7 @@ import { diagnosticStrategicAxes } from "@/components/meu-dia/diagnostic-content
 
 export const frameworkAdminHero = {
   kicker: "Framework Admin",
-  title: "Governe a matriz estrutural que sustenta o diagnóstico Meu Dia.",
+  title: "Governe a matriz estrutural que sustenta o diagnóstico nexxa_life.",
   description:
     "Administre eixos, dimensões e perguntas-base do sistema para manter a leitura diagnóstica coerente, auditável e pronta para evoluir sem depender do storage legado.",
 } as const
@@ -36,28 +36,28 @@ export const frameworkAdminAxes = [
     summary: "Rotina fisiológica, recuperação e sustentação de energia.",
     dimensions: ["Sono & recuperação", "Treino & mobilidade", "Nutrição base"],
     questions: 9,
-    owner: "Sistema Meu Dia",
+    owner: "Sistema nexxa_life",
   },
   {
     axis: "Saúde Mental & Emocional",
     summary: "Humor, estabilidade, reflexão e autorregulação.",
     dimensions: ["Humor do dia", "Reflexão", "Estresse percebido"],
     questions: 10,
-    owner: "Sistema Meu Dia",
+    owner: "Sistema nexxa_life",
   },
   {
     axis: "Carreira",
     summary: "Execução profissional, direção e impacto do trabalho.",
     dimensions: ["Foco estratégico", "Entrega principal", "Ambiente operacional"],
     questions: 9,
-    owner: "Sistema Meu Dia",
+    owner: "Sistema nexxa_life",
   },
   {
     axis: "Finanças",
     summary: "Previsibilidade, margem e controle do sistema financeiro pessoal.",
     dimensions: ["Fluxo de caixa", "Reserva", "Decisões de alocação"],
     questions: 8,
-    owner: "Sistema Meu Dia",
+    owner: "Sistema nexxa_life",
   },
 ] as const
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-describe("Meu Dia insight surfaces contracts", () => {
+describe("nexxa_life insight surfaces contracts", () => {
   it("publishes a diagnostic workspace contract with phases, impact outputs and strategic axes", async () => {
     const module = await import("@/components/meu-dia/diagnostic-content")
 

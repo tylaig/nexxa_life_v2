@@ -20,10 +20,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function MeuDiaNewsView() {
+export function NexxaLifeNewsView() {
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Meu Dia", href: "/dashboard" }, { label: "News" }]} />
+      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "News" }]} />
       <PageHeader
         title={newsHero.title}
         description={newsHero.description}

@@ -15,10 +15,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function MeuDiaMarketplaceView() {
+export function NexxaLifeMarketplaceView() {
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Meu Dia", href: "/dashboard" }, { label: "Marketplace" }]} />
+      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "Marketplace" }]} />
       <PageHeader
         title={marketplaceHero.title}
         description={marketplaceHero.description}
@@ -81,7 +81,7 @@ export function MeuDiaMarketplaceView() {
         <Card>
           <CardHeader>
             <CardTitle>Especialistas em destaque</CardTitle>
-            <CardDescription>Perfis já posicionados por tipo de impacto esperado no ciclo Meu Dia.</CardDescription>
+            <CardDescription>Perfis já posicionados por tipo de impacto esperado no ciclo nexxa_life.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {marketplaceSpecialists.map((item) => {

@@ -50,9 +50,9 @@ Criar uma solução de mercado que permita a marcas e operadores centralizar ate
 - `implementation/phase5-ui-ux-refactor-gap-analysis.md` — gaps estruturais restantes e ordem recomendada de execução da Fase 5
 - `implementation/phase5-frontend-first-refactor/README.md` — blueprint operacional completo da grande rodada frontend-first, com padrões globais, inventário de rotas, matriz de gaps, matriz de CTAs, higiene de código, loop de QA e planos por página
 - `implementation/phase6-meu-dia-flow-root-adaptation-master-plan.md` — plano mestre para absorver todas as páginas e capacidades do `old/meu-dia-flow` na raiz atual, usando o design system e app shell oficiais
-- `implementation/phase6-meu-dia-flow-root-adaptation-progress.md` — registro vivo da descoberta, mapeamento e execução da adaptação do domínio Meu Dia para a raiz atual
-- `implementation/phase6-meu-dia-flow-root-adaptation-gap-analysis.md` — gaps estruturais, de navegação, domínio e QA para completar a migração Meu Dia -> app raiz
-- `implementation/phase6-meu-dia-flow-route-mapping-matrix.md` — matriz operacional de mapeamento entre páginas legadas do Meu Dia Flow, novas rotas da raiz e componentes-alvo do design atual
+- `implementation/phase6-meu-dia-flow-root-adaptation-progress.md` — registro vivo da descoberta, mapeamento e execução da adaptação do domínio nexxa_life para a raiz atual
+- `implementation/phase6-meu-dia-flow-root-adaptation-gap-analysis.md` — gaps estruturais, de navegação, domínio e QA para completar a migração nexxa_life -> app raiz
+- `implementation/phase6-meu-dia-flow-route-mapping-matrix.md` — matriz operacional de mapeamento entre páginas legadas do nexxa_life flow, novas rotas da raiz e componentes-alvo do design atual
 
 ## Público deste pacote
 

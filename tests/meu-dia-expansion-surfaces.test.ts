@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-describe("Meu Dia expansion surface contracts", () => {
+describe("nexxa_life expansion surface contracts", () => {
   it("publishes a framework admin workspace contract for governing diagnostic axes, dimensions and questions", async () => {
     const module = await import("@/components/meu-dia/framework-admin-content")
 
     expect(module.frameworkAdminHero.kicker).toBe("Framework Admin")
-    expect(module.frameworkAdminHero.title).toBe("Governe a matriz estrutural que sustenta o diagnóstico Meu Dia.")
+    expect(module.frameworkAdminHero.title).toBe("Governe a matriz estrutural que sustenta o diagnóstico nexxa_life.")
     expect(module.frameworkAdminKpis.map((item) => item.label)).toEqual([
       "Eixos ativos",
       "Dimensões mapeadas",

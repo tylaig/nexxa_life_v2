@@ -13,13 +13,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function MeuDiaChecklistView() {
+export function NexxaLifeChecklistView() {
   const focusTask = checklistFocusCard.task
   const FocusIcon = focusTask.icon
 
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Meu Dia", href: "/dashboard" }, { label: "Checklist" }]} />
+      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "Checklist" }]} />
       <PageHeader
         title={checklistHero.title}
         description={checklistHero.description}

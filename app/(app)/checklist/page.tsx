@@ -1,12 +1,12 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { MeuDiaChecklistView } from "@/components/meu-dia/meu-dia-checklist-view"
+import { NexxaLifeChecklistView } from "@/components/meu-dia/meu-dia-checklist-view"
 import { checklistHero } from "@/components/meu-dia/checklist-content"
 
 export default function ChecklistPage() {
   return (
     <>
-      <AppTopbar title="Checklist Meu Dia" subtitle={checklistHero.description} />
-      <MeuDiaChecklistView />
+      <AppTopbar title="Checklist nexxa_life" subtitle={checklistHero.description} />
+      <NexxaLifeChecklistView />
     </>
   )
 }

@@ -133,7 +133,7 @@ export function AppSidebar() {
       <SidebarContent className="gap-2 px-2 py-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         <SidebarGroup className="p-0">
           <SidebarGroupLabel className="px-3 pb-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">
-            Meu Dia
+            nexxa_life
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">

@@ -1,4 +1,4 @@
-# Phase 6 — Meu Dia Flow -> Root App Adaptation Gap Analysis
+# Phase 6 — nexxa_life flow -> Root App Adaptation Gap Analysis
 
 ## Pergunta central
 O que falta para a raiz atual comportar, com design consistente, todas as páginas e capacidades do `old/meu-dia-flow`?
@@ -41,7 +41,7 @@ Impacto:
 
 ## 2. Gaps de navegação e IA
 
-### G3. Sidebar principal já foi reconfigurado para o domínio Meu Dia, mas a IA completa ainda não fechou
+### G3. Sidebar principal já foi reconfigurado para o domínio nexxa_life, mas a IA completa ainda não fechou
 A taxonomia principal já foi reescrita em `components/app-shell/meu-dia-navigation.ts`, cobrindo:
 - dashboard
 - diagnóstico
@@ -77,15 +77,15 @@ Já existem hoje na raiz:
 - `/marketplace`
 
 Ainda faltam ou precisam de consolidação funcional:
-- onboarding e autenticação totalmente retematizados para o produto Meu Dia
+- onboarding e autenticação totalmente retematizados para o produto nexxa_life
 - aliases/redirects de naming final quando a taxonomia for fechada
 - racionalização da superfície de integrações/ecossistema herdada do produto anterior
 
 Fechamentos já materializados nesta frente:
-- `/news` agora existe como superfície real no shell oficial, com curadoria editorial contextual, radar de leitura e prioridades conectadas ao estado atual do sistema Meu Dia
+- `/news` agora existe como superfície real no shell oficial, com curadoria editorial contextual, radar de leitura e prioridades conectadas ao estado atual do sistema nexxa_life
 
 ### G6. Dashboard base já foi retematizado e já ganhou primeira camada derivada, mas ainda não é um motor completo
-O `/dashboard` já foi substituído por `MeuDiaDashboardView` e agora prioriza:
+O `/dashboard` já foi substituído por `nexxa_lifeDashboardView` e agora prioriza:
 - evolução pessoal
 - execução do dia
 - objetivos/metas
@@ -99,7 +99,7 @@ Gap remanescente:
 
 ## 4. Gaps de modelo de domínio
 
-### G7. Não há contrato TypeScript moderno do domínio Meu Dia
+### G7. Não há contrato TypeScript moderno do domínio nexxa_life
 Ainda faltam entidades explícitas para:
 - diagnostic session
 - diagnostic answer
@@ -128,7 +128,7 @@ Precisamos de:
 ### G9. Backlog priorizado já existe, mas precisa permanecer sincronizado com as ondas concluídas
 A execução já avançou materialmente e o backlog atual já pode ser tratado assim:
 - P0: aprofundar a derivação real entre eixo crítico, meta ativa/sugerida, checklist e agenda, reduzindo heurísticas soltas
-- P1: consolidar `news`, onboarding e autenticação retematizada do produto Meu Dia
+- P1: consolidar `news`, onboarding e autenticação retematizada do produto nexxa_life
 - P2: definir aliases/redirects finais, convergência com integrações, QA browser-first e racionalização das superfícies legadas do produto anterior
 
 Gap remanescente:
@@ -136,7 +136,7 @@ Gap remanescente:
 
 ## 6. Gaps de QA
 
-### G10. Ainda não há checklist de QA para a migração Meu Dia
+### G10. Ainda não há checklist de QA para a migração nexxa_life
 Precisaremos auditar pelo menos:
 - reachability de rota
 - consistência do sidebar

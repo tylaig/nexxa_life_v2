@@ -13,10 +13,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-export function MeuDiaFrameworkAdminView() {
+export function NexxaLifeFrameworkAdminView() {
   return (
     <PageContainer>
-      <AppBreadcrumbs items={[{ label: "Meu Dia", href: "/dashboard" }, { label: "Framework Admin" }]} />
+      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "Framework Admin" }]} />
       <PageHeader
         title={frameworkAdminHero.title}
         description={frameworkAdminHero.description}
@@ -42,7 +42,7 @@ export function MeuDiaFrameworkAdminView() {
         <Card>
           <CardHeader>
             <CardTitle>Matriz estrutural</CardTitle>
-            <CardDescription>Eixos e dimensões que sustentam a leitura atual do diagnóstico Meu Dia.</CardDescription>
+            <CardDescription>Eixos e dimensões que sustentam a leitura atual do diagnóstico nexxa_life.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {frameworkAdminAxes.map((axis) => (

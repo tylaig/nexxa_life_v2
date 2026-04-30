@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 
 export const dashboardHero = {
-  kicker: "Dashboard Meu Dia",
+  kicker: "Dashboard nexxa_life",
   title: "Seu centro de clareza, execução e evolução.",
   description:
     "Acompanhe seu diagnóstico, organize o checklist, distribua a agenda, revise metas e mantenha o diário e os relatórios conectados no mesmo workspace oficial.",
@@ -95,7 +95,9 @@ export const dashboardExecutionSignals = [
   {
     label: "Status da migração",
     value: "Onda 1 pronta",
-    hint: "Navegação oficial alinhada ao domínio Meu Dia.",
+    hint: "Navegação oficial alinhada ao domínio nexxa_life.",
     icon: Brain,
   },
 ] as const
+
+export const dashboardAnalyticsTabs = ["Execução", "Bem-estar", "Evolução"] as const

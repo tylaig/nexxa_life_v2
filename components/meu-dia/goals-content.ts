@@ -65,7 +65,7 @@ export const goalsAxes = [
     tone: "blue",
     goals: [
       {
-        title: "Entregar a migração do Meu Dia",
+        title: "Entregar a migração do nexxa_life",
         description: "Portar as superfícies principais para o shell oficial com consistência visual.",
         progress: 60,
         completedTasks: 6,

@@ -1,4 +1,4 @@
-# Phase 6 — Meu Dia Flow Route Mapping Matrix
+# Phase 6 — nexxa_life flow Route Mapping Matrix
 
 ## Convenção provisória
 Até a decisão final de naming, esta matriz usa rotas curtas em inglês para a implementação principal, com possibilidade de aliases em PT-BR depois.
@@ -8,9 +8,9 @@ Até a decisão final de naming, esta matriz usa rotas curtas em inglês para a 
 | Legado | Página/Função | Papel no domínio | Rota-alvo provisória | Padrão visual alvo | Componente alvo sugerido | Prioridade | Status atual |
 |---|---|---|---|---|---|---|---|
 | `/` | Landing | Entrada pública / proposta de valor | `/` | marketing / focused public page | `components/marketing/meu-dia-landing-view.tsx` | P1 | MISSING |
-| `/login` | Login | autenticação | `/login` | auth minimal | adaptar entrypoint atual | P0 | EXISTS_NEEDS_RETHEME |
-| `/cadastro` | Cadastro | criação de conta | `/signup` (+ alias `/cadastro`) | auth minimal | `components/auth/signup-view.tsx` | P0 | MISSING |
-| `/onboarding` | Onboarding | coleta inicial guiada | `/onboarding` | wizard / focused flow | `components/onboarding/onboarding-wizard-view.tsx` | P0 | MISSING |
+| `/login` | Login | autenticação | `/login` | auth minimal | adaptar entrypoint atual | P0 | REAL_SHELL_PORT |
+| `/cadastro` | Cadastro | criação de conta | `/signup` (+ alias `/cadastro`) | auth minimal | `components/auth/auth-shell.tsx` + `app/signup/page.tsx` | P0 | REAL_SHELL_PORT |
+| `/onboarding` | Onboarding | coleta inicial guiada | `/onboarding` | wizard / focused flow | `app/onboarding/page.tsx` | P0 | REAL_SHELL_PORT |
 | `/Diagnostico` | Diagnóstico | entrada do ciclo de avaliação | `/diagnostic` | wizard + results workspace | `components/meu-dia/meu-dia-diagnostic-view.tsx` | P0 | REAL_SHELL_PORT |
 | `/Dashboard` | Dashboard | visão executiva do usuário | `/dashboard` | overview workspace | `components/meu-dia/meu-dia-dashboard-view.tsx` | P0 | REAL_SHELL_PORT |
 | `/Checklist` | Checklist Diário | execução diária | `/checklist` | operational workspace | `components/meu-dia/meu-dia-checklist-view.tsx` | P0 | REAL_SHELL_PORT |
@@ -59,7 +59,7 @@ Até a decisão final de naming, esta matriz usa rotas curtas em inglês para a 
 ### Reaproveitar e rethematizar
 - `/login`
 - `/apps` -> provável base estrutural para integrações pessoais
-- `/ai-studio` -> provável base para IA contextual do Meu Dia
+- `/ai-studio` -> provável base para IA contextual do nexxa_life
 - `/settings/*` -> configurações pessoais, privacidade e preferências
 
 ## Primeira sequência de implementação recomendada

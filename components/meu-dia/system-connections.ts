@@ -71,7 +71,7 @@ const parseScore = (score: string) => Number.parseInt(score.replace(/[^\d]/g, ""
 const diagnosticAxisGoalFallbacks = {
   Clareza: null,
   Energia: "Estabilizar rotina de reflexão",
-  Foco: "Entregar a migração do Meu Dia",
+  Foco: "Entregar a migração do nexxa_life",
   Consistência: "Estabilizar rotina de reflexão",
 } as const
 

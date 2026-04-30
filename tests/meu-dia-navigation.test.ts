@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-describe("Meu Dia navigation taxonomy", () => {
+describe("nexxa_life navigation taxonomy", () => {
   it("exposes the first-wave primary routes in the official shell", async () => {
     const navigation = await import("@/components/app-shell/meu-dia-navigation")
 

@@ -1,10 +1,12 @@
 import { Activity, BarChart2, Brain, Heart, Moon, ShieldCheck, Sparkles, TrendingUp } from "lucide-react"
 
+import type { ChartConfig } from "@/components/ui/chart"
+
 export const reportsHero = {
   kicker: "Relatórios",
   title: "Leia padrões de evolução com mais clareza e menos ruído visual.",
   description:
-    "A superfície inicial de relatórios consolida leituras de bem-estar, produtividade, humor e diagnóstico em um formato pronto para evoluir para dados reais do domínio Meu Dia.",
+    "A superfície inicial de relatórios consolida leituras de bem-estar, produtividade, humor e diagnóstico em um formato pronto para evoluir para dados reais do domínio nexxa_life.",
 } as const
 
 export const reportsChartTabs = ["Evolução 7 Dias", "Comparativo %"] as const
@@ -78,3 +80,32 @@ export const reportsWeeklySeries = [
   { day: "Sáb", wellBeing: 76, productivity: 58, mood: 74 },
   { day: "Dom", wellBeing: 80, productivity: 42, mood: 79 },
 ] as const
+
+export const reportsComparisonSeries = [
+  { metric: "Bem-estar", current: 76, baseline: 69 },
+  { metric: "Produtividade", current: 68, baseline: 61 },
+  { metric: "Humor", current: 72, baseline: 64 },
+] as const
+
+export const reportsChartConfig = {
+  wellBeing: {
+    label: "Bem-estar",
+    color: "#10B981",
+  },
+  productivity: {
+    label: "Produtividade",
+    color: "#3B82F6",
+  },
+  mood: {
+    label: "Humor",
+    color: "#8B5CF6",
+  },
+  current: {
+    label: "Período atual",
+    color: "#3B82F6",
+  },
+  baseline: {
+    label: "Base anterior",
+    color: "#94A3B8",
+  },
+} satisfies ChartConfig

@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Onda — Inbox · Plataforma omnichannel para e-commerce",
+  title: "nexxa_life — sistema operacional de evolução pessoal",
   description:
-    "Onda é a plataforma omnichannel de atendimento, automação e IA para e-commerce. WhatsApp Business oficial, inbox compartilhada, automações orientadas a eventos e copilotos com RAG.",
+    "nexxa_life é o sistema operacional de evolução pessoal com diagnóstico, planejamento, execução diária e leitura contínua de evolução.",
   generator: "v0.app",
 }
 

@@ -6,7 +6,7 @@ import { PageContainer, PageHeader } from "@/components/app-shell/page-container
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
-type MeuDiaSurfacePlaceholderProps = {
+type nexxa_lifeSurfacePlaceholderProps = {
   title: string
   description: string
   route: string
@@ -16,7 +16,7 @@ type MeuDiaSurfacePlaceholderProps = {
   breadcrumbs?: { label: string; href?: string }[]
 }
 
-export function MeuDiaSurfacePlaceholder({
+export function NexxaLifeSurfacePlaceholder({
   title,
   description,
   route,
@@ -24,10 +24,10 @@ export function MeuDiaSurfacePlaceholder({
   nextStep,
   status = "Em adaptação",
   breadcrumbs,
-}: MeuDiaSurfacePlaceholderProps) {
+}: nexxa_lifeSurfacePlaceholderProps) {
   return (
     <PageContainer>
-      <AppBreadcrumbs items={breadcrumbs ?? [{ label: "Meu Dia", href: "/dashboard" }, { label: title }]} />
+      <AppBreadcrumbs items={breadcrumbs ?? [{ label: "nexxa_life", href: "/dashboard" }, { label: title }]} />
       <PageHeader
         title={title}
         description={description}
@@ -54,7 +54,7 @@ export function MeuDiaSurfacePlaceholder({
             Superfície migrada para o shell oficial
           </div>
           <p className="text-sm leading-6 text-muted-foreground">
-            Esta rota já existe no app raiz para preparar o port completo do legado Meu Dia Flow sem reativar a interface antiga.
+            Esta rota já existe no app raiz para preparar o port completo do legado nexxa_life flow sem reativar a interface antiga.
             O objetivo desta etapa é manter navegação, arquitetura e design consistentes enquanto o conteúdo funcional é migrado por ondas.
           </p>
 

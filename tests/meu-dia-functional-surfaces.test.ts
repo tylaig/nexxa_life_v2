@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-describe("Meu Dia functional surface contracts", () => {
+describe("nexxa_life functional surface contracts", () => {
   it("publishes a checklist workspace contract with day periods and summary signals", async () => {
     const checklist = await import("@/components/meu-dia/checklist-content")
 
