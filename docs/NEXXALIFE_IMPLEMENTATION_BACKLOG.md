@@ -63,6 +63,8 @@ Estados sugeridos para uso contínuo:
 | P2-03 | Recriar objetivos/metas com contratos novos | DONE | `app/(app)/nexxalife/goals/page.tsx` |
 | P2-04 | Recriar checklist com tarefas controladas | DONE | `app/(app)/nexxalife/checklist/page.tsx` |
 | P2-05 | Validar consistência entre páginas da onda 1 | DONE | runtime e build validados no host raiz; lint ajustado para `tsc --noEmit` |
+| P2-06 | Refinar shell visual compartilhado da onda 1 | DONE | `SurfaceCard`, `SectionHeading`, `StatePill`, toasts planejados e páginas alinhadas |
+| P2-07 | Endurecer feedback explícito em ações ainda não implementadas | DONE | `PlannedActionButton` + `sonner` para planned actions honestas |
 
 ---
 

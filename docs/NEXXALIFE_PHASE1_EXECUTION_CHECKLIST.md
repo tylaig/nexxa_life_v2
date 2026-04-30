@@ -88,9 +88,19 @@ A fase pode ser considerada concluída quando:
 
 ---
 
+## H. Macro-rodada 2 concluída
+
+- [x] Refino visual compartilhado aplicado à Wave 1
+- [x] Shell base endurecido com primitives reutilizáveis
+- [x] Planned actions com feedback explícito via toast
+- [x] Build e typecheck revalidados após o refino
+- [x] Progresso da rodada registrado em `docs/NEXXALIFE_WAVE2_VISUAL_REFINEMENT_PROGRESS.md`
+
+---
+
 ## Próxima macro-rodada sugerida
 
-1. refinar consistência visual entre dashboard, onboarding, goals e checklist
-2. endurecer shell base (tema/toasts reais, primitives compartilhadas e navegação)
-3. decidir próximo recorte: aprofundar onda 1 ou abrir diagnóstico/admin documental
-4. preparar camada inicial de persistência/contratos evolutivos sem tocar no legado
+1. executar browser QA rápido do shell refinado
+2. documentar domínio crítico de `framework/admin` e `diagnostic`
+3. modelar camada inicial de contratos evolutivos para metas/progresso
+4. preparar interface de persistência desacoplada de `storage.js`

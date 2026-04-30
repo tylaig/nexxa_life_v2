@@ -12,6 +12,7 @@ Documentação de auditoria, arquitetura e execução para a reconstrução do N
 7. `NEXXALIFE_PHASE1_CONTROLLED_FIXTURES.md`
 8. `NEXXALIFE_IMPLEMENTATION_BACKLOG.md`
 9. `NEXXALIFE_PHASE1_EXECUTION_CHECKLIST.md`
+10. `NEXXALIFE_WAVE2_VISUAL_REFINEMENT_PROGRESS.md`
 
 ## Documentos históricos já existentes
 - `NEXXALIFE_EXECUTION_MASTERPLAN_2026-04-29.md`

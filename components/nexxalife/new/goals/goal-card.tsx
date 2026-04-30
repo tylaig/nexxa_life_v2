@@ -1,4 +1,7 @@
 import type { Goal } from "../../../../lib/nexxalife/contracts"
+
+import { SurfaceCard } from "../shell/surface-card"
+import { StatePill } from "../shell/state-pill"
 import { GoalProgress } from "./goal-progress"
 
 const statusLabel: Record<Goal["status"], string> = {
@@ -8,21 +11,30 @@ const statusLabel: Record<Goal["status"], string> = {
   completed: "Concluído",
 }
 
+const statusTone: Record<Goal["status"], "neutral" | "success" | "warning"> = {
+  draft: "neutral",
+  active: "success",
+  paused: "warning",
+  completed: "success",
+}
+
 export function GoalCard({ goal }: { goal: Goal }) {
+  const progressTone = goal.status === "completed" ? "success" : goal.status === "paused" ? "muted" : "default"
+
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <SurfaceCard>
       <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-500">
-        <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-700">{statusLabel[goal.status]}</span>
+        <StatePill label={statusLabel[goal.status]} tone={statusTone[goal.status]} />
         {goal.pillar ? <span>{goal.pillar}</span> : null}
         {goal.targetDate ? <span>• alvo {goal.targetDate}</span> : null}
       </div>
       <div className="mt-3 space-y-2">
         <h3 className="text-lg font-semibold text-slate-950">{goal.title}</h3>
-        {goal.description ? <p className="text-sm text-slate-600">{goal.description}</p> : null}
+        {goal.description ? <p className="text-sm leading-6 text-slate-600">{goal.description}</p> : null}
       </div>
       <div className="mt-4">
-        <GoalProgress progressPercent={goal.progressPercent} />
+        <GoalProgress progressPercent={goal.progressPercent} tone={progressTone} />
       </div>
-    </article>
+    </SurfaceCard>
   )
 }
