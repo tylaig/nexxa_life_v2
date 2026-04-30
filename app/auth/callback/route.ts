@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
+import { setAuthSessionCookies } from "@/lib/server/auth-cookies"
 import { getAppBaseUrl } from "@/lib/server/env"
 import { getSupabaseAdminClient } from "@/lib/server/supabase"
+import { ensureAppUserProfile } from "@/modules/auth-profile/repository"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -21,19 +23,21 @@ export async function GET(request: Request) {
   }
 
   const cookieStore = await cookies()
-  cookieStore.set("sb-access-token", data.session.access_token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: data.session.expires_in,
+  setAuthSessionCookies(cookieStore as any, {
+    accessToken: data.session.access_token,
+    refreshToken: data.session.refresh_token,
+    expiresIn: data.session.expires_in,
   })
-  cookieStore.set("sb-refresh-token", data.session.refresh_token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+
+  await ensureAppUserProfile({
+    userId: data.user.id,
+    email: data.user.email ?? `${data.user.id}@example.local`,
+    fullName:
+      typeof data.user.user_metadata?.full_name === "string"
+        ? data.user.user_metadata.full_name
+        : data.user.email ?? data.user.id,
+    nickname: typeof data.user.user_metadata?.nickname === "string" ? data.user.user_metadata.nickname : undefined,
+    phone: typeof data.user.user_metadata?.phone === "string" ? data.user.user_metadata.phone : undefined,
   })
 
   return NextResponse.redirect(new URL(next, getAppBaseUrl()))
