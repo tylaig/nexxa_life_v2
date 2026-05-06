@@ -1,6 +1,7 @@
 -- Migration 008: Diário (journal)
+-- Depende de: 001_bootstrap.sql
 
-create table if not exists journal_entries (
+create table if not exists public.journal_entries (
   id          uuid        primary key default gen_random_uuid(),
   user_id     uuid        not null references auth.users(id) on delete cascade,
   content     text        not null,
@@ -11,19 +12,21 @@ create table if not exists journal_entries (
   updated_at  timestamptz not null default now()
 );
 
-alter table journal_entries enable row level security;
+alter table public.journal_entries enable row level security;
 
 create policy "users_manage_own_journal"
-  on journal_entries for all
+  on public.journal_entries for all
   using (auth.uid() = user_id);
 
--- Full-text search no conteúdo
+-- Índice por data (listagem de entradas)
 create index if not exists journal_user_date_idx
-  on journal_entries(user_id, entry_date desc);
+  on public.journal_entries(user_id, entry_date desc);
 
+-- Full-text search em português
 create index if not exists journal_content_fts_idx
-  on journal_entries using gin(to_tsvector('portuguese', content));
+  on public.journal_entries
+  using gin(to_tsvector('portuguese', content));
 
 create trigger journal_updated_at
-  before update on journal_entries
-  for each row execute function update_updated_at();
+  before update on public.journal_entries
+  for each row execute function public.update_updated_at();
