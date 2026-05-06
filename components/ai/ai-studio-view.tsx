@@ -22,24 +22,23 @@ const TOOL_META: Record<string, { icon: any; label: string; color: string; desc:
 
 export function AiStudioView({ step, diagnosticData }: { step?: string; diagnosticData?: any }) {
   const router = useRouter()
-  const isPlanningMode = step === "planning" || step === "welcome" || step === "diagnostic" // Show planning mode if not fully onboarded
+  const isPlanningMode = step !== "complete" // Show planning mode if not fully onboarded
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
-  const { messages, input = "", handleInputChange, handleSubmit, isLoading, setInput } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
-  } as any) as any
+  })
 
   // Auto-trigger first AI message
   React.useEffect(() => {
-    if (isPlanningMode && (messages || []).length === 0) {
-      const fakeEvent = { preventDefault: () => {} } as any
-      setInput?.("Olá! Vamos começar a organizar meu plano baseado no meu diagnóstico.")
-      setTimeout(() => {
-        handleSubmit?.(fakeEvent)
-      }, 800)
+    if (isPlanningMode && (messages || []).length === 0 && !isLoading) {
+      append({
+        role: "user",
+        content: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
+      })
     }
-  }, [isPlanningMode])
+  }, [isPlanningMode, messages, isLoading, append])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -115,13 +114,13 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
             </div>
           ))}
           
-          {isLoading && (messages || []).length > 0 && (messages || [])[messages.length - 1]?.role === "user" && (
-            <div className="flex w-full justify-start">
+          {isLoading && (
+            <div className="flex w-full justify-start animate-in fade-in duration-300">
               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-1 flex-none border border-primary/20">
                 <Bot className="h-4 w-4 text-primary" />
               </div>
               <div className="rounded-2xl rounded-tl-sm bg-background border border-border/50 px-5 py-4 flex items-center gap-1.5 shadow-sm">
-                <span className="text-sm text-muted-foreground mr-2 font-medium">Processando</span>
+                <span className="text-sm text-muted-foreground mr-2 font-medium">Estrategista digitando</span>
                 {[0, 1, 2].map((i) => (
                   <span key={i} className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
                 ))}
@@ -135,8 +134,8 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         <div className="p-4 bg-background border-t border-border/50">
           <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto flex items-end gap-2">
             <textarea
-              value={input || ""}
-              onChange={(e) => handleInputChange?.(e)}
+              value={input}
+              onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="O que vamos construir hoje?"
               rows={1}
