@@ -1,260 +1,107 @@
-import Link from "next/link"
-import { ArrowRight, ChevronRight, Clock, Flame, Search } from "lucide-react"
+"use client"
 
-import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
-import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
-import {
-  newsCategories,
-  newsFeaturedArticle,
-  newsFeaturedArticleActions,
-  newsHero,
-  newsKpis,
-  newsLibraryArticles,
-  newsPrioritySignals,
-  newsRadarSummary,
-  newsReadingInsights,
-  newsSearchExperience,
-  newsSurfaceGuardrails,
-} from "@/components/meu-dia/news-content"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react"
+import { Search, Clock, Bookmark, ExternalLink, Flame, Filter } from "lucide-react"
+import { PageHeader } from "@/components/ui/page-header"
+import { SectionCard } from "@/components/ui/section-card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
 
-export function NexxaLifeNewsView() {
+type ArticleCategory = "Produtividade" | "Mentalidade" | "Saúde" | "Tecnologia" | "Negócios"
+type Article = {
+  id: string; title: string; summary: string; source: string
+  category: ArticleCategory; readTime: string; date: string; trending?: boolean; saved?: boolean
+}
+
+const ARTICLES: Article[] = [
+  { id: "1", title: "Por que os melhores fazedores não se preocupam com motivação", summary: "A motivação é superestimada. O que os high performers fazem é criar sistemas.", source: "James Clear", category: "Produtividade", readTime: "6 min", date: "Hoje", trending: true },
+  { id: "2", title: "O efeito composto: como pequenas ações se tornam grandes resultados", summary: "Melhorar 1% por dia parece insignificante, mas ao longo de um ano a diferença é exponencial.", source: "Darren Hardy", category: "Mentalidade", readTime: "9 min", date: "Ontem", saved: true },
+  { id: "3", title: "Sono profundo: o ativo mais subestimado da alta performance", summary: "Pesquisas confirmam que qualidade do sono afeta criatividade, memória e tomada de decisão.", source: "Matthew Walker", category: "Saúde", readTime: "12 min", date: "2 dias atrás" },
+  { id: "4", title: "IA como parceira de produtividade: o que realmente funciona", summary: "Como integrar ferramentas de IA no fluxo de trabalho sem se tornar dependente.", source: "NexxaLife", category: "Tecnologia", readTime: "7 min", date: "3 dias atrás" },
+]
+
+const CATEGORIES: ArticleCategory[] = ["Produtividade", "Mentalidade", "Saúde", "Tecnologia", "Negócios"]
+const CAT_COLORS: Record<ArticleCategory, string> = {
+  Produtividade: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
+  Mentalidade: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  Saúde: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  Tecnologia: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  Negócios: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+}
+
+function ArticleCard({ article, featured = false }: { article: Article; featured?: boolean }) {
+  const [saved, setSaved] = useState(article.saved ?? false)
   return (
-    <PageContainer>
-      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "News" }]} />
-      <PageHeader
-        title={newsHero.title}
-        description={newsHero.description}
-        actions={
-          <>
-            <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-              {newsHero.kicker}
-            </Badge>
-            <Button asChild size="sm" className="rounded-lg">
-              <Link href="/reports">Cruzar com relatórios</Link>
-            </Button>
-          </>
-        }
-      />
-
-      <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
-        <Card className="overflow-hidden border-border/80 bg-gradient-to-br from-card via-card to-primary/5">
-          <CardContent className="space-y-6 p-6 md:p-7">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="max-w-2xl space-y-3">
-                <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-                  Camada editorial
-                </Badge>
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-                    Filtre ruído, encontre contexto e transforme leitura em próxima decisão útil.
-                  </h2>
-                  <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
-                    A função desta superfície é editorial: reduzir excesso de input e aproximar conteúdo do estado atual do seu sistema.
-                    Ela precisa deixar claro o que ler, por que ler e qual ação a leitura pode destravar.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Papel da página</div>
-                  <div className="mt-2 text-sm font-semibold text-foreground">Curadoria orientada por contexto</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    A leitura precisa nascer conectada a prioridade, energia e momento do NexxaLife.
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima conexão</div>
-                  <div className="mt-2 text-sm font-semibold text-foreground">News → relatórios → ajustes de direção</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    O feed só faz sentido quando melhora decisão, repertório e ação prática no ciclo atual.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              {newsKpis.map((item) => (
-                <StatCard key={item.label} label={item.label} value={item.value} hint={item.hint} icon={item.icon} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>{newsSearchExperience.title}</CardTitle>
-            <CardDescription>Monte seu recorte editorial para reduzir ruído e aumentar utilidade prática.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3 rounded-2xl border border-border bg-background/60 px-4 py-3 text-sm text-muted-foreground">
-              <Search className="h-4 w-4" />
-              <span>{newsSearchExperience.placeholder}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {newsCategories.map((category) => (
-                <Badge key={category} variant={category === "Todos" ? "default" : "outline"} className="rounded-full">
-                  {category}
-                </Badge>
-              ))}
-            </div>
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-muted-foreground">{newsRadarSummary.label}</div>
-                  <div className="mt-1 text-2xl font-semibold text-foreground">{newsRadarSummary.filteredCount}</div>
-                  <p className="mt-1 text-sm text-muted-foreground">leituras filtradas pelo recorte atual</p>
-                </div>
-                <Badge variant="secondary" className="rounded-full">
-                  {newsRadarSummary.status}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>Prioridades editoriais</CardTitle>
-            <CardDescription>Leituras mais úteis com base no estado atual do seu sistema pessoal.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {newsPrioritySignals.map((item) => (
-              <div key={`${item.axis}-${item.recommendedCategory}`} className="rounded-2xl border border-border bg-background/60 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-foreground">{item.axis}</div>
-                  <Badge variant={item.urgency === "alta" ? "default" : "outline"}>{item.urgency}</Badge>
-                </div>
-                <div className="mt-2 text-sm font-medium text-foreground">Categoria sugerida: {item.recommendedCategory}</div>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.reason}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80 bg-gradient-to-br from-card via-card to-emerald-500/5">
-          <CardHeader>
-            <CardTitle>Leitura rápida</CardTitle>
-            <CardDescription>Sinais curtos para orientar o próximo clique e evitar consumo passivo.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {newsReadingInsights.map((item) => {
-              const Icon = item.icon
-              return (
-                <div key={item.title} className="rounded-2xl border border-border bg-background/70 p-4">
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-sm font-semibold text-foreground">{item.title}</div>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>Destaque editorial</CardTitle>
-            <CardDescription>Leitura de maior valor aplicado para o momento atual do ciclo.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge>{newsFeaturedArticle.category}</Badge>
-              <Badge variant="outline">{newsFeaturedArticle.level}</Badge>
-              <Badge variant="secondary">{newsFeaturedArticle.impact}</Badge>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-foreground">{newsFeaturedArticle.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{newsFeaturedArticle.description}</p>
-            </div>
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-              <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4" />{newsFeaturedArticle.readTime}</span>
-              <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" />{newsFeaturedArticle.impact}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {newsFeaturedArticleActions.slice(0, 2).map((action) => (
-                <Badge key={action} variant="outline" className="rounded-full px-3 py-1 text-xs">
-                  {action}
-                </Badge>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button className="rounded-lg">
-                {newsFeaturedArticleActions[2]}
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" className="rounded-lg">
-                {newsFeaturedArticleActions[3]}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-4">
-          <Card className="border-border/80">
-            <CardHeader>
-              <CardTitle>Biblioteca recente</CardTitle>
-              <CardDescription>Leituras adicionais que já entram com semântica de curadoria, não de ruído.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {newsLibraryArticles.map((article) => (
-                <div key={article.id} className="rounded-2xl border border-border bg-background/60 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold text-foreground">{article.title}</div>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{article.description}</p>
-                    </div>
-                    <Badge variant="outline">{article.category}</Badge>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                    <Badge variant="secondary">{article.level}</Badge>
-                    <Badge variant="secondary">{article.readTime}</Badge>
-                    <Badge variant="secondary">{article.impact}</Badge>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/80">
-            <CardHeader>
-              <CardTitle>Guardrails editoriais</CardTitle>
-              <CardDescription>Regras para a superfície continuar útil, contextual e menos genérica.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {newsSurfaceGuardrails.map((item) => {
-                const Icon = item.icon
-                return (
-                  <div key={item.title} className="rounded-2xl border border-border bg-background/60 p-4">
-                    <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="text-sm font-semibold text-foreground">{item.title}</div>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.description}</p>
-                  </div>
-                )
-              })}
-            </CardContent>
-          </Card>
+    <div className={cn("flex flex-col gap-3 rounded-2xl border p-4 transition-all hover:border-primary/20",
+      featured ? "border-primary/20 bg-primary/5 md:col-span-2" : "border-border/70 bg-card")}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className={cn("rounded-full px-2.5 py-0.5 text-[11px]", CAT_COLORS[article.category])} variant="secondary">{article.category}</Badge>
+          {article.trending ? <span className="flex items-center gap-1 text-[11px] font-medium text-amber-600"><Flame className="h-3 w-3" /> Trending</span> : null}
         </div>
-      </section>
-
-      <div className="mt-6 flex justify-end">
-        <Button asChild variant="link" className="px-0">
-          <Link href="/marketplace">
-            Seguir para marketplace
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+        <button onClick={() => setSaved((s) => !s)} className={cn("shrink-0 transition-colors", saved ? "text-primary" : "text-muted-foreground hover:text-foreground")}>
+          <Bookmark className={cn("h-4 w-4", saved ? "fill-current" : "")} />
+        </button>
+      </div>
+      <div className="space-y-1">
+        <h3 className={cn("font-semibold leading-snug text-foreground", featured ? "text-base" : "text-sm")}>{article.title}</h3>
+        <p className="line-clamp-2 text-xs leading-5 text-muted-foreground">{article.summary}</p>
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          {article.source} · <Clock className="h-3 w-3" />{article.readTime} · {article.date}
+        </span>
+        <Button variant="ghost" size="sm" className="h-7 gap-1 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground">
+          <ExternalLink className="h-3 w-3" /> Ler
         </Button>
       </div>
-    </PageContainer>
+    </div>
+  )
+}
+
+export function NexxaLifeNewsView() {
+  const [search, setSearch] = useState("")
+  const [category, setCategory] = useState<ArticleCategory | "all">("all")
+  const filtered = ARTICLES.filter((a) => {
+    const ms = a.title.toLowerCase().includes(search.toLowerCase())
+    const mc = category === "all" || a.category === category
+    return ms && mc
+  })
+  const featured = filtered.find((a) => a.trending)
+  const rest = filtered.filter((a) => !a.trending)
+
+  return (
+    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+      <PageHeader eyebrow="Conteúdo" title="News & Leituras" description="Artigos e insights curados para o seu crescimento." />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input type="text" placeholder="Buscar artigos..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border/60 bg-background py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground/60 focus:border-primary/40 focus:outline-none" />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Filter className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          {(["all", ...CATEGORIES] as const).map((cat) => (
+            <button key={cat} onClick={() => setCategory(cat as typeof category)}
+              className={cn("rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                category === cat ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground hover:bg-muted")}>
+              {cat === "all" ? "Todas" : cat}
+            </button>
+          ))}
+        </div>
+      </div>
+      {filtered.length === 0 ? (
+        <p className="py-12 text-center text-sm text-muted-foreground">Nenhum artigo encontrado.</p>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {featured ? <ArticleCard article={featured} featured /> : null}
+          {rest.map((a) => <ArticleCard key={a.id} article={a} />)}
+        </div>
+      )}
+      <SectionCard title="Leitura salva" description="Artigos que você marcou para ler depois">
+        <p className="py-4 text-center text-xs text-muted-foreground">Salve artigos clicando no ícone 🔖 acima.</p>
+      </SectionCard>
+    </div>
   )
 }

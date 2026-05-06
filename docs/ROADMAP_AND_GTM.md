@@ -1,130 +1,123 @@
-# Roadmap and Go-To-Market — Omnichannel Commerce Automation Platform 2026
+# Roadmap NexxaLife — Produto Pessoal de Ciclo de Evolução
 
-## 1. Strategic launch angle
+> Última atualização: Maio 2026
+> Produto: NexxaLife — Sistema Operacional de Evolução Pessoal (single-user, não multi-tenant)
 
-Lançar como:
+---
 
-**plataforma de atendimento + automação + IA para e-commerce com WhatsApp oficial**
+## Status Atual
 
-Não como “mais uma inbox”, nem como “mais um bot”. A proposta precisa unir:
+### ✅ Concluído
 
-- operação humana premium
-- automação orientada a receita
-- IA com contexto real
-- integrações de comércio
+#### Auth & Onboarding
+- [x] Login com e-mail/senha
+- [x] Login com Google OAuth (PKCE flow via @supabase/ssr)
+- [x] Cadastro de novo usuário
+- [x] Onboarding multi-etapa (welcome → perfil → diagnóstico → metas → completo)
+- [x] Middleware de proteção de rotas (`/dashboard`, etc.)
+- [x] Callback OAuth robusto (sem loop de redirect)
 
-## 2. Phase roadmap
+#### UI/UX — Páginas do Ciclo
+- [x] Landing page redesenhada
+- [x] Login e signup redesenhados
+- [x] Onboarding redesenhado
+- [x] Dashboard — saudação dinâmica, KPIs, checklist, metas, agenda, diário
+- [x] Checklist — grupos por prioridade, toggle, streak, add inline
+- [x] Metas — cards com progresso, marcos expansíveis, filtros
+- [x] Agenda — mini-calendário semanal, timeline de eventos por tipo
+- [x] Diário — lista de entradas, editor, mood picker, busca
+- [x] Relatórios — período 7/30/90d, heatmap, KPIs, insights
+- [x] Academia — trilhas com progresso, filtros, conteúdos recomendados
+- [x] News — busca, filtros por categoria, artigos com save
+- [x] Marketplace — busca, grid gratuitos/premium, badge Pro
 
-### Phase 0 — Foundation
-- multi-tenant base
-- auth, RBAC, workspace model
-- WhatsApp official onboarding base
-- conversation core
-- inbox v1
-- contacts v1
+#### Design System
+- [x] Primitivos: `PageHeader`, `SectionCard`, `EmptyState`, `KpiTile`
+- [x] Sidebar simplificada (sem WorkspaceSwitcher / multi-tenant)
+- [x] Navegação: "Meu Ciclo" (Metas, Checklist, Agenda, Diário, Relatórios)
+- [x] `/diagnostic` removido do sidebar (apenas no onboarding)
 
-### Phase 1 — MVP sellable
-- shared inbox robusta
-- templates Meta
-- automations v1
-- order timeline
-- payment/order webhooks
-- AI assist v1
-- RAG knowledge v1
-- dashboards operacionais básicos
+#### Database — Migrations
+- [x] 001 — bootstrap (extensões + funções utilitárias)
+- [x] 002 — auth support (onboarding_state, user_settings)
+- [x] 003 — diagnostic_results
+- [x] 004 — app_user_profiles (sem tenant/workspace + trigger automático no signup)
+- [x] 005 — goals + goal_milestones
+- [x] 006 — checklist_items
+- [x] 007 — agenda_events
+- [x] 008 — journal_entries (com full-text search em português)
+- [x] 009 — user_streaks + daily_activity_log + função de streak automática
 
-### Phase 2 — Ecommerce acceleration
-- abandoned cart flows
-- failed payment rescue
-- shipping exception flows
-- revenue attribution
-- advanced segments
-- richer analytics
+---
 
-### Phase 3 — Intelligence and scale
-- supervisor AI
-- AI flow generation assist
-- quality analytics
-- experimentation
-- omnichannel expansion
-- marketplace/integration ecosystem
+### 🔄 Em Andamento
 
-## 3. MVP packaging suggestion
+- [ ] Aplicar migrations 001-009 no Supabase Dashboard (SQL Editor)
+- [ ] Remover referências a `tenant_id` / `workspace_id` do `auth-profile/repository.ts`
+- [ ] API Routes: `/api/v1/goals`, `/api/v1/checklist`, `/api/v1/agenda`, `/api/v1/journal`
+- [ ] Conectar views às API routes (substituir mocks por dados reais)
+- [ ] Apps/Integrações — página de conexões do ciclo (Google Calendar, Notion etc.)
 
-### Plano Start
-- 1 número WhatsApp
-- inbox colaborativa
-- templates
-- automações básicas
-- knowledge base simples
-- analytics essenciais
+---
 
-### Plano Growth
-- múltiplos números
-- filas/times
-- RAG melhorado
-- integrações e-commerce
-- automações comerciais prontas
-- IA assistida mais forte
+### ⏳ Próximos — Fase 2
 
-### Plano Pro / Enterprise
-- governança avançada
-- multi-brand
-- APIs/webhooks amplos
-- observabilidade e auditoria
-- controles avançados de IA
-- suporte a implantação custom
+#### Backend & Dados Reais
+- [ ] Server Actions ou API Routes para CRUD de cada módulo do ciclo
+- [ ] Hook `useGoals()`, `useChecklist()`, `useAgenda()`, `useJournal()` consumindo Supabase
+- [ ] Streak calculado automaticamente via `upsert_user_streak()` ao salvar atividade
+- [ ] Persistência do Diagnóstico no banco (hoje só salva no onboarding_state)
 
-## 4. Commercial motion
+#### Funcionalidades do Ciclo
+- [ ] Recorrência de itens do Checklist (itens recorrentes por dia/semana)
+- [ ] Notificações / lembretes de checklist (via email ou browser push)
+- [ ] Compartilhamento de metas (link público opcional)
+- [ ] Export de relatório em PDF
 
-### Entrada mais forte
-- demonstração focada em ROI
-- prova com fluxos de carrinho, pós-venda e suporte
-- mostrar tempo economizado + receita recuperada
+#### Apps / Integrações
+- [ ] Google Calendar — sync bidirecional com Agenda
+- [ ] Notion — export de metas e diário
+- [ ] Integração com apps de saúde (Apple Health, Google Fit via API)
 
-### Quem compra
-- fundador
-- head de CX/CS
-- head de operações
-- gerente de e-commerce/CRM
+#### Produto
+- [ ] PWA (Progressive Web App) — instalável no celular
+- [ ] Modo offline para checklist e diário
+- [ ] Notificações push via Web Push API
 
-### Quem usa todo dia
-- operadores de atendimento
-- vendedores consultivos
-- supervisores
-- time de retenção/CRM
+#### Monetização
+- [ ] Plano Free (ciclo básico)
+- [ ] Plano Pro (Academy completo, Marketplace premium, integrações avançadas)
+- [ ] Stripe Checkout + webhook de ativação do plano
+- [ ] Billing portal para gerenciar assinatura
 
-## 5. Messaging for the market
+---
 
-### Core promise
-“Centralize atendimento, automatize jornadas e use IA com contexto real para vender e atender melhor no WhatsApp oficial.”
+### ❌ Fora do Escopo (por ora)
 
-### Secondary proof points
-- caixa colaborativa premium
-- automações orientadas a eventos reais
-- RAG com políticas, catálogo e pedidos
-- templates Meta e webhooks oficiais
-- visão de operação + receita
+- Multi-tenant / workspaces (removido — produto é pessoal)
+- WhatsApp Business Platform
+- Inbox colaborativa / atendimento ao cliente
+- Plataforma omnichannel (era o ROADMAP_AND_GTM.md antigo — não se aplica ao NexxaLife pessoal)
 
-## 6. Beachhead verticals
+---
 
-- games e eletrônicos
-- D2C com alto suporte
-- lojas com forte pós-venda/logística
-- negócios que dependem pesado de WhatsApp
+## Stack Atual
 
-## 7. What wins deals in 2026
+| Camada | Tecnologia |
+|--------|-----------|
+| Frontend | Next.js 15 App Router + TypeScript |
+| Styling | Tailwind CSS + shadcn/ui |
+| Auth | Supabase Auth (PKCE + @supabase/ssr) |
+| Database | Supabase (PostgreSQL) |
+| ORM | Queries diretas via Supabase client |
+| Deploy | Vercel (planejado) |
 
-- interface boa de verdade
-- onboarding claro do WhatsApp oficial
-- automações prontas com ROI tangível
-- IA útil e confiável
-- analytics mostrando dinheiro e eficiência
+---
 
-## 8. Recommendation
+## Convenções do Banco
 
-Eu posicionaria o produto como uma categoria híbrida:
-
-**Conversational Commerce Operations Platform**
-
-Isso comunica que não é só atendimento, não é só CRM, não é só chatbot. É a camada operacional de relacionamento e receita por conversa.
+- Todas as tabelas têm `user_id uuid references auth.users(id)` — single-user
+- RLS ativo em todas as tabelas: `auth.uid() = user_id`
+- `update_updated_at()` trigger em todas as tabelas com `updated_at`
+- Migrations sequenciais: 001–NNN em `/db/migrations/`
+- Sem `tenant_id` ou `workspace_id` (produto pessoal)
