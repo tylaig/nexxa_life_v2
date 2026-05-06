@@ -28,7 +28,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
   const [attachments, setAttachments] = React.useState<string[]>([]) // For pasted images (data URLs)
   
-  const { messages, append: sendMessage, status, setMessages, error, reload } = useChat({
+  const { messages, sendMessage, status, setMessages, error, reload } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
   })
