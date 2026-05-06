@@ -50,7 +50,7 @@ const AREA_ORDER = ["health", "mind", "productivity", "finances", "relations", "
 type Question = { id: string; area: string; question_text: string; question_order: number }
 type Phase = "welcome" | "answering" | "transition" | "analyzing" | "results"
 
-export function DiagnosticWizard({ questions }: { questions: Question[] }) {
+export function DiagnosticWizard({ questions, onComplete }: { questions: Question[]; onComplete?: () => void }) {
   const router = useRouter()
   const [phase, setPhase] = React.useState<Phase>("welcome")
   const [currentIndex, setCurrentIndex] = React.useState(0)
@@ -145,8 +145,12 @@ export function DiagnosticWizard({ questions }: { questions: Question[] }) {
   }
 
   async function handleFinish() {
-    router.push("/planning")
-    router.refresh()
+    if (onComplete) {
+      onComplete()
+    } else {
+      router.push("/setup")
+      router.refresh()
+    }
   }
 
   // ─── WELCOME ────────────────────────────────────────────────────────────────

@@ -6,13 +6,13 @@ import { getUserOnboardingStatus } from "@/lib/db/actions"
 import { DiagnosticBlocker } from "@/components/meu-dia/diagnostic-blocker"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { onboarded } = await getUserOnboardingStatus()
+  const { onboarded, step } = await getUserOnboardingStatus()
 
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="bg-background relative">
-        <DiagnosticBlocker onboarded={onboarded}>
+        <DiagnosticBlocker onboarded={onboarded} step={step}>
           {children}
         </DiagnosticBlocker>
         <AiChatAssistant />

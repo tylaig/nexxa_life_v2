@@ -1,8 +1,5 @@
-import { getDiagnosticResult } from "@/lib/db/actions"
-import { PlanningSession } from "@/components/planning/planning-session"
+import { redirect } from "next/navigation"
 
-export default async function PlanningPage() {
-  const diagnostic = await getDiagnosticResult()
-
-  return <PlanningSession diagnosticData={diagnostic} />
+export default function PlanningPage() {
+  redirect("/setup")
 }

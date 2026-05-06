@@ -327,16 +327,29 @@ export async function markUserOnboarded() {
 
 export async function getUserOnboardingStatus() {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) return { onboarded: false }
+  if (!auth) return { onboarded: false, step: "welcome" }
 
   const supabase = await getSupabaseServerClient()
   const { data, error } = await supabase
     .from("app_user_profiles")
-    .select("onboarded")
+    .select("onboarded, onboarding_step")
     .eq("user_id", auth.user.id)
     .single()
 
-  if (error || !data) return { onboarded: false }
-  return { onboarded: data.onboarded }
+  if (error || !data) return { onboarded: false, step: "welcome" }
+  return { onboarded: data.onboarded, step: data.onboarding_step || "welcome" }
 }
 
+export async function updateOnboardingStep(step: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) throw new Error("Unauthorized")
+
+  const supabase = await getSupabaseServerClient()
+  const { error } = await supabase
+    .from("app_user_profiles")
+    .update({ onboarding_step: step })
+    .eq("user_id", auth.user.id)
+
+  if (error) throw error
+  revalidatePath("/")
+}
