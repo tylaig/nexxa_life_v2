@@ -25,9 +25,10 @@ export type NavSection = {
   children: NavItem[]
 }
 
-/** Item único de destaque: Dashboard */
+/** Item único de destaque: Dashboard e Studio */
 export const primaryItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/studio", label: "AI Studio", icon: Sparkles },
 ]
 
 /**

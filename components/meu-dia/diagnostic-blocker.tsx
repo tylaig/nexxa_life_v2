@@ -17,7 +17,7 @@ export function DiagnosticBlocker({
 }) {
   const pathname = usePathname()
   
-  const isOnboardingPage = pathname?.includes("/setup") || pathname?.includes("/diagnostic") || pathname?.includes("/planning") || false
+  const isOnboardingPage = pathname?.includes("/setup") || pathname?.includes("/diagnostic") || pathname?.includes("/planning") || pathname?.includes("/studio") || false
   const isBlocked = !onboarded && !isOnboardingPage
 
   if (isBlocked) {
@@ -48,7 +48,7 @@ export function DiagnosticBlocker({
               <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
             </div>
             <Button asChild size="lg" className="px-10 h-12 text-base">
-              <Link href="/setup">
+              <Link href={needsPlanning ? "/studio" : "/setup"}>
                 <Sparkles className="h-4 w-4 mr-2" />
                 {buttonText}
               </Link>

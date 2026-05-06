@@ -1,7 +1,7 @@
 import type React from "react"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-shell/app-sidebar"
-import { AiChatAssistant } from "@/components/ai/ai-chat-assistant"
+import { CommandMenu } from "@/components/app-shell/command-menu"
 import { getUserOnboardingStatus, getDiagnosticResult } from "@/lib/db/actions"
 import { DiagnosticBlocker } from "@/components/meu-dia/diagnostic-blocker"
 
@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <DiagnosticBlocker onboarded={onboarded} step={step}>
           {children}
         </DiagnosticBlocker>
-        <AiChatAssistant step={step} diagnosticData={diagnosticData} />
+        <CommandMenu />
       </SidebarInset>
     </SidebarProvider>
   )
