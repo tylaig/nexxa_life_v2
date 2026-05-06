@@ -226,7 +226,7 @@ export function AppSidebar({ profile }: { profile?: AppUserProfile | null }) {
       <SidebarFooter className="px-2 pb-3 pt-2">
         <SidebarGroup className="p-0">
           <SidebarGroupLabel className="px-3 pb-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground/80">
-            Administração
+            Conta
           </SidebarGroupLabel>
           <SidebarGroupContent>
             {collapsed ? (

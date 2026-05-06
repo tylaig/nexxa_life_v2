@@ -22,7 +22,7 @@ describe("framework admin role contracts", () => {
     expect(contracts.isAdminProfile({ ...baseProfile, role: "user" })).toBe(false)
   })
 
-  it("exposes framework admin navigation only to admin profiles", async () => {
+  it("keeps framework admin out of the sidebar navigation for every role", async () => {
     const navigation = await import("@/components/app-shell/meu-dia-navigation")
 
     const adminRoutes = navigation.getMeuDiaNavigationForProfile({ ...baseProfile, role: "admin" })
@@ -30,12 +30,25 @@ describe("framework admin role contracts", () => {
     const userRoutes = navigation.getMeuDiaNavigationForProfile({ ...baseProfile, role: "user" })
       .settingsSections.flatMap((section) => section.children.map((item) => item.href))
 
-    expect(adminRoutes).toContain("/framework-admin")
+    expect(adminRoutes).not.toContain("/framework-admin")
     expect(userRoutes).not.toContain("/framework-admin")
+    expect(adminRoutes).toContain("/settings")
     expect(userRoutes).toContain("/settings")
   })
 
-  it("builds framework admin workspace data from persisted profile and diagnostic question records", async () => {
+  it("exposes framework admin only through the floating command menu for admins", async () => {
+    const commandMenu = await import("@/components/app-shell/command-menu")
+
+    const adminRoutes = commandMenu.getCommandMenuForProfile({ ...baseProfile, role: "admin" })
+      .flatMap((group) => group.items.map((item) => item.href))
+    const userRoutes = commandMenu.getCommandMenuForProfile({ ...baseProfile, role: "user" })
+      .flatMap((group) => group.items.map((item) => item.href))
+
+    expect(adminRoutes).toContain("/framework-admin")
+    expect(userRoutes).not.toContain("/framework-admin")
+  })
+
+  it("builds framework admin workspace data from persisted profile, diagnostic question and SaaS configuration records", async () => {
     const { buildFrameworkAdminWorkspace } = await import("@/modules/framework-admin/workspace")
 
     const workspace = buildFrameworkAdminWorkspace({
@@ -54,5 +67,17 @@ describe("framework admin role contracts", () => {
     })
     expect(workspace.axes.map((axis) => axis.area)).toContain("health")
     expect(workspace.recentUsers[0]).toMatchObject({ email: "admin@nexxalife.local", role: "admin" })
+    expect(workspace.adminModules.map((module) => module.id)).toEqual([
+      "users-access",
+      "diagnostic-framework",
+      "plans-billing",
+      "feature-flags",
+      "ai-prompts",
+      "integrations-webhooks",
+      "analytics-logs",
+      "security-compliance",
+      "branding-content",
+      "automations-lifecycle",
+    ])
   })
 })

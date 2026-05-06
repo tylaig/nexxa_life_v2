@@ -14,12 +14,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import * as React from "react"
+import { fetchAuthenticatedAppUser } from "@/lib/client/session"
+
 export function AppUserMenu() {
-  const user = {
-    name: "Tylaig",
-    email: "tylaig@meusuper.app",
-    role: "Admin do workspace",
-  }
+  const [user, setUser] = React.useState({
+    name: "Carregando...",
+    email: "",
+    role: "user",
+  })
+
+  React.useEffect(() => {
+    fetchAuthenticatedAppUser()
+      .then((res) => {
+        if (res?.user && res?.profile) {
+          setUser({
+            name: res.profile.full_name || "Usuário",
+            email: res.profile.email,
+            role: res.profile.role || "user",
+          })
+        }
+      })
+      .catch((err) => console.error("Failed to fetch user:", err))
+  }, [])
 
   return (
     <DropdownMenu>
@@ -30,7 +47,6 @@ export function AppUserMenu() {
           </Avatar>
           <div className="hidden text-left md:block">
             <div className="text-xs font-medium leading-none">{user.name}</div>
-            <div className="mt-1 text-[10px] text-muted-foreground">{user.role}</div>
           </div>
           <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground md:block" />
         </Button>
@@ -44,7 +60,6 @@ export function AppUserMenu() {
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold">{user.name}</div>
               <div className="truncate text-xs text-muted-foreground">{user.email}</div>
-              <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{user.role}</div>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -55,6 +70,15 @@ export function AppUserMenu() {
             Meu perfil
           </Link>
         </DropdownMenuItem>
+        
+        {user.role === "admin" && (
+          <DropdownMenuItem asChild>
+            <Link href="/framework-admin">
+              <ShieldCheck className="h-4 w-4 text-amber-500" />
+              Opções de Admin
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/logs">
             <Bell className="h-4 w-4" />

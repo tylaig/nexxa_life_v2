@@ -7,14 +7,12 @@ import {
   Goal,
   LayoutDashboard,
   Settings,
-  ShieldCheck,
   Sparkles,
   Store,
   Target,
 } from "lucide-react"
 
 import type { AppUserProfile } from "@/modules/auth-profile/contracts"
-import { isAdminProfile } from "@/modules/auth-profile/contracts"
 
 export type NavItem = {
   href: string
@@ -62,9 +60,7 @@ export const accordionSections: NavSection[] = [
   },
 ]
 
-export const adminOnlySettingsItems: NavItem[] = [
-  { href: "/framework-admin", label: "Framework Admin", icon: ShieldCheck },
-]
+export const adminOnlySettingsItems: NavItem[] = []
 
 export const sharedSettingsItems: NavItem[] = [
   { href: "/settings", label: "Configurações", icon: Settings },
@@ -72,9 +68,9 @@ export const sharedSettingsItems: NavItem[] = [
 
 export const settingsSections: NavSection[] = [
   {
-    label: "Administração",
-    icon: ShieldCheck,
-    children: [...adminOnlySettingsItems, ...sharedSettingsItems],
+    label: "Configurações",
+    icon: Settings,
+    children: sharedSettingsItems,
   },
 ]
 
@@ -90,9 +86,9 @@ export function getMeuDiaNavigationForProfile(profile: Pick<AppUserProfile, "rol
     accordionSections,
     settingsSections: [
       {
-        label: "Administração",
-        icon: ShieldCheck,
-        children: [...(isAdminProfile(profile) ? adminOnlySettingsItems : []), ...sharedSettingsItems],
+        label: "Configurações",
+        icon: Settings,
+        children: sharedSettingsItems,
       },
     ],
   }

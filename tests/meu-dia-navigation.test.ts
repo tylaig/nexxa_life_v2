@@ -61,20 +61,37 @@ describe("nexxa_life navigation taxonomy", () => {
     ])
   })
 
-  it("keeps framework-admin visible only in the admin navigation model", async () => {
+  it("keeps framework-admin out of the sidebar navigation for every profile", async () => {
     const navigation = await import("@/components/app-shell/meu-dia-navigation")
 
-    expect(navigation.getMeuDiaNavigationForProfile(adminProfile).settingsSections[0].children.map((item) => item.href)).toEqual([
-      "/framework-admin",
-      "/settings",
-    ])
+    for (const profile of [adminProfile, userProfile, null]) {
+      const sidebarNavigation = navigation.getMeuDiaNavigationForProfile(profile)
+      const sidebarHrefs = [
+        ...sidebarNavigation.primaryItems.map((item) => item.href),
+        ...sidebarNavigation.accordionSections.flatMap((section) => section.children.map((item) => item.href)),
+        ...sidebarNavigation.settingsSections.flatMap((section) => section.children.map((item) => item.href)),
+      ]
 
-    expect(navigation.getMeuDiaNavigationForProfile(userProfile).settingsSections[0].children.map((item) => item.href)).toEqual([
-      "/settings",
-    ])
+      expect(sidebarHrefs).not.toContain("/framework-admin")
+      expect(sidebarNavigation.settingsSections[0].children.map((item) => item.href)).toEqual(["/settings"])
+    }
+  })
 
-    expect(navigation.getMeuDiaNavigationForProfile(null).settingsSections[0].children.map((item) => item.href)).toEqual([
-      "/settings",
-    ])
+  it("keeps framework-admin available only in the floating command menu for admins", async () => {
+    const commandMenu = await import("@/components/app-shell/command-menu")
+
+    const adminCommandHrefs = commandMenu.getCommandMenuForProfile(adminProfile).flatMap((group) =>
+      group.items.map((item) => item.href),
+    )
+    const userCommandHrefs = commandMenu.getCommandMenuForProfile(userProfile).flatMap((group) =>
+      group.items.map((item) => item.href),
+    )
+    const anonymousCommandHrefs = commandMenu.getCommandMenuForProfile(null).flatMap((group) =>
+      group.items.map((item) => item.href),
+    )
+
+    expect(adminCommandHrefs).toContain("/framework-admin")
+    expect(userCommandHrefs).not.toContain("/framework-admin")
+    expect(anonymousCommandHrefs).not.toContain("/framework-admin")
   })
 })

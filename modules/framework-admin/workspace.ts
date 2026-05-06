@@ -26,6 +26,17 @@ export type FrameworkAdminAxis = {
   questions: FrameworkAdminDiagnosticQuestion[]
 }
 
+export type FrameworkAdminModule = {
+  id: string
+  title: string
+  description: string
+  status: "live" | "planned" | "needs-data"
+  owner: string
+  primaryAction: string
+  href: string
+  capabilities: string[]
+}
+
 export type FrameworkAdminWorkspace = {
   generatedAt: string
   kpis: {
@@ -39,6 +50,7 @@ export type FrameworkAdminWorkspace = {
   }
   axes: FrameworkAdminAxis[]
   recentUsers: Pick<AppUserProfile, "userId" | "email" | "fullName" | "role" | "onboarded" | "updatedAt">[]
+  adminModules: FrameworkAdminModule[]
 }
 
 type DiagnosticQuestionRow = {
@@ -89,6 +101,109 @@ const AREA_META: Record<DiagnosticArea, { label: string; summary: string }> = {
     summary: "Direção, identidade, significado e alinhamento de longo prazo.",
   },
 }
+
+export const frameworkAdminModules: FrameworkAdminModule[] = [
+  {
+    id: "users-access",
+    title: "Usuários, roles e acesso",
+    description: "Governança de contas, admins, onboarding, bloqueios e visibilidade por papel.",
+    status: "live",
+    owner: "Core SaaS",
+    primaryAction: "Auditar usuários",
+    href: "#users-access",
+    capabilities: ["Promover/rebaixar admin", "Revisar onboarding", "Segmentar contas"],
+  },
+  {
+    id: "diagnostic-framework",
+    title: "Framework diagnóstico",
+    description: "Controle das áreas, perguntas, ativação e ordem do diagnóstico NexxaLife.",
+    status: "live",
+    owner: "Produto",
+    primaryAction: "Revisar perguntas",
+    href: "#diagnostic-framework",
+    capabilities: ["Ativar/desativar perguntas", "Reordenar matriz", "Medir cobertura por área"],
+  },
+  {
+    id: "plans-billing",
+    title: "Planos, billing e limites",
+    description: "Preparado para planos, assinaturas, quotas, trials, upgrades e feature gates pagos.",
+    status: "planned",
+    owner: "Revenue",
+    primaryAction: "Configurar planos",
+    href: "#plans-billing",
+    capabilities: ["Catálogo de planos", "Limites por assinatura", "Histórico de cobrança"],
+  },
+  {
+    id: "feature-flags",
+    title: "Feature flags e releases",
+    description: "Ative módulos por ambiente, turma, plano ou usuário sem deploy emergencial.",
+    status: "planned",
+    owner: "Engineering",
+    primaryAction: "Criar flag",
+    href: "#feature-flags",
+    capabilities: ["Rollout gradual", "Kill switch", "A/B por segmento"],
+  },
+  {
+    id: "ai-prompts",
+    title: "IA, prompts e guardrails",
+    description: "Workspace para prompts do AI Studio, políticas, modelos, custos e qualidade das respostas.",
+    status: "planned",
+    owner: "AI Ops",
+    primaryAction: "Mapear prompts",
+    href: "#ai-prompts",
+    capabilities: ["Versionar prompts", "Definir guardrails", "Monitorar custo/token"],
+  },
+  {
+    id: "integrations-webhooks",
+    title: "Integrações e webhooks",
+    description: "Configuração central para Supabase, automações, apps externos e webhooks operacionais.",
+    status: "planned",
+    owner: "Ops",
+    primaryAction: "Conectar serviço",
+    href: "#integrations-webhooks",
+    capabilities: ["Webhooks", "Chaves mascaradas", "Retry e logs"],
+  },
+  {
+    id: "analytics-logs",
+    title: "Analytics, logs e auditoria",
+    description: "Eventos críticos, trilhas de auditoria, saúde de jobs e métricas do funil SaaS.",
+    status: "planned",
+    owner: "Data",
+    primaryAction: "Ver auditoria",
+    href: "#analytics-logs",
+    capabilities: ["Eventos admin", "Funil onboarding", "Alertas de erro"],
+  },
+  {
+    id: "security-compliance",
+    title: "Segurança e compliance",
+    description: "Políticas de acesso, LGPD, sessões, permissões sensíveis e revisões de segurança.",
+    status: "planned",
+    owner: "Security",
+    primaryAction: "Revisar políticas",
+    href: "#security-compliance",
+    capabilities: ["Revisão de admins", "Export LGPD", "Sessões suspeitas"],
+  },
+  {
+    id: "branding-content",
+    title: "Branding e conteúdo",
+    description: "Controle de textos, banners, ofertas, marketplace, academia e comunicações do produto.",
+    status: "planned",
+    owner: "Growth",
+    primaryAction: "Editar conteúdo",
+    href: "#branding-content",
+    capabilities: ["Hero e banners", "Templates de e-mail", "Conteúdo por plano"],
+  },
+  {
+    id: "automations-lifecycle",
+    title: "Automações e lifecycle",
+    description: "Jornadas de ativação, nudges, tarefas recorrentes, retenção e recuperação de usuários.",
+    status: "planned",
+    owner: "Lifecycle",
+    primaryAction: "Desenhar jornada",
+    href: "#automations-lifecycle",
+    capabilities: ["Triggers", "Sequências", "Reengajamento"],
+  },
+]
 
 function toIso(value: string | Date) {
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString()
@@ -174,6 +289,7 @@ export function buildFrameworkAdminWorkspace(input: {
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 8)
       .map(({ userId, email, fullName, role, onboarded, updatedAt }) => ({ userId, email, fullName, role, onboarded, updatedAt })),
+    adminModules: frameworkAdminModules,
   }
 }
 

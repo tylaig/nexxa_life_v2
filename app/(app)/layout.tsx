@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <DiagnosticBlocker onboarded={onboarded} step={step}>
           {children}
         </DiagnosticBlocker>
-        <CommandMenu />
+        <CommandMenu profile={auth?.profile ?? null} />
       </SidebarInset>
     </SidebarProvider>
   )
