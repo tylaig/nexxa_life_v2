@@ -24,21 +24,24 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const router = useRouter()
   const isPlanningMode = step !== "complete" // Show planning mode if not fully onboarded
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
+  const [inputValue, setInputValue] = React.useState("")
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, setInput, append } = useChat({
+  const { messages, sendMessage, status, setMessages } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
   })
 
+  const isLoading = status === "submitted" || status === "streaming"
+
   // Auto-trigger first AI message
   React.useEffect(() => {
     if (isPlanningMode && (messages || []).length === 0 && !isLoading) {
-      append({
-        role: "user",
-        content: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
+      sendMessage({
+        text: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
       })
     }
-  }, [isPlanningMode, messages, isLoading, append])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlanningMode])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -46,9 +49,9 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
   function submitMessage(e?: React.FormEvent) {
     if (e) e.preventDefault()
-    if (!input?.trim() || isLoading) return
-    append({ role: "user", content: input })
-    setInput("")
+    if (!inputValue?.trim() || isLoading) return
+    sendMessage({ text: inputValue })
+    setInputValue("")
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -58,18 +61,47 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     }
   }
 
-  // Find the last tool invocation to display in the right panel
-  const lastMessageWithTool = [...(messages || [])].reverse().find(m => m.toolInvocations && m.toolInvocations.length > 0)
-  const lastToolInvocations = lastMessageWithTool?.toolInvocations || []
+  // Aggregate all tool invocations across all messages for the timeline
+  const timelineEvents = React.useMemo(() => {
+    const events: any[] = []
+    
+    // Add initial context if available
+    if (diagnosticData) {
+      events.push({
+        type: 'diagnostic',
+        id: 'diag-init',
+        data: diagnosticData,
+        timestamp: new Date().toISOString()
+      })
+    }
 
-  // If we have diagnosticData but no active tools, we can show the radar chart
-  const showDiagnosticChart = diagnosticData && lastToolInvocations.length === 0
+    // Add tool invocations
+    messages.forEach(m => {
+      if (m.toolInvocations) {
+        m.toolInvocations.forEach(inv => {
+          events.push({
+            type: 'tool',
+            id: inv.toolCallId,
+            inv: inv,
+            messageId: m.id
+          })
+        })
+      }
+    })
+
+    return events
+  }, [messages, diagnosticData])
+
+  const [isPanelOpen, setIsPanelOpen] = React.useState(true)
 
   return (
-    <div className="flex h-[calc(100vh-16px)] m-2 rounded-3xl overflow-hidden border border-border/50 bg-background shadow-2xl">
+    <div className="flex h-[calc(100vh-16px)] m-2 rounded-3xl overflow-hidden border border-border/50 bg-background shadow-2xl relative">
       
       {/* LEFT COLUMN: CHAT INTERFACE */}
-      <div className="flex flex-col w-full lg:w-3/5 border-r border-border/50 relative bg-muted/5">
+      <div className={cn(
+        "flex flex-col h-full border-border/50 relative bg-muted/5 transition-all duration-300",
+        isPanelOpen ? "w-full lg:w-[60%] border-r" : "w-full"
+      )}>
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/40 bg-background/80 backdrop-blur-md px-6 py-4 absolute top-0 w-full z-10">
@@ -86,40 +118,56 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
               </p>
             </div>
           </div>
-          {isPlanningMode && (
+          <div className="flex items-center gap-3">
+            {isPlanningMode && (
+              <Button
+                variant="default"
+                size="sm"
+                className="rounded-xl px-4 h-9 shadow-md"
+                onClick={async () => {
+                  await markUserOnboarded()
+                  router.push("/dashboard")
+                }}
+              >
+                Finalizar Plano <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            )}
+            {/* Panel Toggle Button (visible on lg screens) */}
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
-              className="rounded-xl px-4 h-9 shadow-md"
-              onClick={async () => {
-                await markUserOnboarded()
-                router.push("/dashboard")
-              }}
+              onClick={() => setIsPanelOpen(!isPanelOpen)}
+              className="hidden lg:flex rounded-xl h-9 px-3 text-muted-foreground hover:text-foreground"
             >
-              Finalizar Plano <ChevronRight className="h-4 w-4 ml-1" />
+              <Network className="h-4 w-4 mr-2" />
+              {isPanelOpen ? "Ocultar Insights" : "Ver Insights"}
             </Button>
-          )}
+          </div>
         </div>
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar">
-          {(messages || []).map((m: any) => (
-            <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
-              {m.role !== "user" && (
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-1 flex-none border border-primary/20">
-                  <Bot className="h-4 w-4 text-primary" />
+          {(messages || []).map((m: any) => {
+            const text = getMessageText(m)
+            if (!text && m.role === "user") return null
+            return (
+              <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
+                {m.role !== "user" && (
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-1 flex-none border border-primary/20">
+                    <Bot className="h-4 w-4 text-primary" />
+                  </div>
+                )}
+                <div className={cn(
+                  "max-w-[80%] rounded-2xl px-5 py-4 text-[15px] leading-relaxed shadow-sm",
+                  m.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-tr-sm"
+                    : "bg-background border border-border/50 text-foreground rounded-tl-sm"
+                )}>
+                  {text && <div className="whitespace-pre-wrap">{text}</div>}
                 </div>
-              )}
-              <div className={cn(
-                "max-w-[80%] rounded-2xl px-5 py-4 text-[15px] leading-relaxed shadow-sm",
-                m.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-tr-sm"
-                  : "bg-background border border-border/50 text-foreground rounded-tl-sm"
-              )}>
-                {m.content && <div className="whitespace-pre-wrap">{m.content}</div>}
               </div>
-            </div>
-          ))}
+            )
+          })}
           
           {isLoading && (
             <div className="flex w-full justify-start animate-in fade-in duration-300">
@@ -138,11 +186,11 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-background border-t border-border/50">
+        <div className="p-4 bg-background border-t border-border/50 relative">
           <form onSubmit={submitMessage} className="relative max-w-4xl mx-auto flex items-end gap-2">
             <textarea
-              value={input}
-              onChange={handleInputChange}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="O que vamos construir hoje?"
               rows={1}
@@ -158,7 +206,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
             <Button
               type="submit"
               size="icon"
-              disabled={isLoading || !input?.trim?.()}
+              disabled={isLoading || !inputValue?.trim?.()}
               className="absolute right-2 bottom-2 h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-md hover:scale-105 transition-transform"
             >
               <Send className="h-4 w-4" />
@@ -171,102 +219,126 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
       </div>
 
-      {/* RIGHT COLUMN: DYNAMIC CONTEXT PANEL */}
-      <div className="hidden lg:flex w-2/5 flex-col bg-background relative overflow-hidden">
+      {/* RIGHT COLUMN: INSIGHTS PANEL (TIMELINE) */}
+      <div className={cn(
+        "hidden lg:flex flex-col bg-background relative overflow-hidden transition-all duration-300 ease-in-out border-l border-transparent",
+        isPanelOpen ? "w-[40%] translate-x-0" : "w-0 translate-x-full border-none opacity-0"
+      )}>
         {/* Subtle background glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="flex-1 overflow-y-auto p-8 z-10 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-8 z-10 custom-scrollbar relative">
           
-          <div className="flex items-center gap-2 mb-8 opacity-50">
-            <Network className="h-4 w-4" />
-            <span className="text-xs font-bold uppercase tracking-widest">Painel de Contexto</span>
+          <div className="sticky top-0 bg-background/90 backdrop-blur-sm pb-4 mb-6 z-20 border-b border-border/40">
+            <div className="flex items-center gap-2 opacity-70 text-primary">
+              <Activity className="h-4 w-4" />
+              <span className="text-xs font-bold uppercase tracking-widest">Painel de Insights</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Timeline de coleta de dados e ações da IA</p>
           </div>
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-[60vh] space-y-6 text-muted-foreground animate-in fade-in duration-1000">
-              <div className="relative flex items-center justify-center h-24 w-24">
-                <div className="absolute inset-0 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
-                <Activity className="h-8 w-8 text-primary animate-pulse" />
+          <div className="relative pl-4 border-l-2 border-muted">
+            {timelineEvents.length === 0 ? (
+              <div className="py-10 text-center opacity-60 ml-[-16px]">
+                <Sparkles className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+                <p className="text-sm font-medium">Nenhum insight coletado ainda.</p>
               </div>
-              <p className="text-sm font-medium tracking-wide">Sincronizando estratégias...</p>
-            </div>
-          ) : lastToolInvocations.length > 0 ? (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
-              <h3 className="text-lg font-bold text-foreground">Ações Recentes da IA</h3>
-              <div className="space-y-4">
-                {lastToolInvocations.map((inv: any) => {
-                  const meta = TOOL_META[inv.toolName] || { icon: Sparkles, label: inv.toolName, color: "text-primary", desc: "Ação do sistema" }
-                  const Icon = meta.icon
-                  const isDone = inv.state === "result"
+            ) : (
+              <div className="space-y-8">
+                {timelineEvents.map((item, index) => {
                   
-                  return (
-                    <div key={inv.toolCallId} className={cn(
-                      "p-5 rounded-2xl border transition-all duration-500 relative overflow-hidden",
-                      isDone ? "bg-background border-border/80 shadow-md" : "bg-muted/30 border-dashed border-border/50 opacity-70"
-                    )}>
-                      {isDone && <div className={cn("absolute left-0 top-0 bottom-0 w-1", meta.color.replace("text-", "bg-"))} />}
-                      
-                      <div className="flex items-start gap-4">
-                        <div className={cn("p-2.5 rounded-xl flex-none", isDone ? cn(meta.color.replace("text-", "bg-").replace("500", "500/10"), meta.color) : "bg-muted text-muted-foreground")}>
-                          {isDone ? <Icon className="h-5 w-5" /> : <Loader2 className="h-5 w-5 animate-spin" />}
-                        </div>
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <p className="text-sm font-bold text-foreground">{meta.label}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{meta.desc}</p>
-                          
-                          {/* Render preview of arguments if available */}
-                          {inv.args && typeof inv.args === "object" && (
-                            <div className="mt-3 p-3 rounded-lg bg-muted/40 text-xs font-mono text-muted-foreground overflow-x-auto">
-                              {Object.entries(inv.args).map(([k, v]) => (
-                                <div key={k} className="flex gap-2">
-                                  <span className="opacity-60">{k}:</span>
-                                  <span className="truncate text-foreground/80">{String(v)}</span>
-                                </div>
-                              ))}
+                  if (item.type === 'diagnostic') {
+                    return (
+                      <div key={item.id} className="relative animate-in slide-in-from-right-4 duration-500">
+                        {/* Timeline dot */}
+                        <div className="absolute -left-[25px] top-4 h-4 w-4 rounded-full bg-primary/20 border-2 border-primary ring-4 ring-background" />
+                        
+                        <div className="p-5 rounded-2xl border bg-muted/5 shadow-sm space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                              <Network className="h-4 w-4" />
                             </div>
-                          )}
+                            <div>
+                              <h4 className="text-sm font-bold text-foreground">Diagnóstico Inicial</h4>
+                              <p className="text-xs text-muted-foreground">Contexto basal capturado</p>
+                            </div>
+                          </div>
+                          <div className="pt-2">
+                            <AreaRadarChart
+                              scores={{
+                                mind: item.data?.scores?.mind ?? 5,
+                                health: item.data?.scores?.health ?? 5,
+                                wealth: item.data?.scores?.wealth ?? 5,
+                                relationships: item.data?.scores?.relationships ?? 5,
+                                spirituality: item.data?.scores?.spirituality ?? 5,
+                                productivity: item.data?.scores?.productivity ?? 5
+                              }}
+                              className="mx-auto"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
+                    )
+                  }
+
+                  if (item.type === 'tool') {
+                    const inv = item.inv
+                    const meta = TOOL_META[inv.toolName] || { icon: Sparkles, label: inv.toolName, color: "text-primary", desc: "Ação do sistema" }
+                    const Icon = meta.icon
+                    const isDone = inv.state === "result"
+
+                    return (
+                      <div key={item.id} className="relative animate-in slide-in-from-right-4 duration-500">
+                        {/* Timeline dot */}
+                        <div className={cn(
+                          "absolute -left-[25px] top-4 h-4 w-4 rounded-full ring-4 ring-background border-2",
+                          isDone ? cn(meta.color.replace("text-", "bg-"), "border-background") : "bg-muted border-muted-foreground animate-pulse"
+                        )} />
+
+                        <div className={cn(
+                          "p-4 rounded-2xl border transition-all duration-500 relative overflow-hidden",
+                          isDone ? "bg-background border-border/80 shadow-sm" : "bg-muted/30 border-dashed border-border/50 opacity-70"
+                        )}>
+                          <div className="flex items-start gap-3">
+                            <div className={cn("p-2 rounded-xl flex-none", isDone ? cn(meta.color.replace("text-", "bg-").replace("500", "500/10"), meta.color) : "bg-muted text-muted-foreground")}>
+                              {isDone ? <Icon className="h-4 w-4" /> : <Loader2 className="h-4 w-4 animate-spin" />}
+                            </div>
+                            <div className="flex-1 min-w-0 pt-0.5">
+                              <p className="text-sm font-bold text-foreground">{meta.label}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{meta.desc}</p>
+                              
+                              {/* Preview args as collected insights */}
+                              {inv.args && typeof inv.args === "object" && (
+                                <div className="mt-3 grid grid-cols-1 gap-1.5 p-3 rounded-xl bg-muted/40 text-xs text-muted-foreground">
+                                  {Object.entries(inv.args).map(([k, v]) => (
+                                    <div key={k} className="flex gap-2 items-start">
+                                      <span className="font-medium text-foreground/60 w-20 shrink-0 capitalize">{k}:</span>
+                                      <span className="text-foreground/90">{String(v)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  return null
                 })}
               </div>
-            </div>
-          ) : showDiagnosticChart ? (
-            <div className="space-y-8 animate-in fade-in duration-1000">
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold text-foreground">Sua Roda da Vida</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  A IA está utilizando esses dados em tempo real para calibrar o seu planejamento estratégico.
-                </p>
-              </div>
-              <div className="rounded-3xl bg-muted/5 border border-border/50 p-6 shadow-inner">
-                <AreaRadarChart
-                  scores={{
-                    mind: diagnosticData?.scores?.mind ?? 5,
-                    health: diagnosticData?.scores?.health ?? 5,
-                    wealth: diagnosticData?.scores?.wealth ?? 5,
-                    relationships: diagnosticData?.scores?.relationships ?? 5,
-                    spirituality: diagnosticData?.scores?.spirituality ?? 5,
-                    productivity: diagnosticData?.scores?.productivity ?? 5
-                  }}
-                  className="mx-auto"
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-[60vh] space-y-4 text-center opacity-60">
-              <Sparkles className="h-12 w-12 text-muted-foreground/50" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">AI Studio Standby</p>
-                <p className="text-xs text-muted-foreground max-w-[200px]">
-                  As ações executadas pela IA aparecerão aqui em tempo real.
-                </p>
-              </div>
+            )}
+          </div>
+          
+          {isLoading && (
+            <div className="flex items-center gap-3 mt-6 pl-4 animate-in fade-in duration-500 opacity-60">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <span className="text-xs font-medium text-muted-foreground">Coletando novos insights...</span>
             </div>
           )}
+
         </div>
       </div>
 

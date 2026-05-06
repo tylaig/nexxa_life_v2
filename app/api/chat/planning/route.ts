@@ -18,11 +18,14 @@ import {
 const customOpenAI = createOpenAI({
   baseURL: process.env.AI_GATEWAY_BASE_URL || "https://proxy.ia.meusuper.app/v1",
   apiKey: process.env.AI_GATEWAY_API_KEY || "API-123456",
+  compatibility: "compatible",
 })
 
 export async function POST(req: Request) {
   try {
-    const { messages, diagnosticData } = await req.json()
+    const { messages: uiMessages, diagnosticData } = await req.json()
+    const { convertToModelMessages } = await import("ai")
+    const messages = await convertToModelMessages(uiMessages || [])
 
     const diagnosticContext = diagnosticData
       ? `
@@ -72,9 +75,9 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
           description: "Cria uma nova meta estratégica para o usuário. Use após discutir objetivos.",
           parameters: z.object({
             title: z.string().describe("Título da meta (claro e inspirador)"),
-            description: z.string().optional().describe("Descrição detalhada da meta"),
-            category: z.string().optional().describe("Categoria (Saúde, Mente, Produtividade, Finanças, Relações, Propósito)"),
-          }),
+            description: z.string().describe("Descrição detalhada da meta"),
+            category: z.string().describe("Categoria (Saúde, Mente, Produtividade, Finanças, Relações, Propósito)"),
+          }).strict(),
           execute: async (params) => {
             await addGoal(params)
             return { success: true, message: `Meta "${params.title}" criada com sucesso` }
@@ -84,9 +87,9 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
           description: "Adiciona uma tarefa concreta ao checklist semanal do usuário.",
           parameters: z.object({
             label: z.string().describe("Descrição da tarefa (ação concreta)"),
-            priority: z.enum(["high", "medium", "low"]).optional().describe("Prioridade"),
-            category: z.string().optional().describe("Categoria"),
-            date: z.string().optional().describe("Data YYYY-MM-DD (padrão: hoje)"),
+            priority: z.enum(["high", "medium", "low"]).describe("Prioridade"),
+            category: z.string().describe("Categoria"),
+            date: z.string().describe("Data YYYY-MM-DD (padrão: hoje)"),
           }),
           execute: async (params) => {
             await addChecklistItem(params)
@@ -100,7 +103,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
             date: z.string().describe("Data YYYY-MM-DD"),
             startTime: z.string().describe("Hora início HH:MM"),
             endTime: z.string().describe("Hora término HH:MM"),
-            type: z.enum(["focus", "meeting", "personal", "health"]).optional().describe("Tipo"),
+            type: z.enum(["focus", "meeting", "personal", "health"]).describe("Tipo"),
           }),
           execute: async (params) => {
             await addAgendaEvent(params)
@@ -111,7 +114,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
           description: "Salva uma reflexão ou nota no diário do usuário.",
           parameters: z.object({
             content: z.string().describe("Conteúdo da reflexão"),
-            mood: z.enum(["great", "good", "neutral", "bad", "awful"]).optional(),
+            mood: z.enum(["great", "good", "neutral", "bad", "awful"]).describe("Humor (opcional)"),
           }),
           execute: async (params) => {
             await addJournalEntry(params)
@@ -120,46 +123,40 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         getGoals: tool({
           description: "Consulta as metas já criadas do usuário.",
-          parameters: z.object({}),
+          parameters: z.object({ query: z.string().describe("deixe vazio") }),
           execute: async () => await getGoals(),
         }),
         getChecklist: tool({
           description: "Consulta o checklist do dia.",
-          parameters: z.object({ date: z.string().optional() }),
-          execute: async ({ date }) => await getChecklist(date),
+          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (deixe vazio para hoje)") }),
+          execute: async ({ date }) => await getChecklist(date === "deixe vazio" ? undefined : date),
         }),
         getAgenda: tool({
           description: "Consulta a agenda do dia.",
-          parameters: z.object({ date: z.string().optional() }),
-          execute: async ({ date }) => await getAgenda(date),
+          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (deixe vazio para hoje)") }),
+          execute: async ({ date }) => await getAgenda(date === "deixe vazio" ? undefined : date),
         }),
       },
     })
 
-    return result.toTextStreamResponse ? result.toTextStreamResponse() : result.toDataStreamResponse()
+    return result.toUIMessageStreamResponse()
   } catch (error) {
     console.error("[Planning Chat Error]:", error)
     
-    // Fallback Mock Stream for UI testing when AI Gateway is down
     const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Vi que o seu diagnóstico mostrou algumas oportunidades incríveis nas áreas prioritárias. O que você acha de focarmos em melhorar a consistência da sua rotina na próxima semana? Me conte o que tem em mente!"
     
-    const stream = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder()
-        const chunks = mockResponse.split(" ")
-        for (const chunk of chunks) {
-          controller.enqueue(encoder.encode(`0:"${chunk} "\n`))
-          await new Promise(r => setTimeout(r, 50))
-        }
-        controller.close()
-      }
-    })
-
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'x-vercel-ai-data-stream': 'v1'
-      }
+    const { createUIMessageStreamResponse, createUIMessageStream } = await import("ai")
+    
+    return createUIMessageStreamResponse({
+      stream: createUIMessageStream({
+        execute: async ({ writer }) => {
+          const words = mockResponse.split(" ")
+          for (const word of words) {
+            writer.write({ type: "text", text: word + " " })
+            await new Promise(r => setTimeout(r, 50))
+          }
+        },
+      }),
     })
   }
 }
