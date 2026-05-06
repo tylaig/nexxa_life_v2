@@ -1,168 +1,224 @@
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+"use client"
 
-import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
-import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
-import {
-  checklistFocusCard,
-  checklistHero,
-  checklistPeriods,
-  checklistSummaryCards,
-} from "@/components/meu-dia/checklist-content"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react"
+import { CheckSquare, Plus, Flame, Filter } from "lucide-react"
+import { PageHeader } from "@/components/ui/page-header"
+import { SectionCard } from "@/components/ui/section-card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
 
-export function NexxaLifeChecklistView() {
-  const focusTask = checklistFocusCard.task
-  const FocusIcon = focusTask.icon
+type Priority = "high" | "medium" | "low"
+type ChecklistItem = { id: string; label: string; done: boolean; priority: Priority; category: string; recurrent: boolean }
+
+const INITIAL_ITEMS: ChecklistItem[] = [
+  { id: "1", label: "Revisão das metas semanais", done: true, priority: "high", category: "Planejamento", recurrent: false },
+  { id: "2", label: "Sessão de planejamento profundo 30min", done: false, priority: "high", category: "Planejamento", recurrent: true },
+  { id: "3", label: "Leitura — 20 páginas do livro atual", done: false, priority: "medium", category: "Crescimento", recurrent: true },
+  { id: "4", label: "Exercício físico", done: false, priority: "medium", category: "Saúde", recurrent: true },
+  { id: "5", label: "Meditação noturna", done: false, priority: "low", category: "Saúde", recurrent: true },
+  { id: "6", label: "Responder e-mails prioritários", done: true, priority: "medium", category: "Trabalho", recurrent: false },
+  { id: "7", label: "Revisar código do módulo de auth", done: false, priority: "high", category: "Trabalho", recurrent: false },
+]
+
+const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; dot: string }> = {
+  high: { label: "Alta", color: "text-red-500", dot: "bg-red-400" },
+  medium: { label: "Média", color: "text-amber-500", dot: "bg-amber-400" },
+  low: { label: "Baixa", color: "text-muted-foreground", dot: "bg-muted-foreground/40" },
+}
+
+function ChecklistItemRow({
+  item,
+  onToggle,
+}: {
+  item: ChecklistItem
+  onToggle: (id: string) => void
+}) {
+  const priority = PRIORITY_CONFIG[item.priority]
 
   return (
-    <PageContainer>
-      <AppBreadcrumbs items={[{ label: "NexxaLife", href: "/dashboard" }, { label: "Checklist" }]} />
+    <li className={cn(
+      "group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/40",
+      item.done ? "opacity-60" : ""
+    )}>
+      <button
+        onClick={() => onToggle(item.id)}
+        aria-label={item.done ? "Desmarcar tarefa" : "Marcar como concluída"}
+        className={cn(
+          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+          item.done
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-border hover:border-primary/60"
+        )}
+      >
+        {item.done ? <span className="text-[10px] font-bold">✓</span> : null}
+      </button>
+
+      <span className={cn(
+        "flex-1 text-sm leading-snug",
+        item.done ? "text-muted-foreground line-through" : "text-foreground"
+      )}>
+        {item.label}
+      </span>
+
+      <div className="flex shrink-0 items-center gap-2">
+        {item.recurrent ? (
+          <span className="text-[10px] text-muted-foreground/60">↻</span>
+        ) : null}
+        <span className={cn("h-2 w-2 rounded-full", priority.dot)} title={priority.label} />
+      </div>
+    </li>
+  )
+}
+
+function GroupSection({
+  title,
+  items,
+  onToggle,
+}: {
+  title: string
+  items: ChecklistItem[]
+  onToggle: (id: string) => void
+}) {
+  if (items.length === 0) return null
+  const done = items.filter((i) => i.done).length
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between px-3 pb-1">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
+        <span className="text-[11px] text-muted-foreground tabular-nums">{done}/{items.length}</span>
+      </div>
+      <ul className="space-y-0.5">
+        {items.map((item) => (
+          <ChecklistItemRow key={item.id} item={item} onToggle={onToggle} />
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+export function NexxaLifeChecklistView() {
+  const [items, setItems] = useState<ChecklistItem[]>(INITIAL_ITEMS)
+  const [newLabel, setNewLabel] = useState("")
+  const [filter, setFilter] = useState<"all" | Priority>("all")
+
+  const toggle = (id: string) =>
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, done: !i.done } : i)))
+
+  const addItem = () => {
+    if (!newLabel.trim()) return
+    setItems((prev) => [
+      ...prev,
+      { id: Date.now().toString(), label: newLabel.trim(), done: false, priority: "medium", category: "Geral", recurrent: false },
+    ])
+    setNewLabel("")
+  }
+
+  const filtered = filter === "all" ? items : items.filter((i) => i.priority === filter)
+
+  const done = items.filter((i) => i.done).length
+  const total = items.length
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+
+  const high = filtered.filter((i) => i.priority === "high")
+  const medium = filtered.filter((i) => i.priority === "medium")
+  const low = filtered.filter((i) => i.priority === "low")
+
+  const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
+
+  return (
+    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
-        title={checklistHero.title}
-        description={checklistHero.description}
+        eyebrow="Hoje"
+        title="Checklist"
+        description={`${today} — ${done} de ${total} tarefas concluídas`}
+        badge={
+          <Badge variant="secondary" className="gap-1 rounded-full px-2.5 py-0.5 text-xs">
+            <Flame className="h-3 w-3 text-amber-500" />
+            12 dias
+          </Badge>
+        }
         actions={
-          <>
-            <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-              {checklistHero.kicker}
-            </Badge>
-            <Button asChild size="sm" className="rounded-lg">
-              <Link href="/goals">Ver metas conectadas</Link>
-            </Button>
-          </>
+          <Button size="sm" className="h-8 gap-1.5 rounded-xl px-3 text-xs">
+            <Plus className="h-3.5 w-3.5" /> Nova tarefa
+          </Button>
         }
       />
 
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="overflow-hidden border-border/80 bg-gradient-to-br from-card via-card to-primary/5">
-          <CardContent className="space-y-6 p-6 md:p-7">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="max-w-2xl space-y-3">
-                <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-                  Execução do dia
-                </Badge>
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-                    Destaque a tarefa foco e distribua energia por período com menos dispersão.
-                  </h2>
-                  <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
-                    O checklist atual organiza a execução por manhã, tarde e noite para tornar visível o que já avançou,
-                    o que ainda depende de energia e qual tarefa deve puxar o resto do dia.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Tarefa foco</div>
-                  <div className="mt-2 text-sm font-semibold text-foreground">{focusTask.title}</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    {focusTask.period} · {focusTask.targetTime} · {focusTask.linkedGoal}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próxima intenção</div>
-                  <div className="mt-2 text-sm font-semibold text-foreground">Proteger o bloco profundo antes de abrir novas frentes</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    A página prioriza clareza operacional: menos troca de contexto e mais avanço visível por período.
-                  </p>
-                </div>
-              </div>
+      {/* Progresso geral */}
+      <SectionCard noPadding className="overflow-hidden">
+        <div className="flex items-center gap-6 px-5 py-4">
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">Progresso do dia</span>
+              <span className="text-sm font-bold tabular-nums text-primary">{pct}%</span>
             </div>
+            <Progress value={pct} className="h-2" />
+          </div>
+        </div>
+      </SectionCard>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              {checklistSummaryCards.map((card) => (
-                <StatCard key={card.label} label={card.label} value={card.value} hint={card.hint} icon={card.icon} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>{checklistFocusCard.title}</CardTitle>
-            <CardDescription>{checklistFocusCard.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-2xl border border-border bg-background/70 p-4">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <FocusIcon className="h-5 w-5" />
-              </div>
-              <h3 className="text-base font-semibold text-foreground">{focusTask.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{focusTask.guidance}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant="outline">{focusTask.period}</Badge>
-                <Badge variant="outline">{focusTask.targetTime}</Badge>
-                <Badge variant="outline">{focusTask.linkedGoal}</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 xl:grid-cols-3">
-        {checklistPeriods.map((period) => {
-          const PeriodIcon = period.icon
-          return (
-            <Card key={period.key} className="border-border/80">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-xl bg-primary/10 p-2 text-primary">
-                      <PeriodIcon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <CardTitle>{period.label}</CardTitle>
-                      <CardDescription>{period.tasks.length} tarefa(s) mapeadas para este período.</CardDescription>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="rounded-full">{period.progress}%</Badge>
-                </div>
-                <div className="mt-4 h-2 rounded-full bg-muted/80">
-                  <div className="h-2 rounded-full bg-primary" style={{ width: `${period.progress}%` }} />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {period.tasks.map((task) => {
-                  const isFocusTask = task.title === focusTask.title
-                  return (
-                    <div
-                      key={`${period.key}-${task.title}`}
-                      className={isFocusTask
-                        ? "rounded-2xl border border-primary/30 bg-primary/5 p-4"
-                        : "rounded-2xl border border-border bg-background/60 p-4"}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-sm font-semibold text-foreground">{task.title}</h3>
-                            {isFocusTask ? <Badge className="rounded-full">Foco</Badge> : null}
-                          </div>
-                          <p className="mt-1 text-xs text-muted-foreground">{task.linkedGoal}</p>
-                        </div>
-                        <Badge variant={task.completed ? "default" : "outline"}>
-                          {task.completed ? "Concluída" : task.targetTime}
-                        </Badge>
-                      </div>
-                    </div>
-                  )
-                })}
-              </CardContent>
-            </Card>
-          )
-        })}
-      </section>
-
-      <div className="mt-6 flex justify-end">
-        <Button asChild variant="link" className="px-0">
-          <Link href="/agenda">
-            Avançar para agenda
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
+      {/* Filtros de prioridade */}
+      <div className="flex items-center gap-2">
+        <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+        {(["all", "high", "medium", "low"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              filter === f
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/60 text-muted-foreground hover:bg-muted"
+            )}
+          >
+            {f === "all" ? "Todas" : PRIORITY_CONFIG[f].label}
+          </button>
+        ))}
       </div>
-    </PageContainer>
+
+      {/* Listas agrupadas */}
+      <SectionCard noPadding>
+        <div className="divide-y divide-border/50">
+          <div className="space-y-4 p-4">
+            {filtered.length === 0 ? (
+              <EmptyState
+                icon={CheckSquare}
+                title="Nenhuma tarefa nesta categoria"
+                description="Adicione uma nova tarefa abaixo."
+                className="border-0 bg-transparent py-8"
+              />
+            ) : (
+              <>
+                <GroupSection title="Alta prioridade" items={high} onToggle={toggle} />
+                <GroupSection title="Média prioridade" items={medium} onToggle={toggle} />
+                <GroupSection title="Baixa prioridade" items={low} onToggle={toggle} />
+              </>
+            )}
+          </div>
+
+          {/* Adicionar item inline */}
+          <div className="flex items-center gap-2 px-4 py-3">
+            <div className="h-5 w-5 shrink-0 rounded-full border-2 border-dashed border-border" />
+            <input
+              type="text"
+              placeholder="Adicionar tarefa..."
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addItem()}
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+            />
+            {newLabel.trim() ? (
+              <Button size="sm" onClick={addItem} className="h-7 rounded-lg px-3 text-xs">
+                Adicionar
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </SectionCard>
+    </div>
   )
 }

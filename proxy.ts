@@ -1,28 +1,90 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
+import { createServerClient } from "@supabase/ssr"
 
-const protectedPrefixes = ["/dashboard", "/diagnostic", "/checklist", "/agenda", "/goals", "/journal", "/reports", "/framework-admin", "/apps"]
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/diagnostic",
+  "/checklist",
+  "/agenda",
+  "/goals",
+  "/journal",
+  "/reports",
+  "/framework-admin",
+  "/apps",
+  "/analytics",
+  "/ai-studio",
+  "/knowledge",
+  "/inbox",
+  "/contacts",
+  "/campaigns",
+  "/automations",
+  "/audience",
+  "/orders",
+  "/products",
+  "/settings",
+  "/skills",
+  "/templates",
+  "/storage",
+  "/marketplace",
+  "/news",
+  "/academy",
+  "/logs",
+]
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
-  const insideProtectedPrefix = protectedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
-  const insideAppGroup = pathname.startsWith("/(app)")
 
-  if (!insideProtectedPrefix && !insideAppGroup) {
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  )
+
+  if (!isProtected) {
     return NextResponse.next()
   }
 
-  const accessToken = request.cookies.get("sb-access-token")?.value
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (accessToken) {
+  // Sem config Supabase — deixa passar (modo dev local sem auth)
+  if (!supabaseUrl || !supabaseKey) {
     return NextResponse.next()
   }
 
-  const loginUrl = request.nextUrl.clone()
-  loginUrl.pathname = "/login"
-  loginUrl.searchParams.set("next", `${pathname}${search}`)
+  // Cria response mutável para que @supabase/ssr possa atualizar os cookies de sessão
+  const response = NextResponse.next({
+    request: { headers: request.headers },
+  })
 
-  return NextResponse.redirect(loginUrl)
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        for (const { name, value, options } of cookiesToSet) {
+          request.cookies.set(name, value)
+          response.cookies.set(name, value, options)
+        }
+      },
+    },
+  })
+
+  // Verifica sessão via @supabase/ssr — lê cookies no formato sb-[ref]-auth-token
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = "/login"
+    loginUrl.searchParams.set("next", `${pathname}${search}`)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  return response
 }
 
 export const config = {
@@ -36,6 +98,23 @@ export const config = {
     "/reports/:path*",
     "/framework-admin/:path*",
     "/apps/:path*",
-    "/(app)/:path*",
+    "/analytics/:path*",
+    "/ai-studio/:path*",
+    "/knowledge/:path*",
+    "/inbox/:path*",
+    "/contacts/:path*",
+    "/campaigns/:path*",
+    "/automations/:path*",
+    "/audience/:path*",
+    "/orders/:path*",
+    "/products/:path*",
+    "/settings/:path*",
+    "/skills/:path*",
+    "/templates/:path*",
+    "/storage/:path*",
+    "/marketplace/:path*",
+    "/news/:path*",
+    "/academy/:path*",
+    "/logs/:path*",
   ],
 }

@@ -1,205 +1,178 @@
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+"use client"
 
-import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
-import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
-import { AgendaViewTabs } from "@/components/meu-dia/agenda-view-tabs"
-import { agendaHero, agendaLegend, agendaListHighlights, agendaSummaryCards, agendaTimeline } from "@/components/meu-dia/agenda-content"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react"
+import { CalendarDays, ChevronLeft, ChevronRight, Plus, Clock, Video, MapPin } from "lucide-react"
+import { PageHeader } from "@/components/ui/page-header"
+import { SectionCard } from "@/components/ui/section-card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
-export function NexxaLifeAgendaView() {
-  const nextEvent = agendaTimeline.flatMap((row) => row.items.map((item) => ({ ...item, time: row.time }))).find(Boolean)
-  const upcomingItems = agendaTimeline.flatMap((row) => row.items).slice(0, 5)
-  const ListIcon = agendaListHighlights.icon
+type EventType = "focus" | "meeting" | "personal" | "health"
+
+type AgendaEvent = {
+  id: string
+  title: string
+  time: string
+  endTime: string
+  type: EventType
+  location?: string
+  isOnline?: boolean
+}
+
+const EVENT_STYLES: Record<EventType, { bg: string; border: string; dot: string; label: string }> = {
+  focus:    { bg: "bg-teal-500/10",    border: "border-teal-500/30",    dot: "bg-teal-500",    label: "Foco" },
+  meeting:  { bg: "bg-blue-500/10",    border: "border-blue-500/30",    dot: "bg-blue-500",    label: "Reunião" },
+  personal: { bg: "bg-violet-500/10",  border: "border-violet-500/30",  dot: "bg-violet-500",  label: "Pessoal" },
+  health:   { bg: "bg-emerald-500/10", border: "border-emerald-500/30", dot: "bg-emerald-500", label: "Saúde" },
+}
+
+const MOCK_EVENTS: AgendaEvent[] = [
+  { id: "1", title: "Deep work — MVP auth", time: "08:00", endTime: "10:00", type: "focus" },
+  { id: "2", title: "Alinhamento com time", time: "10:30", endTime: "11:00", type: "meeting", isOnline: true },
+  { id: "3", title: "Almoço + pausa", time: "12:00", endTime: "13:00", type: "personal" },
+  { id: "4", title: "Revisão do plano semanal", time: "14:00", endTime: "15:00", type: "focus" },
+  { id: "5", title: "Treino — academia", time: "18:00", endTime: "19:00", type: "health", location: "Academia" },
+  { id: "6", title: "Leitura + diário", time: "21:00", endTime: "21:30", type: "personal" },
+]
+
+function getMiniCalDays() {
+  const today = new Date()
+  const startOfWeek = new Date(today)
+  startOfWeek.setDate(today.getDate() - today.getDay() + 1)
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(startOfWeek)
+    d.setDate(startOfWeek.getDate() + i)
+    return d
+  })
+}
+
+const WEEK_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
+
+function WeekMiniCal({ selectedDate, onSelect }: { selectedDate: Date; onSelect: (d: Date) => void }) {
+  const days = getMiniCalDays()
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
   return (
-    <PageContainer>
-      <AppBreadcrumbs items={[{ label: "nexxa_life", href: "/dashboard" }, { label: "Agenda" }]} />
+    <SectionCard
+      title="Esta semana"
+      action={
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-lg"><ChevronLeft className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-lg"><ChevronRight className="h-3.5 w-3.5" /></Button>
+        </div>
+      }
+    >
+      <div className="grid grid-cols-7 gap-1">
+        {WEEK_LABELS.map((l) => (
+          <div key={l} className="text-center text-[10px] font-medium text-muted-foreground pb-1">{l}</div>
+        ))}
+        {days.map((day) => {
+          const isToday = day.getTime() === today.getTime()
+          const isSelected = day.toDateString() === selectedDate.toDateString()
+          return (
+            <button
+              key={day.toISOString()}
+              onClick={() => onSelect(day)}
+              className={cn(
+                "flex h-9 w-full flex-col items-center justify-center rounded-xl text-sm font-medium transition-colors",
+                isSelected ? "bg-primary text-primary-foreground" : isToday ? "bg-primary/10 text-primary" : "hover:bg-accent text-foreground"
+              )}
+            >
+              {day.getDate()}
+            </button>
+          )
+        })}
+      </div>
+    </SectionCard>
+  )
+}
+
+function EventRow({ event }: { event: AgendaEvent }) {
+  const style = EVENT_STYLES[event.type]
+  return (
+    <div className={cn("flex gap-3 rounded-xl border p-3 transition-colors hover:brightness-[0.98]", style.bg, style.border)}>
+      <div className="flex flex-col items-end pt-0.5 text-xs tabular-nums text-muted-foreground min-w-[52px]">
+        <span className="font-medium text-foreground">{event.time}</span>
+        <span>{event.endTime}</span>
+      </div>
+      <div className={cn("w-0.5 rounded-full self-stretch", style.dot)} />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{event.title}</p>
+        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            {event.time}–{event.endTime}
+          </span>
+          {event.location ? <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span> : null}
+          {event.isOnline ? <span className="flex items-center gap-1"><Video className="h-3 w-3" />Online</span> : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function NexxaLifeAgendaView() {
+  const [selectedDate, setSelectedDate] = useState(new Date())
+
+  const formattedDate = selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
+  const isToday = selectedDate.toDateString() === new Date().toDateString()
+
+  return (
+    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
-        title={agendaHero.title}
-        description={agendaHero.description}
+        eyebrow="Organização"
+        title="Agenda"
+        description={`${formattedDate}${isToday ? " · Hoje" : ""}`}
         actions={
-          <>
-            <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-              {agendaHero.kicker}
-            </Badge>
-            <Button asChild size="sm" className="rounded-lg">
-              <Link href="/checklist">Voltar ao checklist</Link>
-            </Button>
-          </>
+          <Button size="sm" className="h-8 gap-1.5 rounded-xl px-3 text-xs">
+            <Plus className="h-3.5 w-3.5" /> Novo evento
+          </Button>
         }
       />
 
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="overflow-hidden border-border/80 bg-gradient-to-br from-card via-card to-primary/5">
-          <CardContent className="space-y-6 p-6 md:p-7">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="max-w-2xl space-y-3">
-                <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-                  Ritmo do dia
-                </Badge>
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
-                    Organize o dia com blocos claros, folgas visíveis e próxima ação evidente.
-                  </h2>
-                  <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
-                    A superfície atual prioriza a leitura diária. O objetivo é reduzir atrito operacional e deixar explícito onde agir, pausar ou reorganizar o restante do dia.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Próximo bloco</div>
-                  <div className="mt-2 text-sm font-semibold text-foreground">{nextEvent?.label ?? "Nenhum bloco"}</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    {nextEvent ? `${nextEvent.time} · ${nextEvent.range} · ${nextEvent.category}` : "Sem compromisso posicionado."}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Estado das outras visões</div>
-                  <div className="mt-2 text-sm font-semibold text-foreground">Semana, mês e ano seguem guiados</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    Mantidas como estados degradados explícitos para evitar navegação vazia e preservar o foco na operação diária.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              {agendaSummaryCards.map((card) => (
-                <StatCard key={card.label} label={card.label} value={card.value} hint={card.hint} icon={card.icon} />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>Visão principal</CardTitle>
-            <CardDescription>
-              A experiência atual prioriza a leitura do dia, preservando espaço para expansões semanais e mensais.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AgendaViewTabs
-              primaryContent={
-                <div className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    {agendaLegend.map((item) => (
-                      <Badge key={item.key} variant="secondary" className="rounded-full px-3 py-1">
-                        {item.label}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="rounded-2xl border border-border bg-background/60 p-4 text-sm text-muted-foreground">
-                    A visão diária é a superfície funcional prioritária nesta fase, em linha com o recorte de MVP e com a diretriz do legado para execução curta e clara.
-                  </div>
-                </div>
-              }
-              secondaryContent={
-                <div className="space-y-3 rounded-2xl border border-dashed border-border bg-background/60 p-4 text-sm text-muted-foreground">
-                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Estado degradado explícito</div>
-                  <p>
-                    Esta visualização entra na próxima onda com dados reais e navegação temporal expandida. Por enquanto, a leitura operacional oficial permanece na aba Dia.
-                  </p>
-                  <div className="rounded-xl border border-border/70 bg-background/80 p-3 text-xs leading-5">
-                    Próxima evolução esperada: agregação por período, navegação temporal e reconciliação com metas e checklist.
-                  </div>
-                </div>
-              }
-            />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 xl:grid-cols-[1.12fr_0.88fr]">
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>Agenda operacional</CardTitle>
-            <CardDescription>Linha do tempo base para orientar blocos, respiros e janelas livres.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {agendaTimeline.map((row) => (
-              <div
-                key={row.time}
-                className="grid gap-3 rounded-2xl border border-border bg-background/60 p-4 md:grid-cols-[84px_1fr]"
-              >
-                <div className="text-sm font-medium text-muted-foreground">{row.time}</div>
-                <div className="space-y-2">
-                  {row.items.length > 0 ? (
-                    row.items.map((item) => (
-                      <div key={`${row.time}-${item.label}`} className="rounded-xl border border-border bg-card p-3 shadow-sm shadow-black/5">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="text-sm font-semibold text-foreground">{item.label}</h3>
-                            <p className="mt-1 text-xs text-muted-foreground">{item.range}</p>
-                          </div>
-                          <Badge variant="outline" className="rounded-full">{item.category}</Badge>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-border/80 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
-                      Janela livre para ajuste, descanso ou realocação.
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
+        {/* Coluna esq — mini calendário */}
         <div className="space-y-4">
-          <Card className="border-border/80">
-            <CardHeader>
-              <CardTitle>Próximo compromisso</CardTitle>
-              <CardDescription>Destaque rápido do primeiro bloco relevante já posicionado.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {nextEvent ? (
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
-                  <h3 className="text-base font-semibold text-foreground">{nextEvent.label}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{nextEvent.range}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Badge variant="outline">{nextEvent.time}</Badge>
-                    <Badge variant="outline">{nextEvent.category}</Badge>
-                  </div>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/80 bg-gradient-to-br from-card via-card to-emerald-500/5">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <ListIcon className="h-4 w-4 text-primary" />
-                <CardTitle>{agendaListHighlights.title}</CardTitle>
-              </div>
-              <CardDescription>{agendaListHighlights.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {upcomingItems.map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border bg-background/60 p-3 text-sm">
-                    <div className="font-medium text-foreground">{item.label}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{item.range}</div>
-                  </div>
-                ))}
-            </CardContent>
-          </Card>
+          <WeekMiniCal selectedDate={selectedDate} onSelect={setSelectedDate} />
+          <SectionCard title="Tipos de evento">
+            <ul className="space-y-2">
+              {Object.entries(EVENT_STYLES).map(([key, s]) => (
+                <li key={key} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className={cn("h-2.5 w-2.5 rounded-full", s.dot)} />
+                  {s.label}
+                </li>
+              ))}
+            </ul>
+          </SectionCard>
         </div>
-      </section>
 
-      <div className="mt-6 flex justify-end">
-        <Button asChild variant="link" className="px-0">
-          <Link href="/goals">
-            Avançar para metas
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
+        {/* Timeline do dia */}
+        <SectionCard
+          title={isToday ? "Hoje" : formattedDate}
+          action={
+            <Button variant="ghost" size="sm" className="h-7 rounded-lg px-2 text-xs" onClick={() => setSelectedDate(new Date())}>
+              Ir para hoje
+            </Button>
+          }
+          noPadding
+        >
+          {MOCK_EVENTS.length === 0 ? (
+            <EmptyState
+              icon={CalendarDays}
+              title="Dia livre"
+              description="Nenhum evento agendado para este dia."
+              action={{ label: "Adicionar evento", href: "/agenda" }}
+              className="m-4 border-dashed"
+            />
+          ) : (
+            <div className="space-y-2 p-4">
+              {MOCK_EVENTS.map((event) => <EventRow key={event.id} event={event} />)}
+            </div>
+          )}
+        </SectionCard>
       </div>
-    </PageContainer>
+    </div>
   )
 }

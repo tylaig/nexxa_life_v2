@@ -1,261 +1,302 @@
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+"use client"
 
-import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
-import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
-import { DashboardAnalyticsPanel } from "@/components/meu-dia/dashboard-analytics-panel"
-import { dashboardExecutionSignals, dashboardHero, dashboardPrimaryCards, dashboardQuickLinks } from "@/components/meu-dia/dashboard-content"
-import { meuDiaExecutionGraph, meuDiaPriorityFlow, meuDiaWeeklySystemSummary } from "@/components/meu-dia/system-connections"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react"
+import { CalendarDays, CheckSquare, Flame, Goal, BookText, TrendingUp, ArrowRight, Plus, Clock } from "lucide-react"
+import Link from "next/link"
+
+import { KpiTile } from "@/components/ui/kpi-tile"
+import { SectionCard } from "@/components/ui/section-card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
+
+// ─── Mock data (substituir por dados reais futuramente) ────────────────────
+
+const mockUser = { name: "Tylaig" }
+
+const mockKpis = [
+  { label: "Streak atual", value: "12 dias", icon: Flame, accent: "amber" as const, trend: { value: 20, label: "esta semana" } },
+  { label: "Metas ativas", value: 3, icon: Goal, accent: "teal" as const },
+  { label: "Checklist hoje", value: "4/7", icon: CheckSquare, accent: "emerald" as const, trend: { value: 57 } },
+  { label: "Entradas no diário", value: 18, icon: BookText, accent: "violet" as const, trend: { value: 12, label: "este mês" } },
+]
+
+const mockTodayTasks = [
+  { id: "1", label: "Revisar metas da semana", done: true, priority: "high" },
+  { id: "2", label: "Sessão de planejamento 30min", done: false, priority: "high" },
+  { id: "3", label: "Leitura — 20 páginas", done: false, priority: "medium" },
+  { id: "4", label: "Exercício físico", done: false, priority: "medium" },
+  { id: "5", label: "Meditação noturna", done: false, priority: "low" },
+]
+
+const mockGoals = [
+  { id: "1", title: "Lançar MVP do produto", progress: 68, category: "Trabalho", daysLeft: 22 },
+  { id: "2", title: "Leitura de 12 livros no ano", progress: 42, category: "Crescimento", daysLeft: 180 },
+  { id: "3", title: "Rotina fitness consistente", progress: 75, category: "Saúde", daysLeft: 60 },
+]
+
+const mockNextEvent = {
+  title: "Planejamento semanal",
+  time: "10:00",
+  duration: "1h",
+  type: "focus",
+}
+
+const mockLastJournal = {
+  date: "Ontem, 23:14",
+  preview: "Hoje foi um dia de clareza rara. Consegui finalizar o módulo de auth e ainda...",
+}
+
+// ─── Sub-componentes ────────────────────────────────────────────────────────
+
+function DayGreeting() {
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"
+  const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
+
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-sm text-muted-foreground capitalize">{today}</p>
+      <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        {greeting}, <span className="text-primary">{mockUser.name}</span> 👋
+      </h1>
+      <p className="text-sm text-muted-foreground">Veja o que está esperando por você hoje.</p>
+    </div>
+  )
+}
+
+function TodayChecklistCard() {
+  const [tasks, setTasks] = useState(mockTodayTasks)
+  const done = tasks.filter((t) => t.done).length
+  const pct = Math.round((done / tasks.length) * 100)
+
+  const toggle = (id: string) =>
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
+
+  return (
+    <SectionCard
+      title="Checklist de hoje"
+      action={
+        <Button asChild variant="ghost" size="sm" className="h-7 gap-1 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground">
+          <Link href="/checklist">
+            Ver tudo <ArrowRight className="h-3 w-3" />
+          </Link>
+        </Button>
+      }
+    >
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <Progress value={pct} className="h-1.5 flex-1" />
+          <span className="text-xs font-medium tabular-nums text-muted-foreground">
+            {done}/{tasks.length}
+          </span>
+        </div>
+        <ul className="space-y-1.5">
+          {tasks.slice(0, 5).map((task) => (
+            <li key={task.id} className="flex items-center gap-2.5">
+              <button
+                onClick={() => toggle(task.id)}
+                className={cn(
+                  "flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                  task.done
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border hover:border-primary/60"
+                )}
+              >
+                {task.done ? <span className="text-[9px]">✓</span> : null}
+              </button>
+              <span
+                className={cn(
+                  "flex-1 truncate text-sm",
+                  task.done ? "text-muted-foreground line-through" : "text-foreground"
+                )}
+              >
+                {task.label}
+              </span>
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 shrink-0 rounded-full",
+                  task.priority === "high"
+                    ? "bg-red-400"
+                    : task.priority === "medium"
+                    ? "bg-amber-400"
+                    : "bg-muted-foreground/40"
+                )}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </SectionCard>
+  )
+}
+
+function ActiveGoalsCard() {
+  return (
+    <SectionCard
+      title="Metas em progresso"
+      action={
+        <Button asChild variant="ghost" size="sm" className="h-7 gap-1 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground">
+          <Link href="/goals">
+            Ver todas <ArrowRight className="h-3 w-3" />
+          </Link>
+        </Button>
+      }
+    >
+      {mockGoals.length === 0 ? (
+        <EmptyState
+          icon={Goal}
+          title="Sem metas ativas"
+          description="Crie sua primeira meta para acompanhar aqui."
+          action={{ label: "Criar meta", href: "/goals" }}
+          className="border-0 bg-transparent py-8"
+        />
+      ) : (
+        <ul className="space-y-4">
+          {mockGoals.map((goal) => (
+            <li key={goal.id} className="space-y-1.5">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground">{goal.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {goal.category} · {goal.daysLeft} dias restantes
+                  </p>
+                </div>
+                <span className="shrink-0 text-sm font-semibold tabular-nums text-primary">{goal.progress}%</span>
+              </div>
+              <Progress value={goal.progress} className="h-1.5" />
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionCard>
+  )
+}
+
+function NextEventCard() {
+  return (
+    <SectionCard title="Próximo compromisso">
+      {!mockNextEvent ? (
+        <EmptyState
+          icon={CalendarDays}
+          title="Agenda livre hoje"
+          description="Sem compromissos agendados."
+          action={{ label: "Adicionar", href: "/agenda" }}
+          className="border-0 bg-transparent py-6"
+        />
+      ) : (
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Clock className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-foreground">{mockNextEvent.title}</p>
+            <p className="text-xs text-muted-foreground">
+              {mockNextEvent.time} · {mockNextEvent.duration}
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm" className="h-7 shrink-0 rounded-xl px-3 text-xs">
+            <Link href="/agenda">Ver agenda</Link>
+          </Button>
+        </div>
+      )}
+    </SectionCard>
+  )
+}
+
+function LastJournalCard() {
+  return (
+    <SectionCard
+      title="Último registro no diário"
+      action={
+        <Button asChild variant="ghost" size="sm" className="h-7 gap-1 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground">
+          <Link href="/journal">
+            <Plus className="h-3 w-3" /> Nova entrada
+          </Link>
+        </Button>
+      }
+    >
+      {!mockLastJournal ? (
+        <EmptyState
+          icon={BookText}
+          title="Nenhuma entrada ainda"
+          description="Comece a registrar seu dia no diário."
+          action={{ label: "Escrever agora", href: "/journal" }}
+          className="border-0 bg-transparent py-6"
+        />
+      ) : (
+        <div className="space-y-2">
+          <p className="text-[11px] font-medium text-muted-foreground">{mockLastJournal.date}</p>
+          <p className="line-clamp-3 text-sm leading-6 text-foreground/80">{mockLastJournal.preview}</p>
+          <Button asChild variant="ghost" size="sm" className="h-6 gap-1 px-0 text-xs text-primary hover:text-primary/80">
+            <Link href="/journal">
+              Ler entrada completa <ArrowRight className="h-3 w-3" />
+            </Link>
+          </Button>
+        </div>
+      )}
+    </SectionCard>
+  )
+}
+
+// ─── View principal ────────────────────────────────────────────────────────
 
 export function NexxaLifeDashboardView() {
   return (
-    <PageContainer>
-      <AppBreadcrumbs items={[{ label: "nexxa_life" }, { label: "Dashboard" }]} />
-      <PageHeader
-        title={dashboardHero.title}
-        description={dashboardHero.description}
-        actions={
-          <>
-            <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-              {dashboardHero.kicker}
-            </Badge>
-            <Button asChild size="sm" className="rounded-lg">
-              <Link href="/checklist">Começar pelo checklist</Link>
-            </Button>
-          </>
-        }
-      />
+    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+      {/* Saudação */}
+      <DayGreeting />
 
-      <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card className="overflow-hidden border-border/80 bg-gradient-to-br from-card via-card to-primary/5">
-          <CardContent className="space-y-6 p-6 md:p-7">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="max-w-2xl space-y-3">
-                <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
-                  {dashboardHero.kicker}
-                </Badge>
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{dashboardHero.title}</h2>
-                  <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-base">{dashboardHero.description}</p>
-                </div>
-              </div>
-
-              <div className="grid min-w-[240px] gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
-                      Prioridade dominante
-                    </div>
-                    <Badge variant="outline" className="rounded-full border-amber-500/30 bg-background/70 text-[11px]">
-                      {meuDiaPriorityFlow.confidenceLabel}
-                    </Badge>
-                  </div>
-                  <div className="mt-3 text-sm font-semibold text-foreground">
-                    {meuDiaWeeklySystemSummary.priorityLabel} · prioridade #{meuDiaPriorityFlow.priority}
-                  </div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{meuDiaPriorityFlow.rationale}</p>
-                </div>
-
-                <div className="rounded-2xl border border-border bg-background/70 p-4">
-                  <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Execução do dia</div>
-                  <div className="mt-2 text-lg font-semibold text-foreground">{meuDiaWeeklySystemSummary.completedTasks} concluídas</div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    {meuDiaWeeklySystemSummary.pendingTasks} pendentes · próximo bloco: {meuDiaWeeklySystemSummary.nextAgendaEvent}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              {dashboardPrimaryCards.map((card) => {
-                const Icon = card.icon
-                return (
-                  <div key={card.title} className="rounded-2xl border border-border bg-background/70 p-4 shadow-sm shadow-black/5">
-                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-foreground">{card.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{card.description}</p>
-                    <Button asChild variant="link" size="sm" className="mt-3 h-auto px-0">
-                      <Link href={card.href}>
-                        {card.cta}
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80">
-          <CardHeader className="pb-4">
-            <CardTitle>Superfícies-chave</CardTitle>
-            <CardDescription>Atalhos oficiais para navegar pelo ciclo principal do nexxa_life.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {dashboardQuickLinks.map((item) => {
-              const Icon = item.icon
-              return (
-                <Button
-                  key={item.href}
-                  asChild
-                  variant="outline"
-                  className="h-auto w-full justify-between rounded-2xl border-border/80 py-4 hover:bg-accent/40"
-                >
-                  <Link href={item.href}>
-                    <span className="flex min-w-0 items-start gap-3 text-left">
-                      <span className="mt-0.5 rounded-xl bg-primary/10 p-2 text-primary">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium text-foreground">{item.label}</span>
-                        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{item.description}</span>
-                      </span>
-                    </span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  </Link>
-                </Button>
-              )
-            })}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
-        {dashboardExecutionSignals.map((item) => (
-          <StatCard key={item.label} label={item.label} value={item.value} hint={item.hint} icon={item.icon} />
+      {/* KPIs */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {mockKpis.map((kpi) => (
+          <KpiTile
+            key={kpi.label}
+            label={kpi.label}
+            value={kpi.value}
+            icon={kpi.icon}
+            accent={kpi.accent}
+            trend={kpi.trend}
+          />
         ))}
-      </section>
+      </div>
 
-      <section className="mt-6 grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>Painel analítico do ciclo</CardTitle>
-            <CardDescription>
-              Visão consolidada para execução, bem-estar e evolução, seguindo a diretriz do legado para dashboard básico com leitura gráfica.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <DashboardAnalyticsPanel />
-          </CardContent>
-        </Card>
+      {/* Grid principal 2 colunas */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TodayChecklistCard />
+        <ActiveGoalsCard />
+      </div>
 
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>Leitura consolidada da semana</CardTitle>
-            <CardDescription>
-              Sinais reunidos a partir da conexão entre execução, agenda, reflexão e relatórios.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-              <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Jornada prioritária</div>
-              <div className="mt-3 grid gap-2">
-                <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm text-foreground">
-                  <span className="font-semibold">Meta:</span> {meuDiaPriorityFlow.goal} ({meuDiaPriorityFlow.goalAxis})
-                </div>
-                <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm text-foreground">
-                  <span className="font-semibold">Tarefa-chave:</span> {meuDiaPriorityFlow.checklistTask} ({meuDiaPriorityFlow.checklistPeriod})
-                </div>
-                <div className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm text-foreground">
-                  <span className="font-semibold">Bloco da agenda:</span> {meuDiaPriorityFlow.agendaEvent} ({meuDiaPriorityFlow.agendaCategory})
-                </div>
-              </div>
-            </div>
+      {/* Grid secundário 2 colunas */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <NextEventCard />
+        <LastJournalCard />
+      </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border bg-background/60 p-4">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Meta foco</div>
-                <div className="mt-2 text-sm font-semibold text-foreground">{meuDiaWeeklySystemSummary.focusGoal}</div>
-              </div>
-              <div className="rounded-2xl border border-border bg-background/60 p-4">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Próximo evento</div>
-                <div className="mt-2 text-sm font-semibold text-foreground">{meuDiaWeeklySystemSummary.nextAgendaEvent}</div>
-              </div>
-              <div className="rounded-2xl border border-border bg-background/60 p-4">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Execução</div>
-                <div className="mt-2 text-sm font-semibold text-foreground">
-                  {meuDiaWeeklySystemSummary.completedTasks} concluídas · {meuDiaWeeklySystemSummary.pendingTasks} pendentes
-                </div>
-              </div>
-              <div className="rounded-2xl border border-border bg-background/60 p-4">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Reflexão + leitura</div>
-                <div className="mt-2 text-sm font-semibold text-foreground">
-                  {meuDiaWeeklySystemSummary.journalSignal} · {meuDiaWeeklySystemSummary.reportsSignal}
-                </div>
-              </div>
+      {/* CTA de progresso geral */}
+      <SectionCard variant="highlight" className="col-span-full">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/20 text-primary">
+              <TrendingUp className="h-5 w-5" />
             </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mt-6 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="border-border/80">
-          <CardHeader>
-            <CardTitle>Ciclo conectado</CardTitle>
-            <CardDescription>
-              Sequência operacional atual entre as superfícies do nexxa_life dentro do shell oficial.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {meuDiaExecutionGraph.sequence.map((step, index) => (
-                <Badge key={step} variant={index === 0 ? "default" : "outline"} className="rounded-full px-3 py-1">
-                  {step}
-                </Badge>
-              ))}
+            <div>
+              <p className="text-sm font-semibold text-foreground">Seu ciclo está evoluindo!</p>
+              <p className="text-xs text-muted-foreground">12 dias consecutivos. Continue assim — você está no ritmo certo.</p>
             </div>
-            <div className="space-y-2">
-              {meuDiaExecutionGraph.edges.map((edge, index) => (
-                <div
-                  key={`${edge.from}-${edge.to}`}
-                  className="rounded-2xl border border-border bg-background/60 p-4"
-                >
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                    <span>Etapa {index + 1}</span>
-                    <span>•</span>
-                    <span>{edge.from} → {edge.to}</span>
-                  </div>
-                  <p className="mt-2 text-sm text-foreground">{edge.reason}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/80 bg-gradient-to-br from-card via-card to-emerald-500/5">
-          <CardHeader>
-            <CardTitle>Resumo operacional</CardTitle>
-            <CardDescription>
-              Leitura curta para orientar a próxima decisão antes de abrir as superfícies detalhadas.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-border bg-background/70 p-4">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Eixo crítico</div>
-              <div className="mt-2 text-base font-semibold text-foreground">{meuDiaWeeklySystemSummary.lowestAxis}</div>
-            </div>
-            <div className="rounded-2xl border border-border bg-background/70 p-4">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Progresso do dia</div>
-              <div className="mt-2 text-base font-semibold text-foreground">{meuDiaWeeklySystemSummary.executionProgress}</div>
-            </div>
-            <div className="rounded-2xl border border-border bg-background/70 p-4 sm:col-span-2">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">Próxima melhor ação</div>
-              <p className="mt-2 text-sm leading-6 text-foreground">
-                Reforçar <span className="font-semibold">{meuDiaWeeklySystemSummary.lowestAxis}</span> conectando a meta
-                <span className="font-semibold"> {meuDiaPriorityFlow.goal}</span> com a tarefa
-                <span className="font-semibold"> {meuDiaPriorityFlow.checklistTask}</span> antes do bloco
-                <span className="font-semibold"> {meuDiaPriorityFlow.agendaEvent}</span>.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-    </PageContainer>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs">
+              🔥 Streak ativo
+            </Badge>
+            <Button asChild size="sm" className="h-8 rounded-xl px-4 text-xs">
+              <Link href="/reports">Ver relatório completo</Link>
+            </Button>
+          </div>
+        </div>
+      </SectionCard>
+    </div>
   )
 }

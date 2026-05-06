@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  Brain,
   CalendarDays,
   ClipboardList,
   FileBarChart2,
@@ -12,7 +11,6 @@ import {
   Sparkles,
   Store,
   Target,
-  Workflow,
 } from "lucide-react"
 
 export type NavItem = {
@@ -27,28 +25,23 @@ export type NavSection = {
   children: NavItem[]
 }
 
+/** Item único de destaque: Dashboard */
 export const primaryItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/diagnostic", label: "Diagnóstico", icon: Brain },
-  { href: "/checklist", label: "Checklist", icon: ClipboardList },
-  { href: "/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/goals", label: "Metas", icon: Target },
 ]
 
+/**
+ * Seções expansíveis do ciclo principal.
+ * O /diagnostic foi removido — aparece apenas no /onboarding.
+ */
 export const accordionSections: NavSection[] = [
   {
-    label: "Planejamento",
-    icon: Workflow,
+    label: "Meu Ciclo",
+    icon: Target,
     children: [
+      { href: "/goals", label: "Metas", icon: Goal },
       { href: "/checklist", label: "Checklist", icon: ClipboardList },
       { href: "/agenda", label: "Agenda", icon: CalendarDays },
-      { href: "/goals", label: "Metas", icon: Goal },
-    ],
-  },
-  {
-    label: "Reflexão",
-    icon: FileText,
-    children: [
       { href: "/journal", label: "Diário", icon: FileText },
       { href: "/reports", label: "Relatórios", icon: FileBarChart2 },
     ],

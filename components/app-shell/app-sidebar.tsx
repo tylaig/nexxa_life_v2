@@ -25,7 +25,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { WorkspaceSwitcher } from "@/components/app-shell/workspace-switcher"
 import { accordionSections, primaryItems, settingsSections, type NavSection } from "@/components/app-shell/meu-dia-navigation"
 
 function SidebarExpandableItem({
@@ -125,7 +124,20 @@ export function AppSidebar() {
   return (
     <Sidebar variant="inset" collapsible="icon" className="border-r border-border/50">
       <SidebarHeader className="gap-2 px-3 pt-3">
-        <WorkspaceSwitcher compact={collapsed} />
+        <div className={cn(
+          "flex items-center gap-2.5 rounded-xl px-2 py-2",
+          collapsed ? "justify-center" : ""
+        )}>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <span className="text-[11px] font-bold">NL</span>
+          </div>
+          {!collapsed ? (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">NexxaLife</p>
+              <p className="truncate text-[10px] text-muted-foreground">Sistema de evolução pessoal</p>
+            </div>
+          ) : null}
+        </div>
       </SidebarHeader>
 
       <SidebarSeparator />
