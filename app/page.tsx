@@ -13,8 +13,11 @@ import {
   ChevronRight,
 } from "lucide-react"
 
+import { redirect } from "next/navigation"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { getAuthenticatedAppUser } from "@/lib/server/auth-user"
 
 const features = [
   {
@@ -64,7 +67,19 @@ const pillars = [
   { icon: TrendingUp, text: "Relatórios para decisão e continuidade" },
 ] as const
 
-export default function RootPage() {
+export default async function RootPage(props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  // Apenas Next.js 15+ requer await no searchParams, vamos fazer de forma segura
+  const searchParams = props.searchParams ? await props.searchParams : {}
+  
+  if (searchParams?.code) {
+    // Se o login do Google redirecionou para a home por engano do Supabase,
+    // repassamos para a rota correta de callback
+    redirect(`/auth/callback?code=${searchParams.code}`)
+  }
+
+  const auth = await getAuthenticatedAppUser()
+  const isLoggedIn = !!auth?.user
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ═══ HEADER ═══ */}
@@ -77,15 +92,26 @@ export default function RootPage() {
             <span className="text-sm font-semibold tracking-tight">NexxaLife</span>
           </Link>
           <nav className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm" className="rounded-xl text-muted-foreground hover:text-foreground">
-              <Link href="/login">Entrar</Link>
-            </Button>
-            <Button asChild size="sm" className="rounded-xl px-4">
-              <Link href="/signup">
-                Criar conta
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button asChild size="sm" className="rounded-xl px-4">
+                <Link href="/dashboard">
+                  Acessar Dashboard
+                  <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm" className="rounded-xl text-muted-foreground hover:text-foreground">
+                  <Link href="/login">Entrar</Link>
+                </Button>
+                <Button asChild size="sm" className="rounded-xl px-4">
+                  <Link href="/signup">
+                    Criar conta
+                    <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                  </Link>
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </header>
@@ -136,17 +162,28 @@ export default function RootPage() {
 
             {/* CTAs */}
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <Button asChild size="lg" className="h-12 rounded-xl px-8 text-sm font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:scale-[1.02]">
-                <Link href="/signup">
-                  Começar gratuitamente
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 rounded-xl px-8 text-sm font-semibold border-border/70 hover:bg-muted/50">
-                <Link href="/login">
-                  Já tenho conta
-                </Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button asChild size="lg" className="h-12 rounded-xl px-8 text-sm font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:scale-[1.02]">
+                  <Link href="/dashboard">
+                    Ir para o meu painel
+                    <ArrowRight className="h-4 w-4 ml-1.5" />
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" className="h-12 rounded-xl px-8 text-sm font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:scale-[1.02]">
+                    <Link href="/signup">
+                      Começar gratuitamente
+                      <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="h-12 rounded-xl px-8 text-sm font-semibold border-border/70 hover:bg-muted/50">
+                    <Link href="/login">
+                      Já tenho conta
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Social proof mínima */}
@@ -279,15 +316,26 @@ export default function RootPage() {
                 até a execução diária e os relatórios de acompanhamento.
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
-                <Button asChild className="rounded-xl px-6">
-                  <Link href="/signup">
-                    Criar conta gratuita
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="rounded-xl px-6">
-                  <Link href="/login">Já tenho conta</Link>
-                </Button>
+                {isLoggedIn ? (
+                  <Button asChild className="rounded-xl px-6">
+                    <Link href="/dashboard">
+                      Continuar meu ciclo
+                      <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild className="rounded-xl px-6">
+                      <Link href="/signup">
+                        Criar conta gratuita
+                        <ArrowRight className="h-4 w-4 ml-1.5" />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="rounded-xl px-6">
+                      <Link href="/login">Já tenho conta</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -328,22 +376,37 @@ export default function RootPage() {
               Entre no ciclo NexxaLife e comece a conectar clareza, execução e evolução em um único sistema pessoal.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="h-12 rounded-xl px-10 text-sm font-semibold shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all"
-              >
-                <Link href="/signup">
-                  Começar agora — é grátis
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="ghost" size="lg" className="h-12 rounded-xl px-6 text-sm text-muted-foreground hover:text-foreground">
-                <Link href="/login" className="flex items-center gap-1.5">
-                  Já tenho uma conta
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-12 rounded-xl px-10 text-sm font-semibold shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all"
+                >
+                  <Link href="/dashboard">
+                    Acessar meu Dashboard
+                    <ArrowRight className="h-4 w-4 ml-1.5" />
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-12 rounded-xl px-10 text-sm font-semibold shadow-xl shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all"
+                  >
+                    <Link href="/signup">
+                      Começar agora — é grátis
+                      <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="lg" className="h-12 rounded-xl px-6 text-sm text-muted-foreground hover:text-foreground">
+                    <Link href="/login" className="flex items-center gap-1.5">
+                      Já tenho uma conta
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
