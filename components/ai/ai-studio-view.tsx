@@ -148,7 +148,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar">
           {(messages || []).map((m: any) => {
-            const text = getMessageText(m)
+            const text = m.content || m.text
             if (!text && m.role === "user") return null
             return (
               <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>

@@ -43,6 +43,7 @@ export async function fetchAuthenticatedAppUser() {
   })
 
   if (!response.ok) {
+    if (response.status === 401) return null
     throw new Error("Não foi possível carregar o estado autenticado atual")
   }
 
