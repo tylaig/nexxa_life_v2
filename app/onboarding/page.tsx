@@ -1,115 +1,213 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowRight, Brain, CheckSquare, FileBarChart2, Target } from "lucide-react"
+import {
+  ArrowRight,
+  Brain,
+  CheckSquare,
+  FileBarChart2,
+  PartyPopper,
+  Target,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react"
 
 import { GoogleAuthButton } from "@/components/auth/google-auth-button"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata: Metadata = {
   title: "Onboarding | NexxaLife",
-  description: "Entenda o ciclo do NexxaLife e prepare sua entrada no diagnóstico, plano e execução diária.",
+  description: "Entenda o ciclo do NexxaLife e comece pelo diagnóstico, plano e execução diária.",
 }
 
 const steps = [
   {
+    number: "01",
     title: "Diagnóstico",
-    description: "Ler o momento atual para identificar eixos prioritários com clareza.",
+    description: "Leia seu momento atual e identifique eixos prioritários com clareza real.",
     icon: Brain,
-    href: "/diagnostic",
+    href: "/diagnostico",
+    accent: "text-teal-500 dark:text-teal-400",
+    bg: "bg-teal-500/10",
+    border: "border-teal-500/20",
   },
   {
+    number: "02",
     title: "Metas",
-    description: "Transformar leitura em direção estratégica e foco prático.",
+    description: "Transforme leitura em direção estratégica e foco prático de curto e médio prazo.",
     icon: Target,
     href: "/goals",
+    accent: "text-blue-500 dark:text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
   },
   {
+    number: "03",
     title: "Checklist",
-    description: "Converter intenção em execução diária com prioridades objetivas.",
+    description: "Converta intenção em execução diária com prioridades objetivas e ritmo sustentável.",
     icon: CheckSquare,
     href: "/checklist",
+    accent: "text-emerald-500 dark:text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
   },
   {
+    number: "04",
     title: "Relatórios",
-    description: "Acompanhar evolução, bem-estar e consistência ao longo do tempo.",
+    description: "Acompanhe evolução, bem-estar e consistência para fechar o ciclo com leitura histórica.",
     icon: FileBarChart2,
-    href: "/reports",
+    href: "/relatorio",
+    accent: "text-purple-500 dark:text-purple-400",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/20",
   },
 ] as const
 
-export default function OnboardingPage() {
-  return (
-    <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8 lg:p-10">
-          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-            <div className="max-w-3xl space-y-4">
-              <div className="inline-flex rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-                Onboarding NexxaLife
-              </div>
-              <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
-                Entenda o ciclo principal e entre no produto pelo caminho certo.
-              </h1>
-              <p className="text-sm leading-6 text-muted-foreground md:text-base">
-                O legado do NexxaLife trata o onboarding como a preparação para o fluxo diagnóstico → metas → tarefas → agenda → acompanhamento → relatórios. Nesta fase, a rota foi reintroduzida na raiz atual como uma superfície clara e compatível com o shell moderno.
-              </p>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <Button asChild className="rounded-xl">
-                  <Link href="/diagnostic">
-                    Iniciar pelo diagnóstico
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="rounded-xl">
-                  <Link href="/dashboard">Ir para dashboard</Link>
-                </Button>
-              </div>
-            </div>
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ welcome?: string }>
+}) {
+  const params = await searchParams
+  const isWelcome = params.welcome === "1"
 
-            <div className="rounded-3xl border border-border bg-background/70 p-5 md:p-6">
-              <div className="space-y-2">
-                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Acesso rápido</div>
-                <h2 className="text-xl font-semibold tracking-tight">Entre com Google e siga para o onboarding funcional.</h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Use o Google para reduzir fricção no primeiro acesso. Se o provedor ainda não estiver configurado, mantenha o onboarding como guia e finalize pelo cadastro manual.
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header mínimo */}
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-10">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold transition-all group-hover:scale-105">
+              N
+            </div>
+            <span className="text-sm font-semibold tracking-tight">NexxaLife</span>
+          </Link>
+          <Button asChild variant="ghost" size="sm" className="rounded-xl text-muted-foreground">
+            <Link href="/dashboard">
+              Ir para dashboard
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-6 py-12 md:px-10 md:py-16">
+
+        {/* Banner de boas-vindas */}
+        {isWelcome ? (
+          <div className="mb-10 relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent p-6 md:p-8">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.15),transparent_60%)]" />
+            <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-500/20">
+                <PartyPopper className="h-6 w-6 text-emerald-500" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
+                  Conta criada com sucesso! Bem-vindo ao NexxaLife 🎉
+                </h2>
+                <p className="mt-1 text-sm text-emerald-600/80 dark:text-emerald-400/80">
+                  Agora você faz parte do ciclo. Comece pelo diagnóstico para mapear seu momento atual e entrar no fluxo com clareza.
                 </p>
               </div>
-              <div className="mt-5 space-y-3">
-                <GoogleAuthButton next="/dashboard" label="Continuar com Google" />
-                <Button asChild variant="outline" className="h-11 w-full rounded-xl">
-                  <Link href="/signup">Cadastrar com e-mail</Link>
-                </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Hero do onboarding */}
+        <div className="mb-12 grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              Início do ciclo NexxaLife
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+              Entenda o ciclo e entre pelo{" "}
+              <span className="bg-gradient-to-r from-teal-500 to-blue-500 bg-clip-text text-transparent">
+                caminho certo.
+              </span>
+            </h1>
+            <p className="max-w-xl text-base leading-7 text-muted-foreground">
+              O NexxaLife é estruturado como um ciclo contínuo: você começa com um diagnóstico do seu momento atual,
+              define metas estratégicas, executa com checklist diário e acompanha evolução por relatórios.
+              Cada etapa alimenta a próxima.
+            </p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <Button asChild className="h-11 rounded-xl px-6 font-medium shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all">
+                <Link href="/diagnostico">
+                  Iniciar pelo diagnóstico
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-11 rounded-xl px-6">
+                <Link href="/dashboard">Ir para o dashboard</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Card de acesso rápido */}
+          <div className="rounded-2xl border border-border/70 bg-card/80 p-6 shadow-sm">
+            <div className="space-y-2">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                Acesso rápido
               </div>
+              <h2 className="text-lg font-semibold tracking-tight">
+                Entre com Google e siga para o ciclo principal.
+              </h2>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Use o Google para reduzir fricção no primeiro acesso e começar imediatamente.
+              </p>
+            </div>
+            <div className="mt-5 space-y-3">
+              <GoogleAuthButton next="/dashboard" label="Continuar com Google" />
+              <Button asChild variant="outline" className="h-11 w-full rounded-xl">
+                <Link href="/signup">Cadastrar com e-mail</Link>
+              </Button>
+              <Button asChild variant="ghost" className="h-10 w-full rounded-xl text-muted-foreground text-sm">
+                <Link href="/login">Já tenho conta — entrar</Link>
+              </Button>
             </div>
           </div>
         </div>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {steps.map((step) => {
-            const Icon = step.icon
-            return (
-              <Card key={step.title} className="border-border/80 bg-card/90">
-                <CardHeader>
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
+        {/* Steps do ciclo */}
+        <div>
+          <div className="mb-6">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              O ciclo em 4 etapas
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {steps.map((step, i) => {
+              const Icon = step.icon
+              return (
+                <Link
+                  key={step.title}
+                  href={step.href}
+                  className={`group relative overflow-hidden rounded-2xl border bg-card/80 p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 hover:border-border dark:hover:shadow-black/20 ${step.border}`}
+                >
+                  {/* Número decorativo */}
+                  <div className="absolute -right-2 -top-4 text-6xl font-black text-muted/30 select-none">
+                    {step.number}
                   </div>
-                  <CardTitle>{step.title}</CardTitle>
-                  <CardDescription>{step.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button asChild variant="link" className="px-0">
-                    <Link href={step.href}>
+
+                  <div className="relative space-y-4">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${step.bg} ${step.accent}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">{step.title}</h3>
+                      <p className="mt-1.5 text-sm leading-5 text-muted-foreground">{step.description}</p>
+                    </div>
+                    <div className={`flex items-center gap-1 text-xs font-medium transition-all group-hover:gap-2 ${step.accent}`}>
                       Abrir superfície
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </section>
-      </div>
-    </main>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      </main>
+    </div>
   )
 }

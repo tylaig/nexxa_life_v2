@@ -1,27 +1,28 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { Suspense } from "react"
 
 import { AuthShell } from "@/components/auth/auth-shell"
 import { SignupForm } from "@/components/auth/signup-form"
 
 export const metadata: Metadata = {
-  title: "Cadastro | NexxaLife",
-  description: "Crie sua conta no NexxaLife para iniciar diagnóstico, planejamento e execução diária.",
+  title: "Criar conta | NexxaLife",
+  description: "Crie sua conta no NexxaLife e comece a transformar diagnóstico em metas, execução e evolução contínua.",
 }
 
 export default function SignupPage() {
   return (
     <AuthShell
       eyebrow="Cadastro"
-      title="Crie seu acesso e comece a transformar diagnóstico em plano executável."
-      description="Esta entrada substitui a antiga ausência de cadastro na raiz atual e se alinha ao recorte do legado: autenticação como parte do MVP, com onboarding e continuidade do ciclo NexxaLife."
-      asideTitle="Cadastro já posicionado no domínio certo"
-      asideDescription="A tela agora combina Google OAuth com fallback real por e-mail/senha para manter a jornada honesta enquanto evoluímos o onboarding persistente."
+      title="Crie sua conta e comece sua jornada de evolução."
+      description="O NexxaLife conecta diagnóstico, planejamento e execução diária em um único sistema — feito para quem leva crescimento a sério."
+      asideTitle="Seu sistema operacional de evolução pessoal"
+      asideDescription="Entre no ciclo NexxaLife: diagnostique seu momento, defina metas, execute com consistência e acompanhe sua evolução ao longo do tempo."
       highlights={[
-        "Criar conta com foco em continuidade do ciclo pessoal",
-        "Entrar no onboarding com fluxo funcional mínimo",
-        "Apoiar diagnóstico, metas, checklist e agenda",
-        "Reduzir o gap da rota /signup (+ alias /cadastro)",
+        "Diagnóstico guiado para clareza imediata do momento atual",
+        "Metas conectadas à execução diária com checklist",
+        "Agenda e diário integrados em um único workspace",
+        "Relatórios de evolução para leitura histórica e decisão",
       ]}
       footer={
         <>
@@ -33,7 +34,9 @@ export default function SignupPage() {
         </>
       }
     >
-      <SignupForm />
+      <Suspense fallback={null}>
+        <SignupForm />
+      </Suspense>
     </AuthShell>
   )
 }

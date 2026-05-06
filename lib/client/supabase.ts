@@ -2,7 +2,7 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
-import { getSupabaseBrowserUrl, getSupabasePublishableKey } from "@/lib/server/env"
+import { getClientSupabaseUrl, getClientSupabaseKey } from "@/lib/client/env"
 
 declare global {
   interface Window {
@@ -11,19 +11,24 @@ declare global {
 }
 
 export function getSupabaseBrowserClient(): SupabaseClient {
-  const url = getSupabaseBrowserUrl()
-  const publishableKey = getSupabasePublishableKey()
+  const url = getClientSupabaseUrl()
+  const key = getClientSupabaseKey()
 
-  if (!url || !publishableKey) {
-    throw new Error("Supabase browser configuration is incomplete")
+  if (!url || !key) {
+    throw new Error(
+      "Supabase browser configuration is incomplete. Verifique NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY no .env.local."
+    )
   }
 
   if (!window.__nexxaLifeSupabaseBrowserClient) {
-    window.__nexxaLifeSupabaseBrowserClient = createClient(url, publishableKey, {
+    window.__nexxaLifeSupabaseBrowserClient = createClient(url, key, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        // PKCE flow: evita que o Supabase use Implicit flow (hash fragment)
+        // e garante que o callback receba ?code= via query string
+        flowType: "pkce",
       },
     })
   }

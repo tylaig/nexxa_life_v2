@@ -6,29 +6,29 @@ import { AuthShell } from "@/components/auth/auth-shell"
 import { LoginForm } from "@/components/auth/login-form"
 
 export const metadata: Metadata = {
-  title: "Login | NexxaLife",
-  description: "Acesse sua área do NexxaLife para retomar diagnóstico, plano, execução e evolução.",
+  title: "Entrar | NexxaLife",
+  description: "Acesse o NexxaLife para retomar seu ciclo de diagnóstico, metas, execução e evolução pessoal.",
 }
 
 export default function LoginPage() {
   return (
     <AuthShell
-      eyebrow="Login"
-      title="Entre para retomar seu sistema pessoal com clareza e continuidade."
-      description="A entrada do NexxaLife foi retematizada para o ciclo principal do produto: diagnóstico, metas, checklist, agenda, reflexão e relatórios no mesmo workspace oficial."
-      asideTitle="Uma entrada alinhada ao MVP real"
-      asideDescription="Nos documentos do legado, cadastro/login fazem parte do núcleo do MVP. Esta superfície já abandona o posicionamento anterior de CRM/commerce e passa a refletir o produto NexxaLife."
+      eyebrow="Acesso"
+      title="Bem-vindo de volta ao seu ciclo."
+      description="Entre no NexxaLife para acessar dashboard, agenda, checklist, diário e relatórios — tudo integrado em um único workspace pessoal."
+      asideTitle="Seu sistema pessoal de evolução"
+      asideDescription="O NexxaLife organiza diagnóstico, planejamento estratégico e execução diária em uma jornada contínua e observável."
       highlights={[
-        "Retomar rapidamente o ponto atual do seu ciclo",
-        "Manter acesso ao dashboard, agenda e relatórios",
-        "Entrar com e-mail/senha ou Google no mesmo fluxo oficial",
-        "Eliminar desalinhamento semântico com o produto legado",
+        "Retome rapidamente o ponto atual do seu ciclo",
+        "Acesse dashboard, agenda e relatórios integrados",
+        "Entre com e-mail/senha ou Google — sem fricção",
+        "Mantenha consistência e evolução ao longo do tempo",
       ]}
       footer={
         <>
           Ainda não possui conta?{" "}
           <Link href="/signup" className="font-medium text-primary hover:underline">
-            Criar acesso ao NexxaLife
+            Criar conta gratuita
           </Link>
           .
         </>

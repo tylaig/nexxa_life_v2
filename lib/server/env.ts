@@ -6,7 +6,7 @@ const booleanish = z
   .transform((value) => value === "true" || value === "1")
 
 const envSchema = z.object({
-  APP_SERVICE_NAME: z.string().default("chat.meusuper.app"),
+  APP_SERVICE_NAME: z.string().default("nexxalife"),
   APP_TENANT_ID: z.string().default("tenant_demo"),
   APP_WORKSPACE_ID: z.string().default("workspace_demo"),
   DATABASE_URL: z.string().min(1).optional(),

@@ -1,8 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertCircle, Loader2 } from "lucide-react"
+import { AlertCircle, Check, Loader2, Eye, EyeOff } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -17,17 +18,46 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 const signupSchema = z
   .object({
     fullName: z.string().min(3, "Informe seu nome completo."),
-    nickname: z.string().optional(),
     email: z.string().email("Informe um e-mail válido."),
     password: z.string().min(8, "Use uma senha com pelo menos 8 caracteres."),
-    phone: z.string().optional(),
     acceptedTerms: z.boolean().refine((value) => value, "Você precisa aceitar os termos para continuar."),
   })
 
 type SignupValues = z.infer<typeof signupSchema>
 
+function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+  if (!password) return { score: 0, label: "", color: "" }
+  let score = 0
+  if (password.length >= 8) score++
+  if (password.length >= 12) score++
+  if (/[A-Z]/.test(password)) score++
+  if (/[0-9]/.test(password)) score++
+  if (/[^A-Za-z0-9]/.test(password)) score++
+
+  if (score <= 1) return { score, label: "Muito fraca", color: "bg-red-500" }
+  if (score === 2) return { score, label: "Fraca", color: "bg-orange-500" }
+  if (score === 3) return { score, label: "Razoável", color: "bg-yellow-500" }
+  if (score === 4) return { score, label: "Boa", color: "bg-emerald-500" }
+  return { score, label: "Forte", color: "bg-teal-500" }
+}
+
 function getSignupErrorMessage(error: unknown) {
   if (error instanceof Error && error.message) {
+    const msg = error.message.toLowerCase()
+
+    if (msg.includes("user already registered") || msg.includes("already registered")) {
+      return "Já existe uma conta com esse e-mail. Acesse pelo login ou recupere sua senha."
+    }
+    if (msg.includes("password should be at least")) {
+      return "A senha precisa ter pelo menos 8 caracteres."
+    }
+    if (msg.includes("invalid email")) {
+      return "Informe um endereço de e-mail válido."
+    }
+    if (msg.includes("signup is disabled")) {
+      return "O cadastro está temporariamente indisponível. Tente novamente em breve."
+    }
+
     return error.message
   }
 
@@ -36,19 +66,21 @@ function getSignupErrorMessage(error: unknown) {
 
 export function SignupForm() {
   const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false)
+
   const form = useForm<SignupValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       fullName: "",
-      nickname: "",
       email: "",
       password: "",
-      phone: "",
       acceptedTerms: false,
     },
   })
 
   const serverError = form.formState.errors.root?.message ?? null
+  const passwordValue = form.watch("password")
+  const passwordStrength = getPasswordStrength(passwordValue)
 
   function setServerError(message: string | null) {
     if (!message) {
@@ -70,8 +102,6 @@ export function SignupForm() {
         email: values.email,
         password: values.password,
         fullName: values.fullName,
-        nickname: values.nickname,
-        phone: values.phone,
       })
       router.push("/onboarding?welcome=1")
       router.refresh()
@@ -90,53 +120,40 @@ export function SignupForm() {
         </Alert>
       ) : null}
 
-      <div className="space-y-3">
-        <GoogleAuthButton next="/onboarding" label="Criar conta com Google" />
-        <p className="text-xs leading-5 text-muted-foreground">
-          Google é o caminho mais rápido para iniciar. Se a configuração OAuth ainda não estiver ativa, finalize o acesso pelo formulário abaixo.
-        </p>
-      </div>
+      {/* Google — método principal */}
+      <GoogleAuthButton next="/onboarding" label="Criar conta com Google" />
 
       <div className="relative py-1">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase tracking-[0.24em] text-muted-foreground">
-          <span className="bg-background px-3">ou cadastre manualmente</span>
+          <span className="px-3 [background:inherit]">ou cadastre com e-mail</span>
         </div>
       </div>
 
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome completo</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="text" required placeholder="Seu nome" className="h-11 rounded-xl px-3 py-2" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="nickname"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Apelido</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="text" placeholder="Como prefere ser chamado" className="h-11 rounded-xl px-3 py-2" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome completo</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="text"
+                    required
+                    placeholder="Seu nome completo"
+                    className="h-11 rounded-xl bg-background/60 px-3 py-2"
+                    autoComplete="name"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
@@ -145,54 +162,105 @@ export function SignupForm() {
               <FormItem>
                 <FormLabel>E-mail</FormLabel>
                 <FormControl>
-                  <Input {...field} type="email" required placeholder="voce@exemplo.com" className="h-11 rounded-xl px-3 py-2" />
+                  <Input
+                    {...field}
+                    type="email"
+                    required
+                    placeholder="voce@exemplo.com"
+                    className="h-11 rounded-xl bg-background/60 px-3 py-2"
+                    autoComplete="email"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Senha</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="password" required className="h-11 rounded-xl px-3 py-2" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="tel" placeholder="(11) 99999-9999" className="h-11 rounded-xl px-3 py-2" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Senha</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      type={showPassword ? "text" : "password"}
+                      required
+                      placeholder="Mínimo 8 caracteres"
+                      className="h-11 rounded-xl bg-background/60 px-3 py-2 pr-11"
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </FormControl>
+                {/* Indicador de força da senha */}
+                {passwordValue && (
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div
+                          key={i}
+                          className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                            i <= passwordStrength.score
+                              ? passwordStrength.color
+                              : "bg-border"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    {passwordStrength.label && (
+                      <p className="text-xs text-muted-foreground">
+                        Força da senha:{" "}
+                        <span className={
+                          passwordStrength.score <= 1 ? "text-red-500" :
+                          passwordStrength.score === 2 ? "text-orange-500" :
+                          passwordStrength.score === 3 ? "text-yellow-600 dark:text-yellow-500" :
+                          "text-emerald-600 dark:text-emerald-400"
+                        }>
+                          {passwordStrength.label}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
             name="acceptedTerms"
             render={({ field }) => (
               <FormItem>
-                <label className="flex items-start gap-3 rounded-2xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground transition-colors hover:bg-muted/30 has-[:checked]:border-primary/40 has-[:checked]:bg-primary/5">
                   <FormControl>
-                    <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} className="mt-1" />
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={(checked) => field.onChange(checked === true)}
+                      className="mt-0.5"
+                    />
                   </FormControl>
-                  <span>
-                    Concordo com os termos, política de privacidade e consentimento inicial de uso de dados para operar o ciclo NexxaLife.
+                  <span className="leading-5">
+                    Concordo com os{" "}
+                    <span className="font-medium text-foreground">termos de uso</span>
+                    {" "}e{" "}
+                    <span className="font-medium text-foreground">política de privacidade</span>
+                    {" "}do NexxaLife.
                   </span>
                 </label>
                 <FormMessage />
@@ -200,14 +268,21 @@ export function SignupForm() {
             )}
           />
 
-          <Button type="submit" className="h-11 w-full rounded-xl" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-xl font-medium"
+            disabled={form.formState.isSubmitting}
+          >
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Criando conta...
+                Criando sua conta...
               </>
             ) : (
-              "Criar conta"
+              <>
+                <Check className="h-4 w-4" />
+                Criar conta gratuita
+              </>
             )}
           </Button>
         </form>

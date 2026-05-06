@@ -5,7 +5,7 @@ import { getAppEnv } from "@/lib/server/env"
 
 declare global {
   // eslint-disable-next-line no-var
-  var __chatMeusuperPool: Pool | undefined
+  var __nexxaLifePool: Pool | undefined
 }
 
 export function getDbPool() {
@@ -15,15 +15,15 @@ export function getDbPool() {
     throw new Error("DATABASE_URL is not configured")
   }
 
-  if (!global.__chatMeusuperPool) {
-    global.__chatMeusuperPool = new Pool({
+  if (!global.__nexxaLifePool) {
+    global.__nexxaLifePool = new Pool({
       connectionString: env.DATABASE_URL,
       max: 10,
       idleTimeoutMillis: 30_000,
     })
   }
 
-  return global.__chatMeusuperPool
+  return global.__nexxaLifePool
 }
 
 import type { QueryResultRow } from "pg"

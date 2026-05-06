@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   title: "NexxaLife — sistema operacional de evolução pessoal",
   description:
     "NexxaLife é o sistema operacional de evolução pessoal com diagnóstico, planejamento, execução diária e leitura contínua de evolução.",
-  generator: "v0.app",
 }
 
 export const viewport: Viewport = {

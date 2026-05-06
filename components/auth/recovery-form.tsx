@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
@@ -27,6 +28,8 @@ function getRecoveryErrorMessage(error: unknown) {
 }
 
 export function RecoveryForm() {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
   const form = useForm<RecoveryValues>({
     resolver: zodResolver(recoverySchema),
     defaultValues: {
@@ -35,7 +38,6 @@ export function RecoveryForm() {
   })
 
   const serverError = form.formState.errors.root?.message ?? null
-  const successMessage = form.formState.errors.success?.message ?? null
 
   function setServerError(message: string | null) {
     if (!message) {
@@ -45,18 +47,6 @@ export function RecoveryForm() {
 
     form.setError("root", {
       type: "server",
-      message,
-    })
-  }
-
-  function setSuccessMessage(message: string | null) {
-    if (!message) {
-      form.clearErrors("success")
-      return
-    }
-
-    form.setError("success", {
-      type: "success",
       message,
     })
   }
@@ -77,10 +67,10 @@ export function RecoveryForm() {
   return (
     <div className="space-y-4">
       {successMessage ? (
-        <Alert>
-          <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>E-mail enviado</AlertTitle>
-          <AlertDescription>{successMessage}</AlertDescription>
+        <Alert className="border-emerald-500/30 bg-emerald-500/10">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <AlertTitle className="text-emerald-700 dark:text-emerald-300">E-mail enviado</AlertTitle>
+          <AlertDescription className="text-emerald-600 dark:text-emerald-400">{successMessage}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -101,21 +91,28 @@ export function RecoveryForm() {
               <FormItem>
                 <FormLabel>E-mail</FormLabel>
                 <FormControl>
-                  <Input {...field} type="email" required placeholder="voce@exemplo.com" className="h-11 rounded-xl px-3 py-2" />
+                  <Input
+                    {...field}
+                    type="email"
+                    required
+                    placeholder="voce@exemplo.com"
+                    className="h-11 rounded-xl bg-background/60 px-3 py-2"
+                    autoComplete="email"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="h-11 w-full rounded-xl" disabled={form.formState.isSubmitting}>
+          <Button type="submit" className="h-11 w-full rounded-xl font-medium" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Enviando instruções...
               </>
             ) : (
-              "Enviar instruções"
+              "Enviar instruções de recuperação"
             )}
           </Button>
 

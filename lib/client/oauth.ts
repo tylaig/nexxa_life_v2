@@ -1,15 +1,17 @@
 "use client"
 
-import { hasSupabaseBrowserConfig } from "@/lib/server/env"
+import { hasClientSupabaseConfig } from "@/lib/client/env"
 import { getSupabaseBrowserClient } from "@/lib/client/supabase"
 
 export async function signInWithGoogle(next = "/dashboard") {
-  if (!hasSupabaseBrowserConfig()) {
-    throw new Error("Login com Google ainda não está configurado")
+  if (!hasClientSupabaseConfig()) {
+    throw new Error("Login com Google não está disponível no momento.")
   }
 
   const supabase = getSupabaseBrowserClient()
-  await supabase.auth.signOut()
+
+  // Limpa sessão anterior antes de iniciar novo fluxo OAuth
+  await supabase.auth.signOut({ scope: "local" })
 
   const redirectTo = new URL("/auth/callback", window.location.origin)
   redirectTo.searchParams.set("next", next)
@@ -18,6 +20,13 @@ export async function signInWithGoogle(next = "/dashboard") {
     provider: "google",
     options: {
       redirectTo: redirectTo.toString(),
+      // Garante PKCE flow — o Supabase client com flowType:'pkce' já faz isso
+      // mas passamos explicitamente para evitar fallback para implicit
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+      skipBrowserRedirect: false,
     },
   })
 

@@ -1,9 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertCircle, Loader2 } from "lucide-react"
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -23,6 +24,21 @@ type LoginValues = z.infer<typeof loginSchema>
 
 function getLoginErrorMessage(error: unknown) {
   if (error instanceof Error && error.message) {
+    const msg = error.message.toLowerCase()
+
+    if (msg.includes("email not confirmed")) {
+      return "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada e clique no link enviado pelo NexxaLife."
+    }
+    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
+      return "E-mail ou senha incorretos. Verifique os dados e tente novamente."
+    }
+    if (msg.includes("user not found")) {
+      return "Não encontramos uma conta com esse e-mail. Crie sua conta primeiro."
+    }
+    if (msg.includes("too many requests") || msg.includes("rate limit")) {
+      return "Muitas tentativas de acesso. Aguarde alguns minutos e tente novamente."
+    }
+
     return error.message
   }
 
@@ -42,6 +58,9 @@ export function LoginForm() {
   const searchParams = useSearchParams()
   const next = sanitizeNext(searchParams.get("next"))
   const recovered = searchParams.get("recovered") === "1"
+  const oauthError = searchParams.get("error")
+
+  const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -78,10 +97,24 @@ export function LoginForm() {
   return (
     <div className="space-y-4">
       {recovered ? (
-        <Alert>
+        <Alert className="border-emerald-500/30 bg-emerald-500/10">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <AlertTitle className="text-emerald-700 dark:text-emerald-300">Acesso redefinido</AlertTitle>
+          <AlertDescription className="text-emerald-600 dark:text-emerald-400">
+            Se sua senha foi alterada com sucesso, entre novamente para continuar seu ciclo no NexxaLife.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {oauthError ? (
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Acesso redefinido</AlertTitle>
-          <AlertDescription>Se sua senha foi alterada com sucesso, entre novamente para continuar seu ciclo no NexxaLife.</AlertDescription>
+          <AlertTitle>Falha no login com Google</AlertTitle>
+          <AlertDescription>
+            {oauthError === "missing_code"
+              ? "O código de autorização não foi encontrado. Tente novamente."
+              : "Não foi possível concluir o login com Google. Use e-mail e senha ou tente novamente."}
+          </AlertDescription>
         </Alert>
       ) : null}
 
@@ -93,6 +126,18 @@ export function LoginForm() {
         </Alert>
       ) : null}
 
+      {/* Google primeiro — reduz fricção */}
+      <GoogleAuthButton next={next} />
+
+      <div className="relative py-1">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase tracking-[0.24em] text-muted-foreground">
+          <span className="px-3 [background:inherit]">ou entre com e-mail</span>
+        </div>
+      </div>
+
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
@@ -102,7 +147,14 @@ export function LoginForm() {
               <FormItem>
                 <FormLabel>E-mail</FormLabel>
                 <FormControl>
-                  <Input {...field} type="email" required placeholder="voce@exemplo.com" className="h-11 rounded-xl px-3 py-2" />
+                  <Input
+                    {...field}
+                    type="email"
+                    required
+                    placeholder="voce@exemplo.com"
+                    className="h-11 rounded-xl bg-background/60 px-3 py-2"
+                    autoComplete="email"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -117,18 +169,43 @@ export function LoginForm() {
                 <div className="flex items-center justify-between gap-3">
                   <FormLabel>Senha</FormLabel>
                   <Link href="/recover" className="text-xs text-primary hover:underline">
-                    Recuperar acesso
+                    Esqueci minha senha
                   </Link>
                 </div>
                 <FormControl>
-                  <Input {...field} type="password" required className="h-11 rounded-xl px-3 py-2" />
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      type={showPassword ? "text" : "password"}
+                      required
+                      className="h-11 rounded-xl bg-background/60 px-3 py-2 pr-11"
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3.5 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="h-11 w-full rounded-xl" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            className="h-11 w-full rounded-xl font-medium"
+            disabled={form.formState.isSubmitting}
+          >
             {form.formState.isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -138,20 +215,6 @@ export function LoginForm() {
               "Entrar no NexxaLife"
             )}
           </Button>
-
-          <div className="relative py-1">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              <span className="bg-background px-3">ou</span>
-            </div>
-          </div>
-
-          <GoogleAuthButton next={next} />
-          <p className="text-xs leading-5 text-muted-foreground">
-            Se o Google ainda não estiver configurado no ambiente, use o login por e-mail como fallback até concluirmos a integração OAuth.
-          </p>
         </form>
       </Form>
     </div>
