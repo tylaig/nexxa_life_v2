@@ -1,12 +1,14 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { diagnosticHero } from "@/components/meu-dia/diagnostic-content"
-import { NexxaLifeDiagnosticView } from "@/components/meu-dia/meu-dia-diagnostic-view"
+import { DiagnosticWizard } from "@/components/meu-dia/meu-dia-diagnostic-view"
+import { getDiagnosticQuestions } from "@/lib/db/actions"
 
-export default function DiagnosticPage() {
+export default async function DiagnosticPage() {
+  const questions = await getDiagnosticQuestions()
+
   return (
     <>
-      <AppTopbar title={diagnosticHero.title} subtitle={diagnosticHero.description} />
-      <NexxaLifeDiagnosticView />
+      <AppTopbar title="Diagnóstico Pessoal" subtitle="Mapeie o seu momento para calibrar o NexxaLife" />
+      <DiagnosticWizard questions={questions} />
     </>
   )
 }

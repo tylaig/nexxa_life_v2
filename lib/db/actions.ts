@@ -239,3 +239,104 @@ export async function logDailyActivity(params: { checklistDone: number; checklis
   // Call the streak update function
   await supabase.rpc('upsert_user_streak', { p_user_id: auth.user.id })
 }
+
+// -----------------------------------------------------------------------------
+// DIAGNOSTIC
+// -----------------------------------------------------------------------------
+
+export async function getDiagnosticQuestions() {
+  const supabase = await getSupabaseServerClient()
+  const { data, error } = await supabase
+    .from("diagnostic_questions")
+    .select("*")
+    .eq("active", true)
+    .order("area")
+    .order("question_order", { ascending: true })
+
+  if (error) {
+    console.error("[getDiagnosticQuestions] Error:", error)
+    return []
+  }
+  return data
+}
+
+export async function saveDiagnosticResult(params: {
+  answers: Record<string, number>
+  scores: {
+    health: number
+    mind: number
+    productivity: number
+    finances: number
+    relations: number
+    purpose: number
+  }
+}) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) throw new Error("Unauthorized")
+
+  const supabase = await getSupabaseServerClient()
+  const { error } = await supabase
+    .from("diagnostic_results")
+    .insert({
+      user_id: auth.user.id,
+      score_health: params.scores.health,
+      score_mind: params.scores.mind,
+      score_productivity: params.scores.productivity,
+      score_finances: params.scores.finances,
+      score_relations: params.scores.relations,
+      score_purpose: params.scores.purpose,
+      raw_answers: params.answers,
+    })
+
+  if (error) throw error
+  revalidatePath("/diagnostic")
+  revalidatePath("/dashboard")
+}
+
+export async function getDiagnosticResult() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return null
+
+  const supabase = await getSupabaseServerClient()
+  const { data, error } = await supabase
+    .from("diagnostic_results")
+    .select("*")
+    .eq("user_id", auth.user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+export async function markUserOnboarded() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) throw new Error("Unauthorized")
+
+  const supabase = await getSupabaseServerClient()
+  const { error } = await supabase
+    .from("app_user_profiles")
+    .update({ onboarded: true, onboarding_step: "complete" })
+    .eq("user_id", auth.user.id)
+
+  if (error) throw error
+  revalidatePath("/dashboard")
+  revalidatePath("/")
+}
+
+export async function getUserOnboardingStatus() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return { onboarded: false }
+
+  const supabase = await getSupabaseServerClient()
+  const { data, error } = await supabase
+    .from("app_user_profiles")
+    .select("onboarded")
+    .eq("user_id", auth.user.id)
+    .single()
+
+  if (error || !data) return { onboarded: false }
+  return { onboarded: data.onboarded }
+}
+
