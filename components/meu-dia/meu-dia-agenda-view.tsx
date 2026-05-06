@@ -27,14 +27,7 @@ const EVENT_STYLES: Record<EventType, { bg: string; border: string; dot: string;
   health:   { bg: "bg-emerald-500/10", border: "border-emerald-500/30", dot: "bg-emerald-500", label: "Saúde" },
 }
 
-const MOCK_EVENTS: AgendaEvent[] = [
-  { id: "1", title: "Deep work — MVP auth", time: "08:00", endTime: "10:00", type: "focus" },
-  { id: "2", title: "Alinhamento com time", time: "10:30", endTime: "11:00", type: "meeting", isOnline: true },
-  { id: "3", title: "Almoço + pausa", time: "12:00", endTime: "13:00", type: "personal" },
-  { id: "4", title: "Revisão do plano semanal", time: "14:00", endTime: "15:00", type: "focus" },
-  { id: "5", title: "Treino — academia", time: "18:00", endTime: "19:00", type: "health", location: "Academia" },
-  { id: "6", title: "Leitura + diário", time: "21:00", endTime: "21:30", type: "personal" },
-]
+// No more MOCK_EVENTS — data comes from props
 
 function getMiniCalDays() {
   const today = new Date()
@@ -113,8 +106,19 @@ function EventRow({ event }: { event: AgendaEvent }) {
   )
 }
 
-export function NexxaLifeAgendaView() {
+export function NexxaLifeAgendaView({ events: rawEvents }: { events: any[] }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
+
+  // Map DB data to UI shape
+  const allEvents: AgendaEvent[] = rawEvents.map((e: any) => ({
+    id: e.id,
+    title: e.title,
+    time: e.start_time?.slice(0, 5) || "00:00",
+    endTime: e.end_time?.slice(0, 5) || "00:00",
+    type: (e.type || "personal") as EventType,
+    location: e.location || undefined,
+    isOnline: e.is_online ?? false,
+  }))
 
   const formattedDate = selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
   const isToday = selectedDate.toDateString() === new Date().toDateString()
@@ -133,7 +137,6 @@ export function NexxaLifeAgendaView() {
       />
 
       <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
-        {/* Coluna esq — mini calendário */}
         <div className="space-y-4">
           <WeekMiniCal selectedDate={selectedDate} onSelect={setSelectedDate} />
           <SectionCard title="Tipos de evento">
@@ -148,7 +151,6 @@ export function NexxaLifeAgendaView() {
           </SectionCard>
         </div>
 
-        {/* Timeline do dia */}
         <SectionCard
           title={isToday ? "Hoje" : formattedDate}
           action={
@@ -158,7 +160,7 @@ export function NexxaLifeAgendaView() {
           }
           noPadding
         >
-          {MOCK_EVENTS.length === 0 ? (
+          {allEvents.length === 0 ? (
             <EmptyState
               icon={CalendarDays}
               title="Dia livre"
@@ -168,7 +170,7 @@ export function NexxaLifeAgendaView() {
             />
           ) : (
             <div className="space-y-2 p-4">
-              {MOCK_EVENTS.map((event) => <EventRow key={event.id} event={event} />)}
+              {allEvents.map((event) => <EventRow key={event.id} event={event} />)}
             </div>
           )}
         </SectionCard>

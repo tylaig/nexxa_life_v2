@@ -1,12 +1,14 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
 import { NexxaLifeChecklistView } from "@/components/meu-dia/meu-dia-checklist-view"
-import { checklistHero } from "@/components/meu-dia/checklist-content"
+import { getChecklist } from "@/lib/db/actions"
 
-export default function ChecklistPage() {
+export default async function ChecklistPage() {
+  const items = await getChecklist()
+
   return (
     <>
-      <AppTopbar title="Checklist NexxaLife" subtitle={checklistHero.description} />
-      <NexxaLifeChecklistView />
+      <AppTopbar title="Checklist NexxaLife" subtitle="Foco diário — conquiste o dia, um item por vez" />
+      <NexxaLifeChecklistView initialItems={items} />
     </>
   )
 }

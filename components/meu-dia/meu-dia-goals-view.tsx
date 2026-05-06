@@ -24,28 +24,7 @@ type GoalItem = {
   milestones: { label: string; done: boolean }[]
 }
 
-const MOCK_GOALS: GoalItem[] = [
-  {
-    id: "1", title: "Lançar MVP do produto", description: "Entregar versão funcional com auth e ciclo principal.",
-    progress: 68, category: "Trabalho", status: "active", daysLeft: 22,
-    milestones: [{ label: "Auth funcionando", done: true }, { label: "Dashboard redesenhado", done: true }, { label: "Deploy em produção", done: false }],
-  },
-  {
-    id: "2", title: "Leitura de 12 livros no ano", description: "Um livro por mês — produto, tecnologia e filosofia.",
-    progress: 42, category: "Crescimento", status: "active", daysLeft: 180,
-    milestones: [{ label: "5 livros concluídos", done: true }, { label: "Notas organizadas", done: false }],
-  },
-  {
-    id: "3", title: "Rotina fitness 4x/semana", description: "Consistência por 90 dias consecutivos.",
-    progress: 75, category: "Saúde", status: "active", daysLeft: 60,
-    milestones: [{ label: "30 dias", done: true }, { label: "60 dias", done: true }, { label: "90 dias", done: false }],
-  },
-  {
-    id: "4", title: "Reserva de emergência — 6 meses", description: "Atingir R$ 50k guardados.",
-    progress: 100, category: "Finanças", status: "completed", daysLeft: 0,
-    milestones: [{ label: "R$ 25k", done: true }, { label: "R$ 50k", done: true }],
-  },
-]
+// No more MOCK_GOALS — data comes from props
 
 const CATEGORY_COLORS: Record<GoalCategory, string> = {
   Trabalho: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
@@ -112,18 +91,31 @@ function GoalCard({ goal }: { goal: GoalItem }) {
   )
 }
 
-export function NexxaLifeGoalsView() {
+export function NexxaLifeGoalsView({ goals: rawGoals }: { goals: any[] }) {
   const [filter, setFilter] = useState<"all" | GoalStatus>("all")
+  
+  // Map DB data to UI shape
+  const allGoals: GoalItem[] = rawGoals.map((g: any) => ({
+    id: g.id,
+    title: g.title,
+    description: g.description || undefined,
+    progress: g.progress ?? 0,
+    category: (g.category || "Pessoal") as GoalCategory,
+    status: (g.status || "active") as GoalStatus,
+    daysLeft: g.target_date ? Math.max(0, Math.ceil((new Date(g.target_date).getTime() - Date.now()) / 86400000)) : 0,
+    milestones: (g.goal_milestones || []).map((m: any) => ({ label: m.label, done: m.done })),
+  }))
+
   const FILTERS = [
     { value: "all" as const, label: "Todas" },
     { value: "active" as const, label: "Ativas" },
     { value: "completed" as const, label: "Concluídas" },
     { value: "paused" as const, label: "Pausadas" },
   ]
-  const filtered = filter === "all" ? MOCK_GOALS : MOCK_GOALS.filter((g) => g.status === filter)
-  const activeCount = MOCK_GOALS.filter((g) => g.status === "active").length
-  const completedCount = MOCK_GOALS.filter((g) => g.status === "completed").length
-  const avgProgress = Math.round(MOCK_GOALS.filter((g) => g.status === "active").reduce((a, g) => a + g.progress, 0) / Math.max(activeCount, 1))
+  const filtered = filter === "all" ? allGoals : allGoals.filter((g) => g.status === filter)
+  const activeCount = allGoals.filter((g) => g.status === "active").length
+  const completedCount = allGoals.filter((g) => g.status === "completed").length
+  const avgProgress = Math.round(allGoals.filter((g) => g.status === "active").reduce((a, g) => a + g.progress, 0) / Math.max(activeCount, 1))
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">

@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { BookText, Plus, Search, Smile, Meh, Frown, Zap, Heart } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { SectionCard } from "@/components/ui/section-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { addJournalEntry } from "@/lib/db/actions"
 
 type Mood = "great" | "good" | "neutral" | "bad" | "awful"
 
@@ -27,23 +29,7 @@ type JournalEntry = {
   tags: string[]
 }
 
-const MOCK_ENTRIES: JournalEntry[] = [
-  {
-    id: "1", date: "2025-05-05", dateLabel: "Ontem", mood: "great",
-    content: "Hoje foi um dia de clareza rara. Consegui finalizar o módulo de auth e ainda sobrou tempo para pensar na estrutura do dashboard. Sinto que estou no trilho certo.",
-    tags: ["produtividade", "código"],
-  },
-  {
-    id: "2", date: "2025-05-04", dateLabel: "Ante-ontem", mood: "good",
-    content: "Dia agitado mas produtivo. A reunião de alinhamento ajudou a clarear prioridades. Li 30 páginas do livro à noite — boa sensação.",
-    tags: ["equilíbrio", "leitura"],
-  },
-  {
-    id: "3", date: "2025-05-03", dateLabel: "Sábado", mood: "neutral",
-    content: "Fim de semana mais tranquilo. Aproveitei para descansar e reorganizar pensamentos. Sem grande produtividade mas foi necessário.",
-    tags: ["descanso"],
-  },
-]
+// No more MOCK_ENTRIES — data comes from props
 
 function MoodPicker({ value, onChange }: { value: Mood | null; onChange: (m: Mood) => void }) {
   return (
@@ -102,26 +88,53 @@ function EntryCard({ entry, active, onClick }: { entry: JournalEntry; active: bo
   )
 }
 
-export function NexxaLifeJournalView() {
-  const [activeId, setActiveId] = useState<string | null>(MOCK_ENTRIES[0]?.id ?? null)
+export function NexxaLifeJournalView({ entries: rawEntries }: { entries: any[] }) {
+  const router = useRouter()
+
+  // Map DB data to UI shape
+  const allEntries: JournalEntry[] = rawEntries.map((e: any) => {
+    const d = new Date(e.created_at || e.entry_date || Date.now())
+    const now = new Date()
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000)
+    const dateLabel = diffDays === 0 ? "Hoje" : diffDays === 1 ? "Ontem" : d.toLocaleDateString("pt-BR", { weekday: "long" })
+    return {
+      id: e.id,
+      date: d.toISOString().slice(0, 10),
+      dateLabel,
+      content: e.content || "",
+      mood: (e.mood || "neutral") as Mood,
+      tags: e.tags || [],
+    }
+  })
+
+  const [activeId, setActiveId] = useState<string | null>(allEntries[0]?.id ?? null)
   const [newMode, setNewMode] = useState(false)
   const [draft, setDraft] = useState("")
   const [draftMood, setDraftMood] = useState<Mood | null>(null)
   const [search, setSearch] = useState("")
 
-  const activeEntry = MOCK_ENTRIES.find((e) => e.id === activeId)
-  const filtered = MOCK_ENTRIES.filter(
+  const activeEntry = allEntries.find((e) => e.id === activeId)
+  const filtered = allEntries.filter(
     (e) => e.content.toLowerCase().includes(search.toLowerCase()) || e.tags.some((t) => t.includes(search.toLowerCase()))
   )
 
   const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
+
+  async function handleSave() {
+    if (!draft.trim()) return
+    await addJournalEntry({ content: draft.trim(), mood: draftMood || "neutral" })
+    setDraft("")
+    setDraftMood(null)
+    setNewMode(false)
+    router.refresh()
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Reflexão"
         title="Diário"
-        description={`Registre e reveja o seu dia — ${MOCK_ENTRIES.length} entradas`}
+        description={`Registre e reveja o seu dia — ${allEntries.length} entradas`}
         actions={
           <Button size="sm" className="h-8 gap-1.5 rounded-xl px-3 text-xs" onClick={() => { setNewMode(true); setActiveId(null) }}>
             <Plus className="h-3.5 w-3.5" /> Nova entrada
@@ -156,7 +169,7 @@ export function NexxaLifeJournalView() {
         {/* Editor / visualizador */}
         {newMode ? (
           <SectionCard title={`Nova entrada — ${today}`}
-            action={<Button size="sm" className="h-7 rounded-xl px-3 text-xs" onClick={() => setNewMode(false)}>Salvar</Button>}>
+            action={<Button size="sm" className="h-7 rounded-xl px-3 text-xs" onClick={handleSave}>Salvar</Button>}>
             <div className="space-y-4">
               <textarea
                 placeholder="Como foi o seu dia? O que você sentiu, aprendeu ou quer lembrar..."

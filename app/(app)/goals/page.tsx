@@ -1,12 +1,14 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { goalsHero } from "@/components/meu-dia/goals-content"
 import { NexxaLifeGoalsView } from "@/components/meu-dia/meu-dia-goals-view"
+import { getGoals } from "@/lib/db/actions"
 
-export default function GoalsPage() {
+export default async function GoalsPage() {
+  const goals = await getGoals()
+
   return (
     <>
-      <AppTopbar title="Metas NexxaLife" subtitle={goalsHero.description} />
-      <NexxaLifeGoalsView />
+      <AppTopbar title="Metas NexxaLife" subtitle="Defina, acompanhe e conquiste seus objetivos" />
+      <NexxaLifeGoalsView goals={goals} />
     </>
   )
 }

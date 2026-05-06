@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { CheckSquare, Plus, Flame, Filter } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { SectionCard } from "@/components/ui/section-card"
@@ -9,19 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
+import { addChecklistItem, toggleChecklistItem } from "@/lib/db/actions"
 
 type Priority = "high" | "medium" | "low"
 type ChecklistItem = { id: string; label: string; done: boolean; priority: Priority; category: string; recurrent: boolean }
 
-const INITIAL_ITEMS: ChecklistItem[] = [
-  { id: "1", label: "Revisão das metas semanais", done: true, priority: "high", category: "Planejamento", recurrent: false },
-  { id: "2", label: "Sessão de planejamento profundo 30min", done: false, priority: "high", category: "Planejamento", recurrent: true },
-  { id: "3", label: "Leitura — 20 páginas do livro atual", done: false, priority: "medium", category: "Crescimento", recurrent: true },
-  { id: "4", label: "Exercício físico", done: false, priority: "medium", category: "Saúde", recurrent: true },
-  { id: "5", label: "Meditação noturna", done: false, priority: "low", category: "Saúde", recurrent: true },
-  { id: "6", label: "Responder e-mails prioritários", done: true, priority: "medium", category: "Trabalho", recurrent: false },
-  { id: "7", label: "Revisar código do módulo de auth", done: false, priority: "high", category: "Trabalho", recurrent: false },
-]
+// No more INITIAL_ITEMS — data comes from props
 
 const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; dot: string }> = {
   high: { label: "Alta", color: "text-red-500", dot: "bg-red-400" },
@@ -100,21 +94,29 @@ function GroupSection({
   )
 }
 
-export function NexxaLifeChecklistView() {
-  const [items, setItems] = useState<ChecklistItem[]>(INITIAL_ITEMS)
+export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }) {
+  const router = useRouter()
+  const mapped: ChecklistItem[] = initialItems.map((i: any) => ({
+    id: i.id, label: i.label, done: i.done ?? false,
+    priority: (i.priority || "medium") as Priority,
+    category: i.category || "Geral", recurrent: i.recurrent ?? false,
+  }))
+  const [items, setItems] = useState<ChecklistItem[]>(mapped)
   const [newLabel, setNewLabel] = useState("")
   const [filter, setFilter] = useState<"all" | Priority>("all")
 
-  const toggle = (id: string) =>
+  const toggle = async (id: string) => {
+    const item = items.find((i) => i.id === id)
+    if (!item) return
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, done: !i.done } : i)))
+    await toggleChecklistItem(id, !item.done)
+  }
 
-  const addItem = () => {
+  const addItem = async () => {
     if (!newLabel.trim()) return
-    setItems((prev) => [
-      ...prev,
-      { id: Date.now().toString(), label: newLabel.trim(), done: false, priority: "medium", category: "Geral", recurrent: false },
-    ])
+    await addChecklistItem({ label: newLabel.trim(), priority: "medium", category: "Geral" })
     setNewLabel("")
+    router.refresh()
   }
 
   const filtered = filter === "all" ? items : items.filter((i) => i.priority === filter)

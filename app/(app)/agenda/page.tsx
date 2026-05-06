@@ -1,12 +1,14 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { agendaHero } from "@/components/meu-dia/agenda-content"
 import { NexxaLifeAgendaView } from "@/components/meu-dia/meu-dia-agenda-view"
+import { getAgenda } from "@/lib/db/actions"
 
-export default function AgendaPage() {
+export default async function AgendaPage() {
+  const events = await getAgenda()
+
   return (
     <>
-      <AppTopbar title="Agenda NexxaLife" subtitle={agendaHero.description} />
-      <NexxaLifeAgendaView />
+      <AppTopbar title="Agenda NexxaLife" subtitle="Organize e otimize seu tempo com clareza" />
+      <NexxaLifeAgendaView events={events} />
     </>
   )
 }

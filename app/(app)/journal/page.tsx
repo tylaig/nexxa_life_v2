@@ -1,12 +1,14 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { journalHero } from "@/components/meu-dia/journal-content"
 import { NexxaLifeJournalView } from "@/components/meu-dia/meu-dia-journal-view"
+import { getJournalEntries } from "@/lib/db/actions"
 
-export default function JournalPage() {
+export default async function JournalPage() {
+  const entries = await getJournalEntries()
+
   return (
     <>
-      <AppTopbar title={journalHero.title} subtitle={journalHero.description} />
-      <NexxaLifeJournalView />
+      <AppTopbar title="Diário NexxaLife" subtitle="Registre reflexões e acompanhe sua evolução" />
+      <NexxaLifeJournalView entries={entries} />
     </>
   )
 }
