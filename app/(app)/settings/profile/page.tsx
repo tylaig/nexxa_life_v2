@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { PlannedActionButton } from "@/components/settings/planned-action-button"
+import { Button } from "@/components/ui/button"
 
 export default function SettingsProfilePage() {
   return (
@@ -44,7 +44,7 @@ export default function SettingsProfilePage() {
                 <CardDescription>Persistência visual inicial para a superfície de perfil.</CardDescription>
               </CardHeader>
               <CardContent>
-                <PlannedActionButton message="Preferências de perfil">Salvar preferências</PlannedActionButton>
+                <Button className="w-full">Salvar preferências</Button>
               </CardContent>
             </Card>
           </div>

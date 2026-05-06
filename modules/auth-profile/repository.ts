@@ -6,8 +6,6 @@ import { appUserProfileStore } from "./store"
 
 type AppUserProfileRow = {
   user_id: string
-  tenant_id: string
-  workspace_id: string
   email: string
   full_name: string
   nickname: string | null
@@ -46,8 +44,6 @@ export async function getAppUserProfile(userId: string): Promise<AppUserProfile 
     `
       select
         user_id,
-        tenant_id,
-        workspace_id,
         email,
         full_name,
         nickname,
@@ -57,10 +53,10 @@ export async function getAppUserProfile(userId: string): Promise<AppUserProfile 
         created_at,
         updated_at
       from app_user_profiles
-      where tenant_id = $1 and workspace_id = $2 and user_id = $3
+      where user_id = $1
       limit 1
     `,
-    [env.APP_TENANT_ID, env.APP_WORKSPACE_ID, userId]
+    [userId]
   )
 
   return result.rows[0] ? mapRow(result.rows[0]) : null
@@ -99,8 +95,6 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
     `
       insert into app_user_profiles (
         user_id,
-        tenant_id,
-        workspace_id,
         email,
         full_name,
         nickname,
@@ -108,7 +102,7 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
         onboarded,
         onboarding_step
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      values ($1, $2, $3, $4, $5, $6, $7)
       on conflict (user_id)
       do update set
         email = excluded.email,
@@ -120,8 +114,6 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
         updated_at = now()
       returning
         user_id,
-        tenant_id,
-        workspace_id,
         email,
         full_name,
         nickname,
@@ -133,8 +125,6 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
     `,
     [
       input.userId,
-      env.APP_TENANT_ID,
-      env.APP_WORKSPACE_ID,
       input.email ?? current?.email ?? `${input.userId}@example.local`,
       input.fullName ?? current?.fullName ?? input.email ?? input.userId,
       input.nickname ?? current?.nickname ?? null,
