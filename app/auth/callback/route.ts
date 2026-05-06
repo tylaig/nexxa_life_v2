@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url)
   const code = url.searchParams.get("code")
   const next = sanitizeNext(url.searchParams.get("next"))
-  const baseUrl = getAppBaseUrl()
+  const baseUrl = url.origin
 
   if (!code) {
     // Sem code — fallback para a página client-side que lê o hash fragment
