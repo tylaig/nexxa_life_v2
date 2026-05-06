@@ -22,14 +22,27 @@ const TOOL_LABELS: Record<string, { icon: any; label: string; color: string }> =
   toggleChecklistItem:{ icon: CheckCircle2, label: "Tarefa atualizada", color: "text-blue-500" },
 }
 
-export function AiChatAssistant() {
-  const [isOpen, setIsOpen] = React.useState(false)
-  const [isExpanded, setIsExpanded] = React.useState(false)
+export function AiChatAssistant({ step, diagnosticData }: { step?: string; diagnosticData?: any }) {
+  const isPlanningMode = step === "planning"
+  const [isOpen, setIsOpen] = React.useState(isPlanningMode)
+  const [isExpanded, setIsExpanded] = React.useState(isPlanningMode)
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
-  const { messages, input = "", handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat",
+  const { messages, input = "", handleInputChange, handleSubmit, isLoading, setInput } = useChat({
+    api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
+    body: isPlanningMode ? { diagnosticData } : undefined,
   } as any) as any
+
+  // Auto-trigger first AI message when entering planning chat
+  React.useEffect(() => {
+    if (isPlanningMode && isOpen && (messages || []).length === 0) {
+      const fakeEvent = { preventDefault: () => {} } as any
+      setInput?.("Olá! Acabei de fazer meu diagnóstico. Vamos criar meu plano de evolução!")
+      setTimeout(() => {
+        handleSubmit?.(fakeEvent)
+      }, 500)
+    }
+  }, [isPlanningMode, isOpen])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -58,6 +71,22 @@ export function AiChatAssistant() {
     )
   }
 
+  // Count what IA created if in planning mode
+  let goalsCount = 0, tasksCount = 0, eventsCount = 0
+  if (isPlanningMode) {
+    for (const msg of (messages || [])) {
+      if (msg.toolInvocations) {
+        for (const inv of msg.toolInvocations) {
+          if (inv.state === "result" && inv.result?.success) {
+            if (inv.toolName === "addGoal") goalsCount++
+            if (inv.toolName === "addChecklistItem") tasksCount++
+            if (inv.toolName === "addAgendaEvent") eventsCount++
+          }
+        }
+      }
+    }
+  }
+
   return (
     <div
       className={cn(
@@ -74,17 +103,30 @@ export function AiChatAssistant() {
             <Sparkles className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground">NexxaLife IA</h3>
-            <p className="text-[10px] text-muted-foreground">Assistente de Evolução</p>
+            <h3 className="text-sm font-semibold text-foreground">
+              {isPlanningMode ? "IA Estrategista NexxaLife" : "NexxaLife IA"}
+            </h3>
+            <p className="text-[10px] text-muted-foreground">
+              {isPlanningMode ? "Sessão de Planejamento Pessoal" : "Assistente de Evolução"}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
+          {isPlanningMode && (goalsCount > 0 || tasksCount > 0 || eventsCount > 0) && (
+             <div className="hidden sm:flex items-center gap-3 mr-4">
+              {goalsCount > 0 && <span className="text-xs text-emerald-500 flex items-center gap-1"><Target className="h-3 w-3"/>{goalsCount}</span>}
+              {tasksCount > 0 && <span className="text-xs text-blue-500 flex items-center gap-1"><CheckCircle2 className="h-3 w-3"/>{tasksCount}</span>}
+              {eventsCount > 0 && <span className="text-xs text-violet-500 flex items-center gap-1"><Calendar className="h-3 w-3"/>{eventsCount}</span>}
+             </div>
+          )}
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => setIsExpanded(!isExpanded)}>
             {isExpanded ? <Minimize2 className="h-3.5 w-3.5 text-muted-foreground" /> : <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />}
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => setIsOpen(false)}>
-            <X className="h-3.5 w-3.5 text-muted-foreground" />
-          </Button>
+          {!isPlanningMode && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl" onClick={() => setIsOpen(false)}>
+              <X className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+          )}
         </div>
       </div>
 
