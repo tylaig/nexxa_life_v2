@@ -2,7 +2,7 @@
 
 import * as React from "react"
 // @ts-ignore
-import { useChat } from "ai/react"
+import { useChat } from "@ai-sdk/react"
 import { Bot, Send, X, MessageSquare, Loader2, Maximize2, Minimize2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
