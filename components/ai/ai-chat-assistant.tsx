@@ -162,7 +162,7 @@ export function AiChatAssistant() {
         <form onSubmit={handleSubmit} className="relative">
           <textarea
             value={input || ""}
-            onChange={handleInputChange}
+            onChange={(e) => handleInputChange?.(e)}
             onKeyDown={handleKeyDown}
             placeholder="Digite uma mensagem..."
             rows={1}
