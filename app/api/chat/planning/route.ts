@@ -123,18 +123,18 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         getGoals: tool({
           description: "Consulta as metas já criadas do usuário.",
-          parameters: z.object({ query: z.string().describe("deixe vazio") }),
+          parameters: z.object({ _reason: z.string().describe("Motivo da busca") }),
           execute: async () => await getGoals(),
         }),
         getChecklist: tool({
           description: "Consulta o checklist do dia.",
-          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (deixe vazio para hoje)") }),
-          execute: async ({ date }) => await getChecklist(date === "deixe vazio" ? undefined : date),
+          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (envie 'hoje' ou a data)") }),
+          execute: async ({ date }) => await getChecklist(date === "hoje" || date === "" ? undefined : date),
         }),
         getAgenda: tool({
           description: "Consulta a agenda do dia.",
-          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (deixe vazio para hoje)") }),
-          execute: async ({ date }) => await getAgenda(date === "deixe vazio" ? undefined : date),
+          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (envie 'hoje' ou a data)") }),
+          execute: async ({ date }) => await getAgenda(date === "hoje" || date === "" ? undefined : date),
         }),
       },
     })
@@ -143,7 +143,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
   } catch (error) {
     console.error("[Planning Chat Error]:", error)
     
-    const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Vi que o seu diagnóstico mostrou algumas oportunidades incríveis nas áreas prioritárias. O que você acha de focarmos em melhorar a consistência da sua rotina na próxima semana? Me conte o que tem em mente!"
+    const mockResponse = "ERRO: " + (error instanceof Error ? error.stack : String(error))
     
     const { createUIMessageStreamResponse, createUIMessageStream } = await import("ai")
     

@@ -39,10 +39,10 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         getChecklist: tool({
           description: "Consulta o checklist (tarefas diárias) do usuário para uma data específica (padrão: hoje).",
           parameters: z.object({
-            date: z.string().describe("Data no formato YYYY-MM-DD (deixe vazio para hoje)"),
+            date: z.string().describe("Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)"),
           }),
           execute: async ({ date }) => {
-            const data = await getChecklist(date === "deixe vazio" ? undefined : date)
+            const data = await getChecklist(date === "hoje" || date === "" || date === "deixe vazio" ? undefined : date)
             return data
           },
         }),
@@ -52,10 +52,11 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
             label: z.string().describe("Descrição da tarefa"),
             priority: z.enum(["high", "medium", "low"]).describe("Prioridade da tarefa"),
             category: z.string().describe("Categoria (ex: Trabalho, Saúde, Pessoal)"),
-            date: z.string().describe("Data no formato YYYY-MM-DD (padrão: hoje)"),
+            date: z.string().describe("Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)"),
           }),
           execute: async (params) => {
-            await addChecklistItem(params)
+            const finalDate = params.date === "hoje" || params.date === "" ? undefined : params.date
+            await addChecklistItem({ ...params, date: finalDate })
             return { success: true, message: "Tarefa adicionada com sucesso" }
           },
         }),
@@ -72,7 +73,9 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         getGoals: tool({
           description: "Consulta as metas ativas do usuário e seus marcos (milestones).",
-          parameters: z.object({}),
+          parameters: z.object({
+            _reason: z.string().describe("Breve justificativa para a busca (ex: 'analisar metas')"),
+          }),
           execute: async () => {
             const data = await getGoals()
             return data
@@ -84,7 +87,7 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
             title: z.string().describe("Título da meta"),
             description: z.string().describe("Descrição detalhada"),
             category: z.string().describe("Categoria (ex: Profissional, Pessoal, Financeiro)"),
-          }).strict(),
+          }),
           execute: async (params) => {
             await addGoal(params)
             return { success: true, message: "Meta criada com sucesso" }
@@ -93,10 +96,10 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         getAgenda: tool({
           description: "Consulta a agenda (eventos) do usuário para uma data específica.",
           parameters: z.object({
-            date: z.string().describe("Data no formato YYYY-MM-DD (deixe vazio para hoje)"),
+            date: z.string().describe("Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)"),
           }),
           execute: async ({ date }) => {
-            const data = await getAgenda(date === "deixe vazio" ? undefined : date)
+            const data = await getAgenda(date === "hoje" || date === "" || date === "deixe vazio" ? undefined : date)
             return data
           },
         }),
@@ -116,7 +119,9 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         getJournalEntries: tool({
           description: "Consulta as últimas entradas do diário do usuário.",
-          parameters: z.object({}),
+          parameters: z.object({
+            _reason: z.string().describe("Breve justificativa para consultar o diário"),
+          }),
           execute: async () => {
             const data = await getJournalEntries()
             return data
