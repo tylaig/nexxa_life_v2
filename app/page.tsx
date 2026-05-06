@@ -11,6 +11,11 @@ import {
   Users,
   TrendingUp,
   ChevronRight,
+  ChevronDown,
+  LayoutDashboard,
+  MessageSquare,
+  BarChart,
+  CalendarDays,
 } from "lucide-react"
 
 import { redirect } from "next/navigation"
@@ -66,6 +71,52 @@ const pillars = [
   { icon: Shield, text: "Diário e agenda no mesmo workspace" },
   { icon: TrendingUp, text: "Relatórios para decisão e continuidade" },
 ] as const
+
+const steps = [
+  {
+    step: "01",
+    title: "Diagnóstico Inicial",
+    description: "Mapeie como está sua vida hoje em 6 áreas fundamentais. A IA analisa suas respostas e cria um panorama claro da sua situação atual.",
+    icon: BarChart,
+  },
+  {
+    step: "02",
+    title: "Plano Estratégico",
+    description: "O AI Studio pega seu diagnóstico e desenha metas realistas. Nada de listas genéricas, apenas o que faz sentido para o seu contexto.",
+    icon: Target,
+  },
+  {
+    step: "03",
+    title: "Execução Integrada",
+    description: "Metas se transformam em tarefas diárias no seu Checklist e bloqueios de tempo na Agenda. O sistema te mantém no trilho.",
+    icon: CalendarDays,
+  },
+  {
+    step: "04",
+    title: "Revisão e Diário",
+    description: "Registre aprendizados no Diário. O NexxaLife cruza seus relatos com as tarefas feitas e gera insights para o próximo ciclo.",
+    icon: MessageSquare,
+  },
+] as const
+
+const faqs = [
+  {
+    q: "O NexxaLife substitui o Notion ou Trello?",
+    a: "Sim, para gestão pessoal. Enquanto o Notion é uma folha em branco (o que gera sobrecarga para configurar), o NexxaLife já vem com um método validado de evolução, conectando diagnóstico, metas e rotina de forma nativa.",
+  },
+  {
+    q: "A inteligência artificial lê meus dados?",
+    a: "A IA atua estritamente como sua estrategista pessoal. Ela analisa seu diagnóstico e diário apenas no momento de gerar insights ou sugerir metas, com total privacidade e sem treinar modelos abertos com seus dados.",
+  },
+  {
+    q: "Como funciona o ciclo de evolução?",
+    a: "É um ciclo contínuo: você descobre onde focar (Diagnóstico), define onde quer chegar (Metas), age todo dia (Checklist/Agenda) e avalia o que deu certo (Diário). O sistema cruza tudo isso para você nunca perder o histórico.",
+  },
+  {
+    q: "Preciso pagar para usar?",
+    a: "Atualmente a plataforma está em acesso antecipado gratuito. No futuro, haverá um plano Pro para recursos avançados de IA e análise histórica profunda, mas as fundações de produtividade sempre serão acessíveis.",
+  },
+]
 
 export default async function RootPage(props: { searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
   // Apenas Next.js 15+ requer await no searchParams, vamos fazer de forma segura
@@ -293,6 +344,46 @@ export default async function RootPage(props: { searchParams?: Promise<{ [key: s
         </div>
       </section>
 
+      {/* ═══ COMO FUNCIONA ═══ */}
+      <section className="bg-background px-6 py-20 md:px-10 md:py-28 relative border-t border-border/50">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-16 text-center max-w-2xl mx-auto">
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
+              O Método
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight md:text-4xl">
+              Um ciclo projetado para <span className="text-primary">resultado contínuo</span>
+            </h2>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground md:text-base">
+              Não basta anotar tarefas. A verdadeira evolução acontece quando sua rotina diária 
+              está conectada aos seus objetivos de longo prazo.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-4 relative">
+            {/* Linha conectora (Desktop) */}
+            <div className="hidden md:block absolute top-[45px] left-12 right-12 h-px bg-border/60 z-0" />
+            
+            {steps.map((item, i) => {
+              const Icon = item.icon
+              return (
+                <div key={item.step} className="relative z-10 flex flex-col items-center text-center group">
+                  <div className="mb-6 flex h-24 w-24 flex-col items-center justify-center rounded-3xl border border-border/70 bg-card shadow-lg transition-transform group-hover:-translate-y-2 group-hover:border-primary/40 group-hover:shadow-primary/10">
+                    <span className="text-xs font-black text-muted-foreground/40 mb-1">{item.step}</span>
+                    <Icon className="h-7 w-7 text-primary" />
+                  </div>
+                  <h3 className="mb-3 text-base font-bold text-foreground">{item.title}</h3>
+                  <p className="text-sm leading-6 text-muted-foreground max-w-[250px]">
+                    {item.description}
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ═══ PILARES / PARA QUEM É ═══ */}
       <section className="border-y border-border/50 bg-muted/20">
         <div className="mx-auto max-w-7xl px-6 py-20 md:px-10 md:py-28">
@@ -356,6 +447,34 @@ export default async function RootPage(props: { searchParams?: Promise<{ [key: s
                 )
               })}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ FAQ ═══ */}
+      <section className="bg-background px-6 py-20 md:px-10 md:py-28 border-t border-border/50">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-14 text-center">
+            <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Tira-dúvidas
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+              Perguntas Frequentes
+            </h2>
+          </div>
+
+          <div className="grid gap-6">
+            {faqs.map((faq, index) => (
+              <div key={index} className="rounded-2xl border border-border/60 bg-card/50 p-6 transition-all hover:bg-muted/20">
+                <h3 className="text-base font-bold text-foreground mb-3 flex items-start gap-3">
+                  <span className="text-primary mt-0.5">Q.</span>
+                  {faq.q}
+                </h3>
+                <p className="text-sm leading-relaxed text-muted-foreground pl-7">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

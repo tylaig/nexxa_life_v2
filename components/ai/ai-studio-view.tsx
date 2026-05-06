@@ -245,12 +245,12 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
               <div className="rounded-3xl bg-muted/5 border border-border/50 p-6 shadow-inner">
                 <AreaRadarChart
                   scores={{
-                    mind: diagnosticData.scores?.mind ?? 5,
-                    health: diagnosticData.scores?.health ?? 5,
-                    wealth: diagnosticData.scores?.wealth ?? 5,
-                    relationships: diagnosticData.scores?.relationships ?? 5,
-                    spirituality: diagnosticData.scores?.spirituality ?? 5,
-                    productivity: diagnosticData.scores?.productivity ?? 5
+                    mind: diagnosticData?.scores?.mind ?? 5,
+                    health: diagnosticData?.scores?.health ?? 5,
+                    wealth: diagnosticData?.scores?.wealth ?? 5,
+                    relationships: diagnosticData?.scores?.relationships ?? 5,
+                    spirituality: diagnosticData?.scores?.spirituality ?? 5,
+                    productivity: diagnosticData?.scores?.productivity ?? 5
                   }}
                   className="mx-auto"
                 />
