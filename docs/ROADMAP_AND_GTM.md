@@ -53,9 +53,9 @@
 ### 🔄 Em Andamento
 
 - [ ] Aplicar migrations 001-009 no Supabase Dashboard (SQL Editor)
-- [ ] Remover referências a `tenant_id` / `workspace_id` do `auth-profile/repository.ts`
-- [ ] API Routes: `/api/v1/goals`, `/api/v1/checklist`, `/api/v1/agenda`, `/api/v1/journal`
-- [ ] Conectar views às API routes (substituir mocks por dados reais)
+- [x] Remover referências a `tenant_id` / `workspace_id` do `auth-profile/repository.ts` e remover páginas B2B legadas
+- [x] API Routes: `/api/v1/goals`, `/api/v1/checklist`, `/api/v1/agenda`, `/api/v1/journal` (Feito via Server Actions / AI Route)
+- [x] Conectar views às API routes (substituir mocks por dados reais)
 - [ ] Apps/Integrações — página de conexões do ciclo (Google Calendar, Notion etc.)
 
 ---

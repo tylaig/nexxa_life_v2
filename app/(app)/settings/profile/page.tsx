@@ -23,7 +23,6 @@ export default function SettingsProfilePage() {
             <CardContent className="space-y-4">
               <Field label="Nome completo"><Input defaultValue="Samuel Costa" /></Field>
               <Field label="Email"><Input defaultValue="samuel@onda.app" /></Field>
-              <Field label="Cargo"><Input defaultValue="Operations Lead" /></Field>
               <Field label="Idioma"><Input defaultValue="Português (Brasil)" /></Field>
             </CardContent>
           </Card>
