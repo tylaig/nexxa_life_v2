@@ -7,8 +7,6 @@ const booleanish = z
 
 const envSchema = z.object({
   APP_SERVICE_NAME: z.string().default("nexxalife"),
-  APP_TENANT_ID: z.string().default("tenant_demo"),
-  APP_WORKSPACE_ID: z.string().default("workspace_demo"),
   DATABASE_URL: z.string().min(1).optional(),
   REDIS_URL: z.string().min(1).optional(),
   APP_DISABLE_QUEUE: booleanish,
