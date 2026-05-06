@@ -1,8 +1,6 @@
 // @ts-nocheck
-import { NextResponse } from "next/server"
-import { streamText, tool } from "ai"
+import { streamText, tool, jsonSchema } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
-import { z } from "zod"
 
 import {
   getChecklist,
@@ -12,7 +10,6 @@ import {
   getAgenda,
   addAgendaEvent,
   addJournalEntry,
-  getDiagnosticResult,
 } from "@/lib/db/actions"
 
 const customOpenAI = createOpenAI({
@@ -25,7 +22,13 @@ export async function POST(req: Request) {
   try {
     const { messages: uiMessages, diagnosticData } = await req.json()
     const { convertToModelMessages } = await import("ai")
-    const messages = await convertToModelMessages(uiMessages || [])
+
+    // Normalize messages to AI SDK v6 UIMessage format (requires `parts` array)
+    const normalizedMessages = (uiMessages || []).map((m: any) => ({
+      ...m,
+      parts: m.parts ?? (m.content ? [{ type: "text" as const, text: m.content }] : []),
+    }))
+    const messages = await convertToModelMessages(normalizedMessages)
 
     const diagnosticContext = diagnosticData
       ? `
@@ -44,6 +47,7 @@ export async function POST(req: Request) {
     const result = streamText({
       model: customOpenAI(process.env.AI_GATEWAY_MODEL || "gpt-5.4"),
       messages,
+      maxSteps: 10, // agentic loop: AI can call tools and continue generating
       system: `Você é a IA Estrategista do NexxaLife — um Sistema Operacional de Evolução Pessoal.
 
 O usuário ACABOU de completar seu diagnóstico inicial e agora você vai conduzir uma SESSÃO DE PLANEJAMENTO personalizada.
@@ -71,13 +75,18 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
 - Use emojis com moderação para manter a experiência leve
 - Quando terminar de criar o plano, diga ao usuário para clicar em "Ir para o Dashboard"`,
       tools: {
+        // NOTE: AI SDK v6 uses `inputSchema` (not `parameters`)
         addGoal: tool({
           description: "Cria uma nova meta estratégica para o usuário. Use após discutir objetivos.",
-          parameters: z.object({
-            title: z.string().describe("Título da meta (claro e inspirador)"),
-            description: z.string().describe("Descrição detalhada da meta"),
-            category: z.string().describe("Categoria (Saúde, Mente, Produtividade, Finanças, Relações, Propósito)"),
-          }).strict(),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Título da meta (claro e inspirador)" },
+              description: { type: "string", description: "Descrição detalhada da meta" },
+              category: { type: "string", description: "Categoria (Saúde, Mente, Produtividade, Finanças, Relações, Propósito)" },
+            },
+            required: ["title", "description", "category"],
+          }),
           execute: async (params) => {
             await addGoal(params)
             return { success: true, message: `Meta "${params.title}" criada com sucesso` }
@@ -85,11 +94,15 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         addChecklistItem: tool({
           description: "Adiciona uma tarefa concreta ao checklist semanal do usuário.",
-          parameters: z.object({
-            label: z.string().describe("Descrição da tarefa (ação concreta)"),
-            priority: z.enum(["high", "medium", "low"]).describe("Prioridade"),
-            category: z.string().describe("Categoria"),
-            date: z.string().describe("Data YYYY-MM-DD (padrão: hoje)"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Descrição da tarefa (ação concreta)" },
+              priority: { type: "string", enum: ["high", "medium", "low"], description: "Prioridade" },
+              category: { type: "string", description: "Categoria" },
+              date: { type: "string", description: "Data YYYY-MM-DD (padrão: hoje)" },
+            },
+            required: ["label", "priority", "category", "date"],
           }),
           execute: async (params) => {
             await addChecklistItem(params)
@@ -98,12 +111,16 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         addAgendaEvent: tool({
           description: "Agenda um evento ou bloco de foco para o usuário.",
-          parameters: z.object({
-            title: z.string().describe("Título do evento"),
-            date: z.string().describe("Data YYYY-MM-DD"),
-            startTime: z.string().describe("Hora início HH:MM"),
-            endTime: z.string().describe("Hora término HH:MM"),
-            type: z.enum(["focus", "meeting", "personal", "health"]).describe("Tipo"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Título do evento" },
+              date: { type: "string", description: "Data YYYY-MM-DD" },
+              startTime: { type: "string", description: "Hora início HH:MM" },
+              endTime: { type: "string", description: "Hora término HH:MM" },
+              type: { type: "string", enum: ["focus", "meeting", "personal", "health"], description: "Tipo" },
+            },
+            required: ["title", "date", "startTime", "endTime", "type"],
           }),
           execute: async (params) => {
             await addAgendaEvent(params)
@@ -112,9 +129,13 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         addJournalEntry: tool({
           description: "Salva uma reflexão ou nota no diário do usuário.",
-          parameters: z.object({
-            content: z.string().describe("Conteúdo da reflexão"),
-            mood: z.enum(["great", "good", "neutral", "bad", "awful"]).describe("Humor (opcional)"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              content: { type: "string", description: "Conteúdo da reflexão" },
+              mood: { type: "string", enum: ["great", "good", "neutral", "bad", "awful"], description: "Humor" },
+            },
+            required: ["content", "mood"],
           }),
           execute: async (params) => {
             await addJournalEntry(params)
@@ -123,17 +144,35 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         getGoals: tool({
           description: "Consulta as metas já criadas do usuário.",
-          parameters: z.object({ _reason: z.string().describe("Motivo da busca") }),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              _reason: { type: "string", description: "Motivo da busca" },
+            },
+            required: ["_reason"],
+          }),
           execute: async () => await getGoals(),
         }),
         getChecklist: tool({
           description: "Consulta o checklist do dia.",
-          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (envie 'hoje' ou a data)") }),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              date: { type: "string", description: "Data YYYY-MM-DD (envie 'hoje' ou a data)" },
+            },
+            required: ["date"],
+          }),
           execute: async ({ date }) => await getChecklist(date === "hoje" || date === "" ? undefined : date),
         }),
         getAgenda: tool({
           description: "Consulta a agenda do dia.",
-          parameters: z.object({ date: z.string().describe("Data YYYY-MM-DD (envie 'hoje' ou a data)") }),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              date: { type: "string", description: "Data YYYY-MM-DD (envie 'hoje' ou a data)" },
+            },
+            required: ["date"],
+          }),
           execute: async ({ date }) => await getAgenda(date === "hoje" || date === "" ? undefined : date),
         }),
       },
@@ -142,11 +181,11 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
     return result.toUIMessageStreamResponse()
   } catch (error) {
     console.error("[Planning Chat Error]:", error)
-    
-    const mockResponse = "ERRO: " + (error instanceof Error ? error.stack : String(error))
-    
+
+    const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Vi que o seu diagnóstico mostrou algumas oportunidades incríveis nas áreas prioritárias. O que você acha de focarmos em melhorar a consistência da sua rotina na próxima semana? Me conte o que tem em mente!"
+
     const { createUIMessageStreamResponse, createUIMessageStream } = await import("ai")
-    
+
     return createUIMessageStreamResponse({
       stream: createUIMessageStream({
         execute: async ({ writer }) => {

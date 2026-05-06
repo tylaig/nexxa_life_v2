@@ -75,18 +75,26 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
       })
     }
 
-    // Add tool invocations
+    // Add tool invocations — in AI SDK v6 they live in message.parts
     messages.forEach(m => {
-      if (m.toolInvocations) {
-        m.toolInvocations.forEach(inv => {
+      const parts = (m as any).parts || []
+      parts.forEach((part: any) => {
+        if (part.type && part.type.startsWith('tool-')) {
+          // Extract tool name from type like "tool-addGoal"
+          const toolName = part.toolName || part.type.replace(/^tool-/, '')
           events.push({
             type: 'tool',
-            id: inv.toolCallId,
-            inv: inv,
+            id: part.toolCallId || `${m.id}-${toolName}`,
+            inv: {
+              toolName,
+              toolCallId: part.toolCallId,
+              args: part.input,
+              state: part.state === 'output-available' ? 'result' : part.state,
+            },
             messageId: m.id
           })
-        })
-      }
+        }
+      })
     })
 
     return events
@@ -148,8 +156,10 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar">
           {(messages || []).map((m: any) => {
-            const text = m.content || m.text
-            if (!text && m.role === "user") return null
+            // AI SDK v6: text lives in parts[], not m.content
+            const textPart = (m.parts || []).find((p: any) => p.type === 'text')
+            const text = textPart?.text || m.content || m.text
+            if (!text && m.role === 'user') return null
             return (
               <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
                 {m.role !== "user" && (

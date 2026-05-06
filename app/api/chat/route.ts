@@ -1,8 +1,6 @@
 // @ts-nocheck
-import { NextResponse } from "next/server"
-import { streamText, tool } from "ai"
+import { streamText, tool, jsonSchema } from "ai"
 import { createOpenAI } from "@ai-sdk/openai"
-import { z } from "zod"
 
 import {
   getChecklist,
@@ -26,20 +24,32 @@ export async function POST(req: Request) {
   try {
     const { messages: uiMessages } = await req.json()
     const { convertToModelMessages } = await import("ai")
-    const messages = await convertToModelMessages(uiMessages || [])
+
+    // Normalize messages to AI SDK v6 UIMessage format (requires `parts` array)
+    const normalizedMessages = (uiMessages || []).map((m: any) => ({
+      ...m,
+      parts: m.parts ?? (m.content ? [{ type: "text" as const, text: m.content }] : []),
+    }))
+    const messages = await convertToModelMessages(normalizedMessages)
 
     const result = streamText({
       model: customOpenAI(process.env.AI_GATEWAY_MODEL || "gpt-5.4"),
       messages,
+      maxSteps: 10, // agentic loop: AI can call tools and continue generating
       system: `Você é a IA do NexxaLife, um assistente pessoal focado na evolução do usuário. 
 Você ajuda o usuário a gerenciar seu ciclo de vida: Metas, Checklist (tarefas), Agenda, e Diário.
 Você deve ser proativo, conciso e usar as ferramentas disponíveis para consultar e salvar dados no banco de dados do usuário.
 Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
       tools: {
+        // NOTE: AI SDK v6 uses `inputSchema` (not `parameters`)
         getChecklist: tool({
           description: "Consulta o checklist (tarefas diárias) do usuário para uma data específica (padrão: hoje).",
-          parameters: z.object({
-            date: z.string().describe("Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              date: { type: "string", description: "Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)" },
+            },
+            required: ["date"],
           }),
           execute: async ({ date }) => {
             const data = await getChecklist(date === "hoje" || date === "" || date === "deixe vazio" ? undefined : date)
@@ -48,11 +58,15 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         addChecklistItem: tool({
           description: "Adiciona uma nova tarefa ao checklist diário do usuário.",
-          parameters: z.object({
-            label: z.string().describe("Descrição da tarefa"),
-            priority: z.enum(["high", "medium", "low"]).describe("Prioridade da tarefa"),
-            category: z.string().describe("Categoria (ex: Trabalho, Saúde, Pessoal)"),
-            date: z.string().describe("Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Descrição da tarefa" },
+              priority: { type: "string", enum: ["high", "medium", "low"], description: "Prioridade da tarefa" },
+              category: { type: "string", description: "Categoria (ex: Trabalho, Saúde, Pessoal)" },
+              date: { type: "string", description: "Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)" },
+            },
+            required: ["label", "priority", "category", "date"],
           }),
           execute: async (params) => {
             const finalDate = params.date === "hoje" || params.date === "" ? undefined : params.date
@@ -62,9 +76,13 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         toggleChecklistItem: tool({
           description: "Marca uma tarefa do checklist como concluída ou pendente.",
-          parameters: z.object({
-            id: z.string().describe("ID da tarefa"),
-            done: z.boolean().describe("Status (true para concluída, false para pendente)"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              id: { type: "string", description: "ID da tarefa" },
+              done: { type: "boolean", description: "Status (true para concluída, false para pendente)" },
+            },
+            required: ["id", "done"],
           }),
           execute: async ({ id, done }) => {
             await toggleChecklistItem(id, done)
@@ -73,8 +91,12 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         getGoals: tool({
           description: "Consulta as metas ativas do usuário e seus marcos (milestones).",
-          parameters: z.object({
-            _reason: z.string().describe("Breve justificativa para a busca (ex: 'analisar metas')"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              _reason: { type: "string", description: "Breve justificativa para a busca (ex: 'analisar metas')" },
+            },
+            required: ["_reason"],
           }),
           execute: async () => {
             const data = await getGoals()
@@ -83,10 +105,14 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         addGoal: tool({
           description: "Cria uma nova meta para o usuário.",
-          parameters: z.object({
-            title: z.string().describe("Título da meta"),
-            description: z.string().describe("Descrição detalhada"),
-            category: z.string().describe("Categoria (ex: Profissional, Pessoal, Financeiro)"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Título da meta" },
+              description: { type: "string", description: "Descrição detalhada" },
+              category: { type: "string", description: "Categoria (ex: Profissional, Pessoal, Financeiro)" },
+            },
+            required: ["title", "description", "category"],
           }),
           execute: async (params) => {
             await addGoal(params)
@@ -95,8 +121,12 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         getAgenda: tool({
           description: "Consulta a agenda (eventos) do usuário para uma data específica.",
-          parameters: z.object({
-            date: z.string().describe("Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              date: { type: "string", description: "Data no formato YYYY-MM-DD (envie 'hoje' ou a data específica)" },
+            },
+            required: ["date"],
           }),
           execute: async ({ date }) => {
             const data = await getAgenda(date === "hoje" || date === "" || date === "deixe vazio" ? undefined : date)
@@ -105,12 +135,16 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         addAgendaEvent: tool({
           description: "Adiciona um novo evento na agenda do usuário.",
-          parameters: z.object({
-            title: z.string().describe("Título do evento"),
-            date: z.string().describe("Data no formato YYYY-MM-DD"),
-            startTime: z.string().describe("Hora de início no formato HH:MM"),
-            endTime: z.string().describe("Hora de término no formato HH:MM"),
-            type: z.enum(["focus", "meeting", "personal", "health"]).describe("Tipo de evento"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              title: { type: "string", description: "Título do evento" },
+              date: { type: "string", description: "Data no formato YYYY-MM-DD" },
+              startTime: { type: "string", description: "Hora de início no formato HH:MM" },
+              endTime: { type: "string", description: "Hora de término no formato HH:MM" },
+              type: { type: "string", enum: ["focus", "meeting", "personal", "health"], description: "Tipo de evento" },
+            },
+            required: ["title", "date", "startTime", "endTime", "type"],
           }),
           execute: async (params) => {
             await addAgendaEvent(params)
@@ -119,8 +153,12 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         getJournalEntries: tool({
           description: "Consulta as últimas entradas do diário do usuário.",
-          parameters: z.object({
-            _reason: z.string().describe("Breve justificativa para consultar o diário"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              _reason: { type: "string", description: "Breve justificativa para consultar o diário" },
+            },
+            required: ["_reason"],
           }),
           execute: async () => {
             const data = await getJournalEntries()
@@ -129,10 +167,14 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
         }),
         addJournalEntry: tool({
           description: "Adiciona uma nova entrada no diário (journal) do usuário.",
-          parameters: z.object({
-            content: z.string().describe("Conteúdo da entrada ou reflexão"),
-            mood: z.enum(["great", "good", "neutral", "bad", "awful"]).describe("Humor (opcional)"),
-            tags: z.array(z.string()).describe("Tags relacionadas"),
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              content: { type: "string", description: "Conteúdo da entrada ou reflexão" },
+              mood: { type: "string", enum: ["great", "good", "neutral", "bad", "awful"], description: "Humor" },
+              tags: { type: "array", items: { type: "string" }, description: "Tags relacionadas" },
+            },
+            required: ["content", "mood", "tags"],
           }),
           execute: async (params) => {
             await addJournalEntry(params)
@@ -147,9 +189,9 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
     console.error("[General Chat Error]:", error)
 
     const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Aqui no AI Studio eu consigo te ajudar a criar metas, registrar diários e organizar sua agenda. O que vamos construir hoje?"
-    
+
     const { createUIMessageStreamResponse, createUIMessageStream } = await import("ai")
-    
+
     return createUIMessageStreamResponse({
       stream: createUIMessageStream({
         execute: async ({ writer }) => {
