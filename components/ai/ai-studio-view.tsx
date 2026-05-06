@@ -44,10 +44,17 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isLoading])
 
+  function submitMessage(e?: React.FormEvent) {
+    if (e) e.preventDefault()
+    if (!input?.trim() || isLoading) return
+    append({ role: "user", content: input })
+    setInput("")
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit?.(e)
+      submitMessage()
     }
   }
 
@@ -132,7 +139,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
         {/* Input Area */}
         <div className="p-4 bg-background border-t border-border/50">
-          <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto flex items-end gap-2">
+          <form onSubmit={submitMessage} className="relative max-w-4xl mx-auto flex items-end gap-2">
             <textarea
               value={input}
               onChange={handleInputChange}

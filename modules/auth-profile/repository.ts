@@ -1,7 +1,8 @@
 import { dbQuery } from "@/lib/server/db"
-import { getAppEnv, hasDatabaseUrl } from "@/lib/server/env"
+import { hasDatabaseUrl } from "@/lib/server/env"
 
 import type { AppUserProfile, EnsureAppUserProfileInput, UpsertAppUserProfileInput } from "./contracts"
+import { normalizeAppUserRole } from "./contracts"
 import { appUserProfileStore } from "./store"
 
 type AppUserProfileRow = {
@@ -12,6 +13,7 @@ type AppUserProfileRow = {
   phone: string | null
   onboarded: boolean
   onboarding_step: AppUserProfile["onboardingStep"]
+  role: string | null
   created_at: string | Date
   updated_at: string | Date
 }
@@ -29,6 +31,7 @@ function mapRow(row: AppUserProfileRow): AppUserProfile {
     phone: row.phone ?? undefined,
     onboarded: row.onboarded,
     onboardingStep: row.onboarding_step,
+    role: normalizeAppUserRole(row.role),
     createdAt: toIso(row.created_at),
     updatedAt: toIso(row.updated_at),
   }
@@ -39,7 +42,6 @@ export async function getAppUserProfile(userId: string): Promise<AppUserProfile 
     return appUserProfileStore.getAppUserProfile(userId)
   }
 
-  const env = getAppEnv()
   const result = await dbQuery<AppUserProfileRow>(
     `
       select
@@ -50,6 +52,7 @@ export async function getAppUserProfile(userId: string): Promise<AppUserProfile 
         phone,
         onboarded,
         onboarding_step,
+        role,
         created_at,
         updated_at
       from app_user_profiles
@@ -81,6 +84,7 @@ export async function ensureAppUserProfile(input: EnsureAppUserProfileInput): Pr
     phone: input.phone,
     onboarded: false,
     onboardingStep: "profile",
+    role: "user",
   })
 }
 
@@ -89,7 +93,6 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
     return appUserProfileStore.upsertAppUserProfile(input)
   }
 
-  const env = getAppEnv()
   const current = await getAppUserProfile(input.userId)
   const result = await dbQuery<AppUserProfileRow>(
     `
@@ -100,9 +103,10 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
         nickname,
         phone,
         onboarded,
-        onboarding_step
+        onboarding_step,
+        role
       )
-      values ($1, $2, $3, $4, $5, $6, $7)
+      values ($1, $2, $3, $4, $5, $6, $7, $8)
       on conflict (user_id)
       do update set
         email = excluded.email,
@@ -111,6 +115,7 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
         phone = excluded.phone,
         onboarded = excluded.onboarded,
         onboarding_step = excluded.onboarding_step,
+        role = excluded.role,
         updated_at = now()
       returning
         user_id,
@@ -120,6 +125,7 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
         phone,
         onboarded,
         onboarding_step,
+        role,
         created_at,
         updated_at
     `,
@@ -131,6 +137,7 @@ export async function upsertAppUserProfile(input: UpsertAppUserProfileInput): Pr
       input.phone ?? current?.phone ?? null,
       input.onboarded ?? current?.onboarded ?? false,
       input.onboardingStep ?? current?.onboardingStep ?? "profile",
+      input.role ?? current?.role ?? "user",
     ]
   )
 

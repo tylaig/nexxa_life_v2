@@ -1,23 +1,22 @@
 import { describe, expect, it } from "vitest"
 
+import type { AppUserProfile } from "@/modules/auth-profile/contracts"
+
+const adminProfile = { role: "admin" } satisfies Pick<AppUserProfile, "role">
+const userProfile = { role: "user" } satisfies Pick<AppUserProfile, "role">
+
 describe("nexxa_life navigation taxonomy", () => {
-  it("exposes the first-wave primary routes in the official shell", async () => {
+  it("exposes the current primary routes in the official shell", async () => {
     const navigation = await import("@/components/app-shell/meu-dia-navigation")
 
     expect(navigation.primaryItems.map((item) => item.href)).toEqual([
       "/dashboard",
-      "/diagnostic",
-      "/checklist",
-      "/agenda",
-      "/goals",
+      "/studio",
     ])
 
     expect(navigation.primaryItems.map((item) => item.label)).toEqual([
       "Dashboard",
-      "Diagnóstico",
-      "Checklist",
-      "Agenda",
-      "Metas",
+      "AI Studio",
     ])
   })
 
@@ -26,7 +25,10 @@ describe("nexxa_life navigation taxonomy", () => {
     const labels = [
       ...navigation.primaryItems.map((item) => item.label),
       ...navigation.accordionSections.flatMap((section) => [section.label, ...section.children.map((child) => child.label)]),
-      ...navigation.settingsSections.flatMap((section) => [section.label, ...section.children.map((child) => child.label)]),
+      ...navigation.getMeuDiaNavigationForProfile(adminProfile).settingsSections.flatMap((section) => [
+        section.label,
+        ...section.children.map((child) => child.label),
+      ]),
     ]
 
     expect(labels).not.toContain("Inbox")
@@ -35,35 +37,43 @@ describe("nexxa_life navigation taxonomy", () => {
     expect(labels).not.toContain("Automações")
   })
 
-  it("keeps reflection and admin surfaces mapped for the next migration waves", async () => {
+  it("keeps cycle and ecosystem surfaces mapped for migration waves", async () => {
     const navigation = await import("@/components/app-shell/meu-dia-navigation")
 
     expect(navigation.accordionSections.map((section) => section.label)).toEqual([
-      "Planejamento",
-      "Reflexão",
+      "Meu Ciclo",
       "Ecossistema",
     ])
 
     expect(navigation.accordionSections[0].children.map((item) => item.href)).toEqual([
+      "/goals",
       "/checklist",
       "/agenda",
-      "/goals",
-    ])
-
-    expect(navigation.accordionSections[1].children.map((item) => item.href)).toEqual([
       "/journal",
       "/reports",
     ])
 
-    expect(navigation.accordionSections[2].children.map((item) => item.href)).toEqual([
+    expect(navigation.accordionSections[1].children.map((item) => item.href)).toEqual([
       "/academy",
       "/apps",
       "/news",
       "/marketplace",
     ])
+  })
 
-    expect(navigation.settingsSections[0].children.map((item) => item.href)).toEqual([
+  it("keeps framework-admin visible only in the admin navigation model", async () => {
+    const navigation = await import("@/components/app-shell/meu-dia-navigation")
+
+    expect(navigation.getMeuDiaNavigationForProfile(adminProfile).settingsSections[0].children.map((item) => item.href)).toEqual([
       "/framework-admin",
+      "/settings",
+    ])
+
+    expect(navigation.getMeuDiaNavigationForProfile(userProfile).settingsSections[0].children.map((item) => item.href)).toEqual([
+      "/settings",
+    ])
+
+    expect(navigation.getMeuDiaNavigationForProfile(null).settingsSections[0].children.map((item) => item.href)).toEqual([
       "/settings",
     ])
   })

@@ -25,7 +25,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { accordionSections, primaryItems, settingsSections, type NavSection } from "@/components/app-shell/meu-dia-navigation"
+import { getMeuDiaNavigationForProfile, type NavSection } from "@/components/app-shell/meu-dia-navigation"
+import type { AppUserProfile } from "@/modules/auth-profile/contracts"
 
 function SidebarExpandableItem({
   item,
@@ -91,10 +92,12 @@ function SidebarExpandableItem({
   )
 }
 
-export function AppSidebar() {
+export function AppSidebar({ profile }: { profile?: AppUserProfile | null }) {
   const pathname = usePathname()
   const { state, isMobile } = useSidebar()
   const collapsed = state === "collapsed" && !isMobile
+  const navigation = React.useMemo(() => getMeuDiaNavigationForProfile(profile), [profile])
+  const { primaryItems, accordionSections, settingsSections } = navigation
 
   const allSections = [...accordionSections, ...settingsSections]
 

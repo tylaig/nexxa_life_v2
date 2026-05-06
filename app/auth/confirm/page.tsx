@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { Suspense, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Loader2 } from "lucide-react"
 
@@ -12,7 +12,7 @@ import { getSupabaseBrowserClient } from "@/lib/client/supabase"
  * ler isso. Esta página roda no client-side, lê a sessão via detectSessionInUrl,
  * e redireciona para o destino correto.
  */
-export default function AuthConfirmPage() {
+function AuthConfirmContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get("next") || "/dashboard"
@@ -52,6 +52,10 @@ export default function AuthConfirmPage() {
     handleSession()
   }, [next, router])
 
+  return <AuthConfirmLoading />
+}
+
+function AuthConfirmLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4 text-center">
@@ -64,5 +68,13 @@ export default function AuthConfirmPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthConfirmPage() {
+  return (
+    <Suspense fallback={<AuthConfirmLoading />}>
+      <AuthConfirmContent />
+    </Suspense>
   )
 }

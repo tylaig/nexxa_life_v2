@@ -137,7 +137,27 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
     // @ts-ignore
     return result.toTextStreamResponse ? result.toTextStreamResponse() : result.toDataStreamResponse()
   } catch (error) {
-    console.error("[Chat API Error]:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    console.error("[General Chat Error]:", error)
+
+    const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Aqui no AI Studio eu consigo te ajudar a criar metas, registrar diários e organizar sua agenda. O que vamos construir hoje?"
+    
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder()
+        const chunks = mockResponse.split(" ")
+        for (const chunk of chunks) {
+          controller.enqueue(encoder.encode(`0:"${chunk} "\n`))
+          await new Promise(r => setTimeout(r, 50))
+        }
+        controller.close()
+      }
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'x-vercel-ai-data-stream': 'v1'
+      }
+    })
   }
 }

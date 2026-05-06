@@ -139,6 +139,27 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
     return result.toTextStreamResponse ? result.toTextStreamResponse() : result.toDataStreamResponse()
   } catch (error) {
     console.error("[Planning Chat Error]:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    
+    // Fallback Mock Stream for UI testing when AI Gateway is down
+    const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Vi que o seu diagnóstico mostrou algumas oportunidades incríveis nas áreas prioritárias. O que você acha de focarmos em melhorar a consistência da sua rotina na próxima semana? Me conte o que tem em mente!"
+    
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder()
+        const chunks = mockResponse.split(" ")
+        for (const chunk of chunks) {
+          controller.enqueue(encoder.encode(`0:"${chunk} "\n`))
+          await new Promise(r => setTimeout(r, 50))
+        }
+        controller.close()
+      }
+    })
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'x-vercel-ai-data-stream': 'v1'
+      }
+    })
   }
 }

@@ -15,6 +15,7 @@ function normalizeInitialProfile(input: EnsureAppUserProfileInput): AppUserProfi
     phone: input.phone,
     onboarded: false,
     onboardingStep: "profile",
+    role: "user",
     createdAt: timestamp,
     updatedAt: timestamp,
   }
@@ -55,6 +56,7 @@ export function createAppUserProfileStore(seed: AppUserProfile[] = []) {
         ...created,
         onboarded: input.onboarded ?? created.onboarded,
         onboardingStep: input.onboardingStep ?? created.onboardingStep,
+        role: input.role ?? created.role,
         updatedAt: now(),
       }
 
@@ -70,6 +72,7 @@ export function createAppUserProfileStore(seed: AppUserProfile[] = []) {
       phone: input.phone ?? existing.phone,
       onboarded: input.onboarded ?? existing.onboarded,
       onboardingStep: input.onboardingStep ?? existing.onboardingStep,
+      role: input.role ?? existing.role,
       updatedAt: now(),
     }
 
