@@ -6,7 +6,7 @@ import { useChat } from "@ai-sdk/react"
 import { useRouter } from "next/navigation"
 import {
   Bot, Send, Sparkles, Loader2,
-  CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, Activity
+  CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, Activity, RefreshCw, Pencil, Image as ImageIcon, X, AlertCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,9 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const [inputValue, setInputValue] = React.useState("")
 
-  const { messages, sendMessage, status, setMessages } = useChat({
+  const [attachments, setAttachments] = React.useState<string[]>([]) // For pasted images (data URLs)
+  
+  const { messages, append: sendMessage, status, setMessages, error, reload } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
   })
@@ -49,9 +51,53 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
   function submitMessage(e?: React.FormEvent) {
     if (e) e.preventDefault()
-    if (!inputValue?.trim() || isLoading) return
-    sendMessage({ text: inputValue })
+    if ((!inputValue?.trim() && attachments.length === 0) || isLoading) return
+    
+    const messageOpts: any = { text: inputValue }
+    
+    // In AI SDK v3/v4, if you want to pass images, you can pass dataUrls
+    // or use experimental_attachments. For now, we'll map them if provided.
+    if (attachments.length > 0) {
+      messageOpts.experimental_attachments = attachments.map(url => ({
+        url,
+        contentType: url.startsWith("data:image/png") ? "image/png" : "image/jpeg",
+        name: "pasted-image"
+      }))
+    }
+    
+    sendMessage(messageOpts)
     setInputValue("")
+    setAttachments([])
+  }
+
+  function handlePaste(e: React.ClipboardEvent) {
+    const items = e.clipboardData?.items
+    if (!items) return
+    
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile()
+        if (file) {
+          const reader = new FileReader()
+          reader.onload = (event) => {
+            if (event.target?.result) {
+              setAttachments(prev => [...prev, event.target!.result as string])
+            }
+          }
+          reader.readAsDataURL(file)
+        }
+      }
+    }
+  }
+
+  function handleEditMessage(id: string) {
+    const index = messages.findIndex(m => m.id === id)
+    if (index === -1) return
+    
+    const msg = messages[index]
+    const textPart = (msg.parts || []).find((p: any) => p.type === 'text')
+    setInputValue(textPart?.text || msg.content || msg.text || "")
+    setMessages(messages.slice(0, index))
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -168,16 +214,53 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                   </div>
                 )}
                 <div className={cn(
-                  "max-w-[80%] rounded-2xl px-5 py-4 text-[15px] leading-relaxed shadow-sm",
+                  "relative group max-w-[80%] rounded-2xl px-5 py-4 text-[15px] leading-relaxed shadow-sm",
                   m.role === "user"
                     ? "bg-primary text-primary-foreground rounded-tr-sm"
                     : "bg-background border border-border/50 text-foreground rounded-tl-sm"
                 )}>
+                  {m.role === "user" && (
+                    <button 
+                      onClick={() => handleEditMessage(m.id)}
+                      className="absolute -left-10 top-2 p-1.5 rounded-full bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 hover:text-primary"
+                      title="Editar mensagem"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
                   {text && <div className="whitespace-pre-wrap">{text}</div>}
+                  
+                  {/* Render attachments if any */}
+                  {m.experimental_attachments && m.experimental_attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {m.experimental_attachments.map((att: any, i: number) => (
+                        <div key={i} className="relative rounded-lg overflow-hidden border border-border/50">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={att.url} alt="Attachment" className="h-20 w-auto object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )
           })}
+          
+          {error && (
+            <div className="flex w-full justify-start animate-in fade-in duration-300">
+              <div className="h-8 w-8 rounded-full bg-destructive/10 flex items-center justify-center mr-3 mt-1 flex-none border border-destructive/20">
+                <AlertCircle className="h-4 w-4 text-destructive" />
+              </div>
+              <div className="rounded-2xl rounded-tl-sm bg-destructive/5 border border-destructive/20 px-5 py-4 shadow-sm max-w-[80%]">
+                <p className="text-sm font-medium text-destructive mb-2">Ops! Tivemos um problema de conexão com a IA.</p>
+                <p className="text-xs text-destructive/80 mb-3">{error.message || "A requisição falhou. Tente novamente."}</p>
+                <Button variant="outline" size="sm" onClick={() => reload()} className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10">
+                  <RefreshCw className="h-3 w-3 mr-2" />
+                  Tentar novamente
+                </Button>
+              </div>
+            </div>
+          )}
           
           {isLoading && (
             <div className="flex w-full justify-start animate-in fade-in duration-300">
@@ -197,12 +280,33 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
         {/* Input Area */}
         <div className="p-4 bg-background border-t border-border/50 relative">
+          
+          {/* Attachments Preview */}
+          {attachments.length > 0 && (
+            <div className="flex gap-2 mb-3 px-2 overflow-x-auto">
+              {attachments.map((url, idx) => (
+                <div key={idx} className="relative group rounded-xl overflow-hidden border border-border/60 bg-muted/30 w-16 h-16 flex-none">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="Pasted attachment" className="w-full h-full object-cover" />
+                  <button 
+                    type="button"
+                    onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                    className="absolute top-1 right-1 p-0.5 rounded-full bg-background/80 text-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <form onSubmit={submitMessage} className="relative max-w-4xl mx-auto flex items-end gap-2">
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="O que vamos construir hoje?"
+              onPaste={handlePaste}
+              placeholder="O que vamos construir hoje? (Cole uma imagem ou digite)"
               rows={1}
               disabled={isLoading}
               className="w-full min-h-[56px] resize-none rounded-2xl border border-border/60 bg-muted/30 py-4 pl-5 pr-14 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
@@ -216,14 +320,16 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
             <Button
               type="submit"
               size="icon"
-              disabled={isLoading || !inputValue?.trim?.()}
+              disabled={isLoading || (!inputValue?.trim?.() && attachments.length === 0)}
               className="absolute right-2 bottom-2 h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-md hover:scale-105 transition-transform"
             >
               <Send className="h-4 w-4" />
             </Button>
           </form>
-          <div className="text-center mt-3 text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium">
-            NexxaLife Engine v2.0
+          <div className="text-center mt-3 text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium flex items-center justify-center gap-2">
+            <span>NexxaLife Engine v2.0</span>
+            <span className="w-1 h-1 rounded-full bg-border/50"></span>
+            <span className="flex items-center"><ImageIcon className="h-3 w-3 mr-1 opacity-70" /> Suporta imagens</span>
           </div>
         </div>
 

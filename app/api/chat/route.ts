@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const messages = await convertToModelMessages(normalizedMessages)
 
     const result = streamText({
-      model: customOpenAI(process.env.AI_GATEWAY_MODEL || "gpt-5.4"),
+      model: customOpenAI.chat(process.env.AI_GATEWAY_MODEL || "gpt-5.4"),
       messages,
       maxSteps: 10, // agentic loop: AI can call tools and continue generating
       system: `Você é a IA do NexxaLife, um assistente pessoal focado na evolução do usuário. 
