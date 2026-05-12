@@ -313,10 +313,10 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      submitMessage()
+      e.currentTarget.form?.requestSubmit()
     }
   }
 
