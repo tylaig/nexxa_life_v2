@@ -104,18 +104,22 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const hasSentInitial = React.useRef(false)
   React.useEffect(() => {
     if (!isHydrated) return // Wait for restore attempt to finish
-    if (isPlanningMode && (messages || []).length === 0 && !isLoading && !hasSentInitial.current) {
+    if ((messages || []).length === 0 && !isLoading && !hasSentInitial.current) {
       hasSentInitial.current = true
+      
+      const greeting = isPlanningMode
+        ? "Olá! Terminei meu diagnóstico. Vamos começar a organizar seu plano estratégico."
+        : "Sessão iniciada. O que vamos construir, organizar ou revisar hoje?"
+        
       const timer = setTimeout(() => {
         append({
           role: "assistant",
-          content: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
+          content: greeting,
         })
-      }, 300)
+      }, 1200) // Delay to show the empty state animation
       return () => clearTimeout(timer)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlanningMode, isHydrated])
+  }, [isPlanningMode, isHydrated, messages.length, isLoading, append])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -288,7 +292,25 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar relative">
+          
+          {/* Empty State Animation */}
+          {(!messages || messages.length === 0) && !isLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 delay-150 pointer-events-none">
+              <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-primary/20 to-violet-500/20 flex items-center justify-center mb-6 shadow-inner relative">
+                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+                <div className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping opacity-20" style={{ animationDuration: '3s' }} />
+                <div className="absolute inset-[-20px] rounded-full border border-violet-500/20 animate-ping opacity-10" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+              </div>
+              <h3 className="text-xl font-bold text-foreground tracking-tight mb-2">Conectando Inteligência...</h3>
+              <p className="text-sm text-muted-foreground max-w-[280px]">
+                {isPlanningMode 
+                  ? "Analisando seu diagnóstico e preparando o terreno." 
+                  : "Sincronizando com sua memória e ferramentas."}
+              </p>
+            </div>
+          )}
+
           {(messages || []).map((m: any) => {
             const toolInvocations = m.toolInvocations || []
             const mutatingToolParts = toolInvocations.filter((inv: any) => MUTATING_TOOLS.includes(inv.toolName))
