@@ -264,24 +264,22 @@ Você opera em um loop de pensamento e ação. ANTES de enviar uma mensagem fina
       },
     })
 
-    return result.toUIMessageStreamResponse()
+    return result.toDataStreamResponse()
   } catch (error) {
     console.error("[Planning Chat Error]:", error)
 
     const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Vi que o seu diagnóstico mostrou algumas oportunidades incríveis nas áreas prioritárias. O que você acha de focarmos em melhorar a consistência da sua rotina na próxima semana? Me conte o que tem em mente!"
 
-    const { createUIMessageStreamResponse, createUIMessageStream } = await import("ai")
+    const { createDataStreamResponse } = await import("ai")
 
-    return createUIMessageStreamResponse({
-      stream: createUIMessageStream({
-        execute: async ({ writer }) => {
-          const words = mockResponse.split(" ")
-          for (const word of words) {
-            writer.write({ type: "text", text: word + " " })
-            await new Promise(r => setTimeout(r, 50))
-          }
-        },
-      }),
+    return createDataStreamResponse({
+      execute: async (dataStream) => {
+        const words = mockResponse.split(" ")
+        for (const word of words) {
+          dataStream.writeData(word + " ")
+          await new Promise(r => setTimeout(r, 50))
+        }
+      },
     })
   }
 }

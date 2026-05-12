@@ -184,24 +184,22 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
       },
     })
 
-    return result.toUIMessageStreamResponse()
+    return result.toDataStreamResponse()
   } catch (error) {
     console.error("[General Chat Error]:", error)
 
     const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Aqui no AI Studio eu consigo te ajudar a criar metas, registrar diários e organizar sua agenda. O que vamos construir hoje?"
 
-    const { createUIMessageStreamResponse, createUIMessageStream } = await import("ai")
+    const { createDataStreamResponse } = await import("ai")
 
-    return createUIMessageStreamResponse({
-      stream: createUIMessageStream({
-        execute: async ({ writer }) => {
-          const words = mockResponse.split(" ")
-          for (const word of words) {
-            writer.write({ type: "text", text: word + " " })
-            await new Promise(r => setTimeout(r, 50))
-          }
-        },
-      }),
+    return createDataStreamResponse({
+      execute: async (dataStream) => {
+        const words = mockResponse.split(" ")
+        for (const word of words) {
+          dataStream.writeData(word + " ")
+          await new Promise(r => setTimeout(r, 50))
+        }
+      },
     })
   }
 }
