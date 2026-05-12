@@ -288,9 +288,21 @@ export async function saveDiagnosticResult(params: {
       raw_answers: params.answers,
     })
 
-  if (error) { console.error("Supabase Error:", error); throw error; }
+  if (error) { console.error("Supabase Error saving diagnostic:", error); throw error; }
+
+  // Automatically update the step to 'goals'
+  const { error: profileError } = await supabase
+    .from("app_user_profiles")
+    .update({ onboarding_step: "goals" })
+    .eq("user_id", auth.user.id)
+
+  if (profileError) {
+    console.error("Supabase Error updating step after diagnostic:", profileError)
+  }
+
   revalidatePath("/diagnostic")
   revalidatePath("/dashboard")
+  revalidatePath("/")
 }
 
 export async function getDiagnosticResult() {
