@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Sparkles, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { updateAvatarUrl } from "@/lib/db/actions"
+import { updateAvatarUrl, updateOnboardingStep } from "@/lib/db/actions"
 
 const CHARACTERS = [
   { id: "mago", name: "O Mago", icon: "🧙", desc: "Foca em conhecimento, estratégia e saúde mental." },
@@ -22,8 +22,8 @@ export function CharacterSelection({ onComplete }: { onComplete: () => void }) {
     try {
       const character = CHARACTERS.find(c => c.id === selected)
       if (character) {
-        // Save the emoji/icon as the avatar_url for now
         await updateAvatarUrl(character.icon)
+        await updateOnboardingStep("diagnostic")
       }
       onComplete()
     } catch (error) {
