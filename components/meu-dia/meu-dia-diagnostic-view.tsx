@@ -102,10 +102,7 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
         animateTransition(() => setCurrentIndex((i) => i + 1))
       }
     } else {
-      // All done
-      setPhase("analyzing")
-      
-      // Fallback: calculate scores locally from raw answers
+      // All done — compute scores locally
       const computeLocalScores = () => {
         const areaScores: Record<string, number[]> = {}
         for (const q of questions) {
@@ -123,6 +120,38 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
         }
       }
 
+      const localResult = computeLocalScores()
+      const scores = localResult.scores
+
+      if (onComplete) {
+        // ─── ONBOARDING FLOW: redirect immediately, show toast on destination ───
+        try { sessionStorage.setItem("nexxa_analyzing", Date.now().toString()) } catch {}
+
+        // Fire-and-forget: save diagnostic result in background
+        saveDiagnosticResult({
+          answers,
+          scores: {
+            health: scores.health ?? 5, mind: scores.mind ?? 5,
+            productivity: scores.productivity ?? 5, finances: scores.finances ?? 5,
+            relations: scores.relations ?? 5, purpose: scores.purpose ?? 5,
+          },
+        }).catch(() => console.error("[DiagnosticWizard] Background save failed"))
+
+        // Fire-and-forget: AI analysis (non-blocking, may take 30s+)
+        fetch("/api/diagnostic/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answers, questions }),
+        }).catch(() => {})
+
+        // Redirect immediately — no waiting
+        onComplete()
+        return
+      }
+
+      // ─── STANDALONE FLOW: show analyzing + results phases ─────────────────
+      setPhase("analyzing")
+
       let result: any = null
       try {
         const res = await fetch("/api/diagnostic/analyze", {
@@ -132,34 +161,25 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
         })
         if (res.ok) {
           const data = await res.json()
-          // Validate that we got proper scores back
           if (data.scores && typeof data.scores === "object") {
             result = data
           }
         }
-      } catch {
-        // Network error or parse error — will use local fallback
-      }
+      } catch {}
 
-      // Use local fallback if AI analysis failed
-      if (!result) {
-        result = computeLocalScores()
-      }
+      if (!result) result = localResult
 
       setAnalysis(result)
-      const scores = result.scores || {}
-
       try {
         await saveDiagnosticResult({
           answers,
           scores: {
-            health: scores.health ?? 5, mind: scores.mind ?? 5,
-            productivity: scores.productivity ?? 5, finances: scores.finances ?? 5,
-            relations: scores.relations ?? 5, purpose: scores.purpose ?? 5,
+            health: (result.scores?.health ?? 5), mind: (result.scores?.mind ?? 5),
+            productivity: (result.scores?.productivity ?? 5), finances: (result.scores?.finances ?? 5),
+            relations: (result.scores?.relations ?? 5), purpose: (result.scores?.purpose ?? 5),
           },
         })
       } catch {
-        // DB save failed (e.g. auth issue) — still show results to user
         console.error("[DiagnosticWizard] Failed to save results, continuing anyway")
       }
 

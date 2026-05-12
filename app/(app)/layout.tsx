@@ -5,6 +5,7 @@ import { CommandMenu } from "@/components/app-shell/command-menu"
 import { getUserOnboardingStatus, getDiagnosticResult } from "@/lib/db/actions"
 import { getAuthenticatedAppUser } from "@/lib/server/auth-user"
 import { DiagnosticBlocker } from "@/components/meu-dia/diagnostic-blocker"
+import { AnalysisToast } from "@/components/onboarding/analysis-toast"
 
 export const dynamic = "force-dynamic"
 
@@ -21,6 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </DiagnosticBlocker>
         <CommandMenu profile={auth?.profile ?? null} />
+        <AnalysisToast />
       </SidebarInset>
     </SidebarProvider>
   )
