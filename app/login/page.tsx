@@ -1,16 +1,23 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
+import { redirect } from "next/navigation"
 
 import { AuthShell } from "@/components/auth/auth-shell"
 import { LoginForm } from "@/components/auth/login-form"
+import { getAuthenticatedAppUser } from "@/lib/server/auth-user"
 
 export const metadata: Metadata = {
   title: "Entrar | NexxaLife",
   description: "Acesse o NexxaLife para retomar seu ciclo de diagnóstico, metas, execução e evolução pessoal.",
 }
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const auth = await getAuthenticatedAppUser()
+  if (auth) {
+    redirect("/dashboard")
+  }
+
   return (
     <AuthShell
       eyebrow="Acesso"

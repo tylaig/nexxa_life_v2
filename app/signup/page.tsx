@@ -1,16 +1,23 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { Suspense } from "react"
+import { redirect } from "next/navigation"
 
 import { AuthShell } from "@/components/auth/auth-shell"
 import { SignupForm } from "@/components/auth/signup-form"
+import { getAuthenticatedAppUser } from "@/lib/server/auth-user"
 
 export const metadata: Metadata = {
   title: "Criar conta | NexxaLife",
   description: "Crie sua conta no NexxaLife e comece a transformar diagnóstico em metas, execução e evolução contínua.",
 }
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const auth = await getAuthenticatedAppUser()
+  if (auth) {
+    redirect("/dashboard")
+  }
+
   return (
     <AuthShell
       eyebrow="Cadastro"
