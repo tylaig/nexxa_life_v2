@@ -72,14 +72,21 @@ export async function getAuthenticatedAppUser() {
       user: {
         id: user.id,
         email,
-        fullName: profile.fullName,
-        nickname: profile.nickname,
-        phone: profile.phone,
+        fullName: profile?.fullName ?? email,
+        nickname: profile?.nickname,
+        phone: profile?.phone,
       },
       profile,
     }
   } catch (err) {
-    console.error("[getAuthenticatedAppUser] error:", err)
-    return null
+    console.error("[getAuthenticatedAppUser] CRITICAL ERROR:", err)
+    // Se o banco falhar, retornamos um objeto que passa na checagem if (!auth),
+    // mas sinaliza que houve erro de banco, evitando o loop de redirecionamento.
+    return {
+      user: null,
+      profile: null,
+      isDatabaseError: true,
+      errorDetails: err instanceof Error ? err.message : String(err)
+    }
   }
 }

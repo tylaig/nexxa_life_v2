@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 }
 
 export default async function LoginPage() {
-  const auth = await getAuthenticatedAppUser()
-  if (auth) {
+  const auth = await getAuthenticatedAppUser() as any
+  if (auth && (auth.user || auth.isDatabaseError)) {
     redirect("/dashboard")
   }
 
