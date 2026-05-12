@@ -10,6 +10,10 @@ import {
   getAgenda,
   addAgendaEvent,
   addJournalEntry,
+  getMemory,
+  appendMemory,
+  searchMemory,
+  getAllMemory,
 } from "@/lib/db/actions"
 
 const customOpenAI = createOpenAI({
@@ -29,6 +33,9 @@ export async function POST(req: Request) {
       parts: m.parts ?? (m.content ? [{ type: "text" as const, text: m.content }] : []),
     }))
     const messages = await convertToModelMessages(normalizedMessages)
+
+    // Load persistent memory for this user
+    const agentMemory = await getAllMemory()
 
     // Build rich diagnostic profile
     const scores = diagnosticData ? {
@@ -62,6 +69,15 @@ ${rawAnswers}
 
     const today = new Date().toISOString().split('T')[0]
 
+    const memoryContext = (agentMemory.soul || agentMemory.memory || agentMemory.skills)
+      ? `
+## MEMÓRIA PERSISTENTE DO USUÁRIO:
+${agentMemory.soul ? `### Soul (personalidade)\n${agentMemory.soul}\n` : ''}
+${agentMemory.memory ? `### Memory (fatos e contexto)\n${agentMemory.memory}\n` : ''}
+${agentMemory.skills ? `### Skills (habilidades)\n${agentMemory.skills}\n` : ''}
+`
+      : '\n## MEMÓRIA: Vazia. Use appendMemory para registrar observações sobre o usuário.\n'
+
     const result = streamText({
       model: customOpenAI.chat(process.env.AI_GATEWAY_MODEL || "openai/o4-mini-high"),
       messages,
@@ -71,6 +87,7 @@ ${rawAnswers}
 Você tem acesso COMPLETO ao perfil comportamental do usuário baseado no diagnóstico que ele acabou de preencher.
 
 ${diagnosticContext}
+${memoryContext}
 
 ## SEU PAPEL:
 Você ANALISA o diagnóstico e PROPÕE um plano personalizado. O usuário NÃO precisa dizer o que quer — VOCÊ sugere baseado nos dados.
@@ -107,7 +124,16 @@ Chame TODAS as ferramentas simultaneamente. NÃO espere aprovação entre elas.
 - NUNCA peça mais de 1 info por vez
 - SEMPRE baseie sugestões nos dados do diagnóstico
 - Respostas CURTAS (máx 3 parágrafos + chamadas de ferramenta)
-- Use emojis com moderação`,
+- Use emojis com moderação
+
+## MEMÓRIA:
+- Na PRIMEIRA interação com um usuário novo, use appendMemory para registrar observações iniciais no 'soul' e 'memory'
+- Sempre que descobrir algo novo sobre o usuário (preferências, desafios, vitórias, padrões), registre em appendMemory
+- Use readMemory antes de fazer sugestões personalizadas
+- Use searchMemory para buscar informações específicas
+- soul = personalidade, valores, estilo de comunicação
+- memory = fatos, decisões, datas importantes, contexto
+- skills = habilidades, forças, expertise, padrões recorrentes`,
       tools: {
         addGoal: tool({
           description: "Cria uma meta estratégica. Use os dados do diagnóstico para sugerir metas inteligentes e relevantes.",
@@ -195,6 +221,51 @@ Chame TODAS as ferramentas simultaneamente. NÃO espere aprovação entre elas.
             required: ["date"],
           }),
           execute: async ({ date }) => await getAgenda(date === "hoje" || date === "" ? undefined : date),
+        }),
+
+        // ─── MEMORY TOOLS ─────────────────────────────────
+        readMemory: tool({
+          description: "Lê um arquivo de memória do usuário. Tipos: 'soul' (personalidade), 'memory' (fatos/contexto), 'skills' (habilidades). Use para personalizar sugestões.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              memoryType: { type: "string", enum: ["soul", "memory", "skills"], description: "Tipo da memória" },
+            },
+            required: ["memoryType"],
+          }),
+          execute: async ({ memoryType }) => {
+            const content = await getMemory(memoryType)
+            return content || `(${memoryType}.md está vazio)`
+          },
+        }),
+        appendMemory: tool({
+          description: "Adiciona uma observação à memória do usuário. Use para registrar insights, preferências, padrões. SEMPRE registre quando descobrir algo novo.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              memoryType: { type: "string", enum: ["soul", "memory", "skills"], description: "Tipo" },
+              entry: { type: "string", description: "Conteúdo markdown a adicionar" },
+            },
+            required: ["memoryType", "entry"],
+          }),
+          execute: async ({ memoryType, entry }) => {
+            await appendMemory(memoryType, entry)
+            return { success: true, message: `Registrado em ${memoryType}.md` }
+          },
+        }),
+        searchMemory: tool({
+          description: "Busca texto nas memórias do usuário. Use para encontrar informações específicas antes de sugerir algo.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              query: { type: "string", description: "Termo de busca" },
+            },
+            required: ["query"],
+          }),
+          execute: async ({ query }) => {
+            const results = await searchMemory(query)
+            return results.length > 0 ? results : "Nenhum resultado encontrado"
+          },
         }),
       },
     })

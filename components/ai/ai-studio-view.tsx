@@ -6,7 +6,7 @@ import { useChat } from "@ai-sdk/react"
 import { lastAssistantMessageIsCompleteWithToolCalls } from "ai"
 import { useRouter } from "next/navigation"
 import {
-  Bot, Send, Sparkles, Loader2,
+  Bot, Send, Sparkles, Loader2, Brain,
   CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, ChevronDown, ChevronUp, Activity, RefreshCw, Pencil, Image as ImageIcon, X, AlertCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -23,6 +23,9 @@ const TOOL_META: Record<string, { icon: any; label: string; color: string; desc:
   getGoals:         { icon: Target,       label: "Metas Consultadas", color: "text-emerald-400", desc: "Metas existentes verificadas" },
   getChecklist:     { icon: CheckCircle2, label: "Checklist Lido",    color: "text-blue-400",    desc: "Checklist do dia verificado" },
   getAgenda:        { icon: Calendar,     label: "Agenda Consultada", color: "text-violet-400",  desc: "Agenda do dia verificada" },
+  readMemory:       { icon: Brain,        label: "Memória Lida",      color: "text-pink-400",    desc: "Contexto do usuário consultado" },
+  appendMemory:     { icon: Brain,        label: "Memória Salva",     color: "text-pink-500",    desc: "Nova observação registrada" },
+  searchMemory:     { icon: Brain,        label: "Memória Buscada",   color: "text-pink-400",    desc: "Busca na memória do agente" },
 }
 
 const MUTATING_TOOLS = ["addGoal", "addChecklistItem", "addAgendaEvent", "addJournalEntry"]
@@ -247,6 +250,22 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                 Finalizar Plano <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (!confirm("Resetar conversa? Sua memória será mantida.")) return
+                try { localStorage.removeItem(storageKey) } catch {}
+                deleteChatSession(sessionType).catch(() => {})
+                setMessages([])
+                hasSentInitial.current = false
+              }}
+              className="rounded-xl h-9 px-3 text-muted-foreground hover:text-foreground"
+              title="Resetar conversa (mantém memória)"
+            >
+              <RefreshCw className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">Resetar</span>
+            </Button>
             {/* Panel Toggle Button (visible on lg screens) */}
             <Button
               variant="outline"

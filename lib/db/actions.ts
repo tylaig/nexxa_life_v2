@@ -402,3 +402,105 @@ export async function deleteChatSession(sessionType: string) {
     .eq("user_id", auth.user.id)
     .eq("session_type", sessionType)
 }
+
+// -----------------------------------------------------------------------------
+// AGENT MEMORY (soul.md / memory.md / skills.md)
+// -----------------------------------------------------------------------------
+
+export async function getMemory(memoryType: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return ""
+
+  const supabase = await getSupabaseServerClient()
+  const { data } = await supabase
+    .from("agent_memory")
+    .select("content")
+    .eq("user_id", auth.user.id)
+    .eq("memory_type", memoryType)
+    .single()
+
+  return data?.content || ""
+}
+
+export async function getAllMemory() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return { soul: "", memory: "", skills: "" }
+
+  const supabase = await getSupabaseServerClient()
+  const { data } = await supabase
+    .from("agent_memory")
+    .select("memory_type, content")
+    .eq("user_id", auth.user.id)
+
+  const result: Record<string, string> = { soul: "", memory: "", skills: "" }
+  for (const row of data || []) {
+    result[row.memory_type] = row.content || ""
+  }
+  return result
+}
+
+export async function updateMemory(memoryType: string, content: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return
+
+  const supabase = await getSupabaseServerClient()
+  await supabase
+    .from("agent_memory")
+    .upsert({
+      user_id: auth.user.id,
+      memory_type: memoryType,
+      content,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,memory_type" })
+}
+
+export async function appendMemory(memoryType: string, entry: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return
+
+  const existing = await getMemory(memoryType)
+  const timestamp = new Date().toISOString().split('T')[0]
+  const newContent = existing
+    ? `${existing}\n\n---\n_${timestamp}_\n${entry}`
+    : `# ${memoryType === 'soul' ? 'Soul' : memoryType === 'memory' ? 'Memory' : 'Skills'}\n\n---\n_${timestamp}_\n${entry}`
+
+  await updateMemory(memoryType, newContent)
+}
+
+export async function searchMemory(query: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return []
+
+  const supabase = await getSupabaseServerClient()
+
+  // Simple text search across all memory files
+  const { data } = await supabase
+    .from("agent_memory")
+    .select("memory_type, content")
+    .eq("user_id", auth.user.id)
+
+  if (!data) return []
+
+  const queryLower = query.toLowerCase()
+  return data
+    .filter(row => row.content?.toLowerCase().includes(queryLower))
+    .map(row => ({
+      type: row.memory_type,
+      matches: row.content!
+        .split('\n')
+        .filter(line => line.toLowerCase().includes(queryLower))
+        .slice(0, 5)
+        .join('\n'),
+    }))
+}
+
+export async function resetMemory() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return
+
+  const supabase = await getSupabaseServerClient()
+  await supabase
+    .from("agent_memory")
+    .delete()
+    .eq("user_id", auth.user.id)
+}
