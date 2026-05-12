@@ -139,21 +139,27 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
   function submitMessage(e?: React.FormEvent) {
     if (e) e.preventDefault()
-    if ((!inputValue?.trim() && attachments.length === 0) || isLoading) return
+    
+    const content = inputValue.trim()
+    if (!content && attachments.length === 0 && !isLoading) return
+    if (isLoading) return
     
     const messageOpts: any = { 
       role: 'user',
-      content: inputValue 
+      content: content || (attachments.length > 0 ? "[Arquivo(s) Anexado(s)]" : "")
     }
     
     // In AI SDK v3/v4, if you want to pass images, you can pass dataUrls
     // or use experimental_attachments. For now, we'll map them if provided.
     if (attachments.length > 0) {
-      messageOpts.experimental_attachments = attachments.map(url => ({
-        url,
-        contentType: url.startsWith("data:image/png") ? "image/png" : "image/jpeg",
-        name: "pasted-image"
-      }))
+      messageOpts.experimental_attachments = attachments.map(url => {
+        const isAudio = url.startsWith("data:audio")
+        return {
+          url,
+          contentType: isAudio ? "audio/mpeg" : (url.startsWith("data:image/png") ? "image/png" : "image/jpeg"),
+          name: isAudio ? "voice-note" : "attachment"
+        }
+      })
     }
     
     append(messageOpts)
@@ -611,7 +617,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
             </div>
           )}
 
-          <div className="relative max-w-4xl mx-auto">
+          <div className="relative w-full">
             {/* Recording Overlay (WhatsApp Style) */}
             {isRecording ? (
               <div className="flex items-center gap-3 w-full min-h-[56px] rounded-2xl border border-primary/40 bg-primary/5 py-2 px-4 animate-in fade-in slide-in-from-bottom-2">
@@ -653,7 +659,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                 </div>
               </div>
             ) : (
-              <form onSubmit={submitMessage} className="flex items-end gap-2">
+              <form onSubmit={submitMessage} className="flex items-end gap-2 w-full">
                 <Button
                   type="button"
                   variant="ghost"
@@ -670,18 +676,17 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
-                  placeholder={isDragging ? "Solte para anexar" : "O que vamos construir hoje?"}
+                  placeholder={isDragging ? "Solte para anexar" : "Digite uma mensagem..."}
                   rows={1}
                   disabled={isLoading}
                   className={cn(
-                    "w-full min-h-[56px] resize-none rounded-2xl border border-border/60 bg-muted/30 py-4 px-5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50",
+                    "w-full min-h-[56px] max-h-[300px] resize-none rounded-2xl border border-border/60 bg-muted/30 py-4 px-5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50 custom-scrollbar",
                     isDragging && "border-primary bg-primary/5"
                   )}
-                  style={{ overflow: 'hidden' }}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement
                     target.style.height = '56px'
-                    target.style.height = `${Math.min(target.scrollHeight, 200)}px`
+                    target.style.height = `${Math.min(target.scrollHeight, 300)}px`
                   }}
                 />
 
@@ -701,7 +706,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                     <Button
                       type="submit"
                       size="icon"
-                      disabled={isLoading || (!inputValue?.trim?.() && attachments.length === 0)}
+                      disabled={isLoading}
                       className="h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-md hover:scale-105 transition-transform"
                     >
                       <Send className="h-4 w-4" />
