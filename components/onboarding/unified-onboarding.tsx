@@ -28,7 +28,11 @@ export function UnifiedOnboarding({ questions, diagnosticData, initialStep }: Pr
   const [diagData, setDiagData] = React.useState(diagnosticData)
 
   const handleDiagnosticDone = React.useCallback(async () => {
-    await updateOnboardingStep("goals")
+    try {
+      await updateOnboardingStep("goals")
+    } catch {
+      console.error("[UnifiedOnboarding] Failed to update onboarding step, redirecting anyway")
+    }
     window.location.href = "/studio"
   }, [])
 
