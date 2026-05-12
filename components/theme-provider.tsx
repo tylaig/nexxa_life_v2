@@ -23,7 +23,7 @@ const ThemeProviderContext = React.createContext<ThemeProviderState | null>(null
 const STORAGE_KEY = "onda-theme"
 
 function getSystemTheme(): ResolvedTheme {
-  if (typeof window === "undefined") return "dark"
+  if (typeof window === "undefined") return "light"
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
 }
 
@@ -47,7 +47,7 @@ export function ThemeProvider({
   disableTransitionOnChange,
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(defaultTheme)
-  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("dark")
+  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("light")
 
   const setTheme = React.useCallback((nextTheme: Theme) => {
     setThemeState(nextTheme)

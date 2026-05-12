@@ -4,8 +4,8 @@ import { createOpenAI } from "@ai-sdk/openai"
 import { generateText } from "ai"
 
 const customOpenAI = createOpenAI({
-  baseURL: process.env.AI_GATEWAY_BASE_URL || "https://proxy.ia.meusuper.app/v1",
-  apiKey: process.env.AI_GATEWAY_API_KEY || "API-123456",
+  baseURL: process.env.AI_GATEWAY_BASE_URL || "https://openrouter.ai/api/v1",
+  apiKey: process.env.AI_GATEWAY_API_KEY || "",
 })
 
 export async function POST(req: Request) {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     }).join("\n")
 
     const result = await generateText({
-      model: customOpenAI(process.env.AI_GATEWAY_MODEL || "gpt-5.4"),
+      model: customOpenAI(process.env.AI_GATEWAY_MODEL || "openai/o4-mini-high"),
       prompt: `Você é o motor de análise do NexxaLife, um sistema operacional de evolução pessoal.
 
 O usuário acabou de responder um diagnóstico inicial com notas de 0 a 10. Analise as respostas e retorne EXCLUSIVAMENTE um JSON válido (sem markdown, sem texto antes/depois) com:

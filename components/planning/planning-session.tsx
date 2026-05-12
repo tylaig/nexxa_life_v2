@@ -48,8 +48,10 @@ export function PlanningSession({ diagnosticData }: PlanningSessionProps) {
   }, [messages])
 
   // Auto-trigger first AI message when entering chat
+  const hasSentInitial = React.useRef(false)
   React.useEffect(() => {
-    if (phase === "chat" && messages?.length === 0) {
+    if (phase === "chat" && messages?.length === 0 && !hasSentInitial.current) {
+      hasSentInitial.current = true
       const fakeEvent = { preventDefault: () => {} } as any
       setInput?.("Olá! Acabei de fazer meu diagnóstico. Vamos criar meu plano de evolução!")
       setTimeout(() => {
@@ -81,14 +83,13 @@ export function PlanningSession({ diagnosticData }: PlanningSessionProps) {
         if (text.includes("Tarefa") && text.includes("adicionada")) tasks++
         if (text.includes("Evento") && text.includes("agendado")) events++
       }
-      // Check tool results
-      if (msg.toolInvocations) {
-        for (const inv of msg.toolInvocations) {
-          if (inv.state === "result" && inv.result?.success) {
-            if (inv.toolName === "addGoal") goals++
-            if (inv.toolName === "addChecklistItem") tasks++
-            if (inv.toolName === "addAgendaEvent") events++
-          }
+      // AI SDK v6: tool results live in message.parts
+      const parts = (msg as any).parts || []
+      for (const part of parts) {
+        if (part.type === "tool-invocation" && part.state === "result" && part.result?.success) {
+          if (part.toolName === "addGoal") goals++
+          if (part.toolName === "addChecklistItem") tasks++
+          if (part.toolName === "addAgendaEvent") events++
         }
       }
     }
@@ -221,7 +222,12 @@ export function PlanningSession({ diagnosticData }: PlanningSessionProps) {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="max-w-2xl mx-auto space-y-4">
-            {(messages || []).filter((m: any) => m.role !== "system").map((msg: any, i: number) => (
+            {(messages || []).filter((m: any) => m.role !== "system").map((msg: any, i: number) => {
+              // AI SDK v6: text lives in parts[], not msg.content
+              const textPart = ((msg as any).parts || []).find((p: any) => p.type === 'text')
+              const text = textPart?.text || (typeof msg.content === "string" ? msg.content : "")
+              if (!text) return null
+              return (
               <div
                 key={msg.id || i}
                 className={cn(
@@ -242,11 +248,7 @@ export function PlanningSession({ diagnosticData }: PlanningSessionProps) {
                       : "bg-muted/50 text-foreground border border-border/30 rounded-bl-md"
                   )}
                 >
-                  {typeof msg.content === "string" ? (
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
-                  ) : (
-                    <div className="whitespace-pre-wrap">{JSON.stringify(msg.content)}</div>
-                  )}
+                  <div className="whitespace-pre-wrap">{text}</div>
                 </div>
                 {msg.role === "user" && (
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-foreground/10 mt-1">
@@ -254,7 +256,8 @@ export function PlanningSession({ diagnosticData }: PlanningSessionProps) {
                   </div>
                 )}
               </div>
-            ))}
+              )
+            })}
 
             {isLoading && (
               <div className="flex gap-3 animate-in fade-in duration-300">

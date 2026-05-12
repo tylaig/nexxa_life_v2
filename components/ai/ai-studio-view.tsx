@@ -35,12 +35,17 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
   const isLoading = status === "submitted" || status === "streaming"
 
-  // Auto-trigger first AI message
+  // Auto-trigger first AI message (delay to let useChat fully hydrate)
+  const hasSentInitial = React.useRef(false)
   React.useEffect(() => {
-    if (isPlanningMode && (messages || []).length === 0 && !isLoading) {
-      sendMessage({
-        text: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
-      })
+    if (isPlanningMode && (messages || []).length === 0 && !isLoading && !hasSentInitial.current) {
+      hasSentInitial.current = true
+      const timer = setTimeout(() => {
+        sendMessage({
+          text: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
+        })
+      }, 300)
+      return () => clearTimeout(timer)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlanningMode])
@@ -205,7 +210,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
             // AI SDK v6: text lives in parts[], not m.content
             const textPart = (m.parts || []).find((p: any) => p.type === 'text')
             const text = textPart?.text || m.content || m.text
-            if (!text && m.role === 'user') return null
+            if (!text) return null
             return (
               <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
                 {m.role !== "user" && (

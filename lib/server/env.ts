@@ -19,6 +19,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().min(1).optional(),
   AI_GATEWAY_BASE_URL: z.string().min(1).optional(),
   AI_GATEWAY_API_KEY: z.string().min(1).optional(),
+  AI_GATEWAY_MODEL: z.string().default("openai/o4-mini-high"),
   AI_GATEWAY_EMBEDDING_MODEL: z.string().default("text-embedding-3-small"),
   RAG_USE_PGVECTOR: booleanish,
   RAG_MATCH_THRESHOLD: z.coerce.number().default(0.2),

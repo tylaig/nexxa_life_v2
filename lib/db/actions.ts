@@ -30,7 +30,7 @@ export async function getChecklist(dateStr?: string) {
 
 export async function toggleChecklistItem(id: string, done: boolean) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -39,14 +39,14 @@ export async function toggleChecklistItem(id: string, done: boolean) {
     .eq("id", id)
     .eq("user_id", auth.user.id)
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/checklist")
   revalidatePath("/dashboard")
 }
 
 export async function addChecklistItem(params: { label: string; priority?: "high" | "medium" | "low"; category?: string; date?: string }) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -59,7 +59,7 @@ export async function addChecklistItem(params: { label: string; priority?: "high
       item_date: params.date || new Date().toISOString().split('T')[0],
     })
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/checklist")
   revalidatePath("/dashboard")
 }
@@ -91,7 +91,7 @@ export async function getGoals() {
 
 export async function addGoal(params: { title: string; description?: string; category?: string }) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -103,7 +103,7 @@ export async function addGoal(params: { title: string; description?: string; cat
       category: params.category || "Pessoal",
     })
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/goals")
   revalidatePath("/dashboard")
 }
@@ -135,7 +135,7 @@ export async function getAgenda(dateStr?: string) {
 
 export async function addAgendaEvent(params: { title: string; date: string; startTime: string; endTime: string; type?: string }) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -149,7 +149,7 @@ export async function addAgendaEvent(params: { title: string; date: string; star
       type: params.type || "personal",
     })
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/agenda")
   revalidatePath("/dashboard")
 }
@@ -178,7 +178,7 @@ export async function getJournalEntries() {
 
 export async function addJournalEntry(params: { content: string; mood?: string; tags?: string[] }) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -190,7 +190,7 @@ export async function addJournalEntry(params: { content: string; mood?: string; 
       tags: params.tags || [],
     })
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/journal")
   revalidatePath("/dashboard")
 }
@@ -218,7 +218,7 @@ export async function getUserStreak() {
 
 export async function logDailyActivity(params: { checklistDone: number; checklistTotal: number; modulesActive: string[]; mood?: string }) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const date = new Date().toISOString().split('T')[0]
@@ -234,7 +234,7 @@ export async function logDailyActivity(params: { checklistDone: number; checklis
       mood: params.mood,
     }, { onConflict: "user_id,activity_date" })
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   
   // Call the streak update function
   await supabase.rpc('upsert_user_streak', { p_user_id: auth.user.id })
@@ -272,7 +272,7 @@ export async function saveDiagnosticResult(params: {
   }
 }) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -288,7 +288,7 @@ export async function saveDiagnosticResult(params: {
       raw_answers: params.answers,
     })
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/diagnostic")
   revalidatePath("/dashboard")
 }
@@ -312,7 +312,7 @@ export async function getDiagnosticResult() {
 
 export async function markUserOnboarded() {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -320,7 +320,7 @@ export async function markUserOnboarded() {
     .update({ onboarded: true, onboarding_step: "complete" })
     .eq("user_id", auth.user.id)
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/dashboard")
   revalidatePath("/")
 }
@@ -342,7 +342,7 @@ export async function getUserOnboardingStatus() {
 
 export async function updateOnboardingStep(step: string) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) throw new Error("Unauthorized")
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
@@ -350,6 +350,6 @@ export async function updateOnboardingStep(step: string) {
     .update({ onboarding_step: step })
     .eq("user_id", auth.user.id)
 
-  if (error) throw error
+  if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/")
 }

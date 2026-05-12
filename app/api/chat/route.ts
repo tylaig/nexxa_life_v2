@@ -15,8 +15,8 @@ import {
 } from "@/lib/db/actions"
 
 const customOpenAI = createOpenAI({
-  baseURL: process.env.AI_GATEWAY_BASE_URL || "https://proxy.ia.meusuper.app/v1",
-  apiKey: process.env.AI_GATEWAY_API_KEY || "API-123456",
+  baseURL: process.env.AI_GATEWAY_BASE_URL || "https://openrouter.ai/api/v1",
+  apiKey: process.env.AI_GATEWAY_API_KEY || "",
   compatibility: "compatible",
 })
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const messages = await convertToModelMessages(normalizedMessages)
 
     const result = streamText({
-      model: customOpenAI.chat(process.env.AI_GATEWAY_MODEL || "gpt-5.4"),
+      model: customOpenAI.chat(process.env.AI_GATEWAY_MODEL || "openai/o4-mini-high"),
       messages,
       maxSteps: 10, // agentic loop: AI can call tools and continue generating
       system: `Você é a IA do NexxaLife, um assistente pessoal focado na evolução do usuário. 
