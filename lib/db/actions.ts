@@ -268,7 +268,7 @@ export async function updateAvatarUrl(avatarUrl: string) {
   await supabase
     .from("app_user_profiles")
     .update({ avatar_url: avatarUrl })
-    .eq("id", auth.user.id)
+    .eq("user_id", auth.user.id)
 }
 
 export async function saveDiagnosticResult(params: {
