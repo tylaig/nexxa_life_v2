@@ -49,26 +49,33 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
   const sessionType = isPlanningMode ? "planning" : "studio"
 
-  // Restore saved messages from localStorage
-  const savedMessages = React.useMemo(() => {
-    try {
-      const raw = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null
-      if (raw) return JSON.parse(raw)
-    } catch {}
-    return undefined
-  }, [storageKey])
-
   const { messages, sendMessage, status, setMessages, error, reload, addToolResult } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
-    initialMessages: savedMessages,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
   })
 
   const isLoading = status === "submitted" || status === "streaming"
 
-  // Mark hydrated after first render
-  React.useEffect(() => { setIsHydrated(true) }, [])
+  // Restore from localStorage on mount (client-side only)
+  const didRestore = React.useRef(false)
+  React.useEffect(() => {
+    if (didRestore.current) return
+    didRestore.current = true
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (raw) {
+        const saved = JSON.parse(raw)
+        if (Array.isArray(saved) && saved.length > 0) {
+          setMessages(saved)
+          setIsHydrated(true)
+          return
+        }
+      }
+    } catch {}
+    setIsHydrated(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Persist messages to localStorage + DB (debounced)
   const saveTimerRef = React.useRef<NodeJS.Timeout>()
@@ -81,9 +88,10 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     }, 2000)
   }, [messages, storageKey, sessionType, isHydrated])
 
-  // Auto-trigger first AI message (delay to let useChat fully hydrate)
+  // Auto-trigger first AI message ONLY if no saved messages were restored
   const hasSentInitial = React.useRef(false)
   React.useEffect(() => {
+    if (!isHydrated) return // Wait for restore attempt to finish
     if (isPlanningMode && (messages || []).length === 0 && !isLoading && !hasSentInitial.current) {
       hasSentInitial.current = true
       const timer = setTimeout(() => {
@@ -94,7 +102,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
       return () => clearTimeout(timer)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlanningMode])
+  }, [isPlanningMode, isHydrated])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
