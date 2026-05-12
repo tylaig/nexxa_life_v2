@@ -23,13 +23,6 @@ export function DiagnosticBlocker({
   const isBlocked = !onboarded && step === "welcome" && !isOnboardingPage
 
   if (isBlocked) {
-    const needsPlanning = step === "planning" || step === "goals"
-    const title = needsPlanning ? "Planejamento Pendente" : "Configuração Inicial"
-    const description = needsPlanning
-      ? "Você já completou seu diagnóstico! Agora vamos criar seu plano personalizado com a IA."
-      : "O NexxaLife é um Sistema Operacional Pessoal moldado exclusivamente para você. Precisamos mapear suas áreas da vida para calibrar o sistema."
-    const buttonText = needsPlanning ? "Continuar Planejamento" : "Iniciar Configuração"
-
     return (
       <div className="relative h-screen w-full overflow-hidden">
         <div className="pointer-events-none blur-md opacity-30 select-none h-full">
@@ -46,13 +39,15 @@ export function DiagnosticBlocker({
               <Sparkles className="h-8 w-8 text-primary animate-pulse" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+              <h2 className="text-2xl font-bold text-foreground">Configuração Inicial</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                O NexxaLife é um Sistema Operacional Pessoal moldado exclusivamente para você. Precisamos mapear suas áreas da vida para calibrar o sistema.
+              </p>
             </div>
             <Button asChild size="lg" className="px-10 h-12 text-base">
-              <Link href={needsPlanning ? "/studio" : "/setup"}>
+              <Link href="/setup">
                 <Sparkles className="h-4 w-4 mr-2" />
-                {buttonText}
+                Iniciar Configuração
               </Link>
             </Button>
           </div>

@@ -498,7 +498,7 @@ export async function searchMemory(query: string) {
       type: row.memory_type,
       matches: row.content!
         .split('\n')
-        .filter(line => line.toLowerCase().includes(queryLower))
+        .filter((line: string) => line.toLowerCase().includes(queryLower))
         .slice(0, 5)
         .join('\n'),
     }))
