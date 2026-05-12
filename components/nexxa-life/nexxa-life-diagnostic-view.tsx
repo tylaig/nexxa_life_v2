@@ -161,27 +161,30 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
       const scores = localResult.scores
 
       if (onComplete) {
-        // ─── ONBOARDING FLOW: redirect immediately, show toast on destination ───
+        // ─── ONBOARDING FLOW: save first, then redirect ───
         try { sessionStorage.setItem("nexxa_analyzing", Date.now().toString()) } catch {}
 
-        // Fire-and-forget: save diagnostic result in background
-        saveDiagnosticResult({
-          answers,
-          scores: {
-            health: scores.health ?? 5, mind: scores.mind ?? 5,
-            productivity: scores.productivity ?? 5, finances: scores.finances ?? 5,
-            relations: scores.relations ?? 5, purpose: scores.purpose ?? 5,
-          },
-        }).catch(() => console.error("[DiagnosticWizard] Background save failed"))
+        // MUST await — without this, diagnostic data may not exist when studio loads
+        try {
+          await saveDiagnosticResult({
+            answers,
+            scores: {
+              health: scores.health ?? 5, mind: scores.mind ?? 5,
+              productivity: scores.productivity ?? 5, finances: scores.finances ?? 5,
+              relations: scores.relations ?? 5, purpose: scores.purpose ?? 5,
+            },
+          })
+        } catch (e) {
+          console.error("[DiagnosticWizard] Failed to save diagnostic:", e)
+        }
 
-        // Fire-and-forget: AI analysis (non-blocking, may take 30s+)
+        // AI analysis can still be fire-and-forget (non-critical, takes 30s+)
         fetch("/api/diagnostic/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ answers, questions }),
         }).catch(() => {})
 
-        // Clear saved progress and redirect immediately
         clearSavedProgress()
         onComplete()
         return

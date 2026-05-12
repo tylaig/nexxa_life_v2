@@ -312,15 +312,20 @@ export async function getDiagnosticResult() {
 
 export async function markUserOnboarded() {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
+  if (!auth) { console.error("Unauthorized in markUserOnboarded"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
   const { error } = await supabase
     .from("app_user_profiles")
-    .update({ onboarded: true, onboarding_step: "complete" })
-    .eq("user_id", auth.user.id)
+    .upsert({
+      user_id: auth.user.id,
+      email: auth.user.email,
+      full_name: auth.user.fullName || auth.user.email,
+      onboarded: true,
+      onboarding_step: "complete",
+    }, { onConflict: "user_id" })
 
-  if (error) { console.error("Supabase Error:", error); throw error; }
+  if (error) { console.error("markUserOnboarded Error:", error); throw error; }
   revalidatePath("/dashboard")
   revalidatePath("/")
 }
@@ -342,15 +347,20 @@ export async function getUserOnboardingStatus() {
 
 export async function updateOnboardingStep(step: string) {
   const auth = await getAuthenticatedAppUser()
-  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
+  if (!auth) { console.error("Unauthorized in updateOnboardingStep"); throw new Error("Unauthorized"); }
 
   const supabase = await getSupabaseServerClient()
+  // Use upsert to handle case where profile row doesn't exist yet
   const { error } = await supabase
     .from("app_user_profiles")
-    .update({ onboarding_step: step })
-    .eq("user_id", auth.user.id)
+    .upsert({
+      user_id: auth.user.id,
+      email: auth.user.email,
+      full_name: auth.user.fullName || auth.user.email,
+      onboarding_step: step,
+    }, { onConflict: "user_id" })
 
-  if (error) { console.error("Supabase Error:", error); throw error; }
+  if (error) { console.error("updateOnboardingStep Error:", error); throw error; }
   revalidatePath("/")
 }
 
