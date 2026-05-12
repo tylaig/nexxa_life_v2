@@ -4,6 +4,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { DiagnosticWizard } from "@/components/nexxa-life/nexxa-life-diagnostic-view"
+import { CharacterSelection } from "./character-selection"
 import { updateOnboardingStep, markUserOnboarded } from "@/lib/db/actions"
 import { Sparkles, ArrowRight, Bot } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -21,8 +22,8 @@ export function UnifiedOnboarding({ questions, diagnosticData, initialStep }: Pr
   const isComplete = initialStep === "complete"
   const router = useRouter()
 
-  const [phase, setPhase] = React.useState<"diagnostic" | "planning">(
-    hasDiagnostic ? "planning" : "diagnostic"
+  const [phase, setPhase] = React.useState<"character" | "diagnostic" | "planning">(
+    initialStep === "welcome" || initialStep === "profile" ? "character" : hasDiagnostic ? "planning" : "diagnostic"
   )
 
   const [diagData, setDiagData] = React.useState(diagnosticData)
@@ -30,6 +31,10 @@ export function UnifiedOnboarding({ questions, diagnosticData, initialStep }: Pr
   const handleDiagnosticDone = React.useCallback(() => {
     window.location.href = "/studio"
   }, [])
+
+  if (phase === "character") {
+    return <CharacterSelection onComplete={() => setPhase("diagnostic")} />
+  }
 
   if (phase === "diagnostic") {
     return <DiagnosticWizard questions={questions} onComplete={handleDiagnosticDone} />

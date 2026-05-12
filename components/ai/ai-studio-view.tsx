@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { markUserOnboarded, addGoal, addChecklistItem, addAgendaEvent, addJournalEntry, saveChatSession, deleteChatSession } from "@/lib/db/actions"
+import { markUserOnboarded, addGoal, addChecklistItem, addAgendaEvent, addJournalEntry, saveChatSession, deleteChatSession, getAllMemory } from "@/lib/db/actions"
 import { AreaRadarChart } from "@/components/nexxa-life/charts/area-radar-chart"
 import { ToolApprovalCard } from "@/components/ai/tool-approval-card"
 
@@ -48,6 +48,8 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const [inputValue, setInputValue] = React.useState("")
   const [attachments, setAttachments] = React.useState<string[]>([])
   const [isHydrated, setIsHydrated] = React.useState(false)
+  const [activeTab, setActiveTab] = React.useState<'insights' | 'memory'>('insights')
+  const [liveMemory, setLiveMemory] = React.useState<{soul: string, memory: string, skills: string}>({ soul: '', memory: '', skills: '' })
 
   const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
   const sessionType = isPlanningMode ? "planning" : "studio"
@@ -59,6 +61,13 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   })
 
   const isLoading = status === "submitted" || status === "streaming"
+
+  // Fetch memory
+  React.useEffect(() => {
+    if (activeTab === 'memory') {
+      getAllMemory().then(setLiveMemory).catch(() => {})
+    }
+  }, [activeTab, messages])
 
   // Restore from localStorage on mount (client-side only)
   const didRestore = React.useRef(false)
@@ -157,8 +166,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     if (index === -1) return
     
     const msg = messages[index]
-    const textPart = (msg.parts || []).find((p: any) => p.type === 'text')
-    setInputValue(textPart?.text || msg.content || msg.text || "")
+    setInputValue(msg.content || msg.text || "")
     setMessages(messages.slice(0, index))
   }
 
@@ -183,25 +191,21 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
       })
     }
 
-    // Add tool invocations — in AI SDK v6 they live in message.parts
-    messages.forEach(m => {
-      const parts = (m as any).parts || []
-      parts.forEach((part: any) => {
-        if (part.type && part.type.startsWith('tool-')) {
-          // Extract tool name from type like "tool-addGoal"
-          const toolName = part.toolName || part.type.replace(/^tool-/, '')
-          events.push({
-            type: 'tool',
-            id: part.toolCallId || `${m.id}-${toolName}`,
-            inv: {
-              toolName,
-              toolCallId: part.toolCallId,
-              args: part.input,
-              state: part.state === 'output-available' ? 'result' : part.state,
-            },
-            messageId: m.id
-          })
-        }
+    // Add tool invocations from AI SDK
+    messages.forEach((m: any) => {
+      const toolInvocations = m.toolInvocations || []
+      toolInvocations.forEach((inv: any) => {
+        events.push({
+          type: 'tool',
+          id: inv.toolCallId || `${m.id}-${inv.toolName}`,
+          inv: {
+            toolName: inv.toolName,
+            toolCallId: inv.toolCallId,
+            args: inv.args,
+            state: inv.state === 'result' ? 'result' : inv.state,
+          },
+          messageId: m.id
+        })
       })
     })
 
@@ -282,12 +286,10 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar">
           {(messages || []).map((m: any) => {
-            const parts = m.parts || []
-            const textParts = parts.filter((p: any) => p.type === 'text' && p.text?.trim())
-            const toolParts = parts.filter((p: any) => p.type?.startsWith('tool-') || p.type === 'dynamic-tool')
-            const mutatingToolParts = toolParts.filter((p: any) => MUTATING_TOOLS.includes(p.toolName))
-            const hasContent = textParts.length > 0 || toolParts.length > 0
-            const text = textParts.map((p: any) => p.text).join('\n') || m.content || m.text || ''
+            const toolInvocations = m.toolInvocations || []
+            const mutatingToolParts = toolInvocations.filter((inv: any) => MUTATING_TOOLS.includes(inv.toolName))
+            const hasContent = !!m.content?.trim() || toolInvocations.length > 0
+            const text = m.content || ''
 
             if (!hasContent && m.role === 'assistant') return null
 
@@ -360,7 +362,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                 ))}
 
                 {/* Thinking indicator for tool-only messages with no text */}
-                {m.role === "assistant" && !text && toolParts.length > 0 && mutatingToolParts.length === 0 && (
+                {m.role === "assistant" && !text && toolInvocations.length > 0 && mutatingToolParts.length === 0 && (
                   <div className="flex w-full justify-start">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-1 flex-none border border-primary/20">
                       <Bot className="h-4 w-4 text-primary" />
@@ -477,30 +479,62 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
         <div className="flex-1 overflow-y-auto p-6 z-10 custom-scrollbar relative">
           
-          <div className="sticky top-0 bg-background/90 backdrop-blur-sm pb-3 mb-4 z-20 border-b border-border/40">
+          <div className="sticky top-0 bg-background/90 backdrop-blur-sm pb-3 mb-4 z-20 border-b border-border/40 flex items-center justify-between">
             <div className="flex items-center gap-2 opacity-70 text-primary">
               <Activity className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-widest">Insights</span>
+              <span className="text-xs font-bold uppercase tracking-widest">Workspace</span>
             </div>
           </div>
 
-          <div className="space-y-2">
-            {timelineEvents.length === 0 ? (
-              <div className="py-10 text-center opacity-60">
-                <Sparkles className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-sm font-medium">Nenhum insight ainda.</p>
-              </div>
-            ) : (
-              timelineEvents.map((item) => (
-                <InsightCard key={item.id} item={item} />
-              ))
-            )}
+          <div className="flex gap-2 mb-6 bg-muted/30 p-1 rounded-lg">
+            <button 
+              onClick={() => setActiveTab('insights')}
+              className={cn("flex-1 text-xs font-medium py-1.5 rounded-md transition-all", activeTab === 'insights' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+            >
+              Timeline
+            </button>
+            <button 
+              onClick={() => setActiveTab('memory')}
+              className={cn("flex-1 text-xs font-medium py-1.5 rounded-md transition-all", activeTab === 'memory' ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+            >
+              Memória
+            </button>
           </div>
-          
-          {isLoading && (
-            <div className="flex items-center gap-3 mt-4 animate-in fade-in duration-500 opacity-60">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-xs font-medium text-muted-foreground">Coletando insights...</span>
+
+          {activeTab === 'insights' ? (
+            <div className="space-y-2">
+              {timelineEvents.length === 0 ? (
+                <div className="py-10 text-center opacity-60">
+                  <Sparkles className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+                  <p className="text-sm font-medium">Nenhum insight ainda.</p>
+                </div>
+              ) : (
+                timelineEvents.map((item) => (
+                  <InsightCard key={item.id} item={item} />
+                ))
+              )}
+              
+              {isLoading && (
+                <div className="flex items-center gap-3 mt-4 animate-in fade-in duration-500 opacity-60">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-xs font-medium text-muted-foreground">Coletando insights...</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4 animate-in fade-in duration-300">
+              <div className="rounded-xl border bg-muted/5 p-4">
+                <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-2"><Brain className="h-3 w-3 text-pink-500"/> Soul (Personalidade)</h3>
+                <div className="text-[11px] text-muted-foreground whitespace-pre-wrap">{liveMemory.soul || "Vazio"}</div>
+              </div>
+              <div className="rounded-xl border bg-muted/5 p-4">
+                <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-2"><BookText className="h-3 w-3 text-amber-500"/> Memory (Fatos/Contexto)</h3>
+                <div className="text-[11px] text-muted-foreground whitespace-pre-wrap">{liveMemory.memory || "Vazio"}</div>
+              </div>
+              <div className="rounded-xl border bg-muted/5 p-4">
+                <h3 className="text-xs font-bold text-foreground mb-2 flex items-center gap-2"><Target className="h-3 w-3 text-emerald-500"/> Skills (Padrões)</h3>
+                <div className="text-[11px] text-muted-foreground whitespace-pre-wrap">{liveMemory.skills || "Vazio"}</div>
+              </div>
             </div>
           )}
 

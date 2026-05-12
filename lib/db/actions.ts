@@ -260,6 +260,17 @@ export async function getDiagnosticQuestions() {
   return data
 }
 
+export async function updateAvatarUrl(avatarUrl: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) throw new Error("Não autenticado")
+
+  const supabase = await getSupabaseServerClient()
+  await supabase
+    .from("app_user_profiles")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", auth.user.id)
+}
+
 export async function saveDiagnosticResult(params: {
   answers: Record<string, number>
   scores: {
