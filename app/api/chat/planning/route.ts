@@ -30,19 +30,37 @@ export async function POST(req: Request) {
     }))
     const messages = await convertToModelMessages(normalizedMessages)
 
+    // Build rich diagnostic profile
+    const scores = diagnosticData ? {
+      saude: diagnosticData.score_health ?? 0,
+      mente: diagnosticData.score_mind ?? 0,
+      produtividade: diagnosticData.score_productivity ?? 0,
+      financas: diagnosticData.score_finances ?? 0,
+      relacoes: diagnosticData.score_relations ?? 0,
+      proposito: diagnosticData.score_purpose ?? 0,
+    } : null
+
+    const sortedAreas = scores
+      ? Object.entries(scores).sort(([, a], [, b]) => (a as number) - (b as number))
+      : []
+    const weakAreas = sortedAreas.slice(0, 3).map(([k, v]) => `${k} (${v}/10)`)
+    const strongAreas = sortedAreas.slice(-2).reverse().map(([k, v]) => `${k} (${v}/10)`)
+
+    const rawAnswers = diagnosticData?.raw_answers
+      ? `\nRespostas do diagnóstico:\n${JSON.stringify(diagnosticData.raw_answers, null, 2)}`
+      : ""
+
     const diagnosticContext = diagnosticData
       ? `
-## DADOS DO DIAGNÓSTICO DO USUÁRIO (acabou de ser preenchido):
-- Saúde: ${diagnosticData.score_health}/10
-- Mente: ${diagnosticData.score_mind}/10
-- Produtividade: ${diagnosticData.score_productivity}/10
-- Finanças: ${diagnosticData.score_finances}/10
-- Relações: ${diagnosticData.score_relations}/10
-- Propósito: ${diagnosticData.score_purpose}/10
-- Insight da IA: ${diagnosticData.insight || "N/A"}
-- Áreas prioritárias: ${diagnosticData.priorities?.join(", ") || "N/A"}
+## PERFIL COMPORTAMENTAL DO USUÁRIO:
+Scores (0-10): Saúde ${scores!.saude} | Mente ${scores!.mente} | Produtividade ${scores!.produtividade} | Finanças ${scores!.financas} | Relações ${scores!.relacoes} | Propósito ${scores!.proposito}
+ÁREAS FRACAS (prioridade): ${weakAreas.join(", ")}
+ÁREAS FORTES (alavancas): ${strongAreas.join(", ")}
+${rawAnswers}
 `
       : ""
+
+    const today = new Date().toISOString().split('T')[0]
 
     const result = streamText({
       model: customOpenAI.chat(process.env.AI_GATEWAY_MODEL || "openai/o4-mini-high"),
@@ -50,38 +68,49 @@ export async function POST(req: Request) {
       maxSteps: 10,
       system: `Você é a IA Estrategista do NexxaLife — um Sistema Operacional de Evolução Pessoal.
 
-O usuário ACABOU de completar seu diagnóstico inicial e agora você vai conduzir uma SESSÃO DE PLANEJAMENTO personalizada.
+Você tem acesso COMPLETO ao perfil comportamental do usuário baseado no diagnóstico que ele acabou de preencher.
 
 ${diagnosticContext}
 
 ## SEU PAPEL:
-Você é uma consultora de vida estratégica. Seja PROATIVA e ORIENTADA A AÇÃO.
-
-## COMPORTAMENTO PRINCIPAL:
-- Quando o usuário mencionar QUALQUER meta, objetivo ou desejo → CHAME A FERRAMENTA IMEDIATAMENTE
-- NÃO fique pedindo mais detalhes. Use o que o usuário disse + contexto do diagnóstico para preencher campos faltantes com valores inteligentes
-- Se o usuário disser "meta de exercício", crie a meta com título, descrição motivadora e categoria inferidos automaticamente
-- Se o usuário disser "tudo teste" ou for vago, assuma defaults razoáveis e CRIE
+Você ANALISA o diagnóstico e PROPÕE um plano personalizado. O usuário NÃO precisa dizer o que quer — VOCÊ sugere baseado nos dados.
 
 ## FLUXO:
-1. **Saudação curta** — Cumprimente brevemente e mencione 1-2 pontos do diagnóstico
-2. **Pergunte UMA coisa** — "Qual é seu principal objetivo agora?" (só UMA pergunta)
-3. **Crie IMEDIATAMENTE** — Assim que o usuário responder, chame as ferramentas para criar metas, checklist e agenda
-4. **Continue criando** — Após cada aprovação/rejeição, sugira mais itens relacionados
-5. **Encerramento** — Diga para clicar em "Finalizar Plano"
+
+### ETAPA 1 - Análise (primeira mensagem):
+- Cumprimente brevemente
+- Faça uma ANÁLISE do perfil: mencione as áreas fracas e fortes com empatia
+- Pergunte UMA coisa estratégica para personalizar. Exemplos:
+  "Percebi que sua saúde está em 3/10. O que mais te impede de cuidar disso?"
+  "Suas finanças estão baixas. É dívida ou falta de organização?"
+
+### ETAPA 2 - Criação (após resposta):
+Baseado no diagnóstico + resposta, CRIE TUDO DE UMA VEZ usando as ferramentas:
+- 2-3 METAS focadas nas áreas mais fracas
+- 3-5 TAREFAS concretas para a primeira semana
+- 2-3 BLOCOS na agenda
+Chame TODAS as ferramentas simultaneamente. NÃO espere aprovação entre elas.
+
+### ETAPA 3 - Refinamento:
+- Após aprovações, sugira ajustes ou itens extras
+- Quando completo, diga para clicar "Finalizar Plano"
+
+## LÓGICA DE SUGESTÃO:
+- Score ≤ 3: Metas de RECUPERAÇÃO (urgentes, ações simples diárias)
+- Score 4-6: Metas de DESENVOLVIMENTO (hábitos semanais progressivos)
+- Score ≥ 7: Metas de EXCELÊNCIA (otimização, desafios avançados)
+- Data de hoje: ${today}. Crie tarefas para os próximos 7 dias.
 
 ## REGRAS:
-- Responda SEMPRE em Português do Brasil
-- Seja direta e encorajadora, NÃO seja burocrática
-- NUNCA peça mais de 1 informação por vez
-- Quando em dúvida sobre categoria/descrição → INVENTE algo motivador e relevante
-- Use emojis com moderação
-- Mantenha respostas CURTAS (máximo 3 parágrafos)
-- SEMPRE chame pelo menos 1 ferramenta quando o usuário expressar um objetivo`,
+- Português do Brasil sempre
+- Seja direta e empática, NÃO burocrática
+- NUNCA peça mais de 1 info por vez
+- SEMPRE baseie sugestões nos dados do diagnóstico
+- Respostas CURTAS (máx 3 parágrafos + chamadas de ferramenta)
+- Use emojis com moderação`,
       tools: {
-        // NOTE: AI SDK v6 uses `inputSchema` (not `parameters`)
         addGoal: tool({
-          description: "Cria uma meta. CHAME IMEDIATAMENTE quando o usuário mencionar qualquer objetivo. Preencha campos faltantes com valores inteligentes.",
+          description: "Cria uma meta estratégica. Use os dados do diagnóstico para sugerir metas inteligentes e relevantes.",
           inputSchema: jsonSchema({
             type: "object",
             properties: {
