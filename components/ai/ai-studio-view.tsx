@@ -54,7 +54,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
   const sessionType = isPlanningMode ? "planning" : "studio"
 
-  const { messages, sendMessage, status, setMessages, error, reload, addToolResult } = useChat({
+  const { messages, append, status, setMessages, error, reload, addToolResult } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
@@ -107,8 +107,9 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     if (isPlanningMode && (messages || []).length === 0 && !isLoading && !hasSentInitial.current) {
       hasSentInitial.current = true
       const timer = setTimeout(() => {
-        sendMessage({
-          text: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
+        append({
+          role: "assistant",
+          content: "Olá! Terminei meu diagnóstico. Vamos começar a organizar meu plano estratégico.",
         })
       }, 300)
       return () => clearTimeout(timer)
@@ -124,7 +125,10 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     if (e) e.preventDefault()
     if ((!inputValue?.trim() && attachments.length === 0) || isLoading) return
     
-    const messageOpts: any = { text: inputValue }
+    const messageOpts: any = { 
+      role: 'user',
+      content: inputValue 
+    }
     
     // In AI SDK v3/v4, if you want to pass images, you can pass dataUrls
     // or use experimental_attachments. For now, we'll map them if provided.
@@ -136,7 +140,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
       }))
     }
     
-    sendMessage(messageOpts)
+    append(messageOpts)
     setInputValue("")
     setAttachments([])
   }
