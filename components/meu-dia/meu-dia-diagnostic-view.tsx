@@ -104,26 +104,9 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
     } else {
       // All done
       setPhase("analyzing")
-      try {
-        const res = await fetch("/api/diagnostic/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ answers, questions }),
-        })
-        const data = await res.json()
-        setAnalysis(data)
-        const scores = data.scores || {}
-        await saveDiagnosticResult({
-          answers,
-          scores: {
-            health: scores.health ?? 5, mind: scores.mind ?? 5,
-            productivity: scores.productivity ?? 5, finances: scores.finances ?? 5,
-            relations: scores.relations ?? 5, purpose: scores.purpose ?? 5,
-          },
-        })
-        setTimeout(() => setPhase("results"), 800)
-      } catch {
-        // Fallback manual
+      
+      // Fallback: calculate scores locally from raw answers
+      const computeLocalScores = () => {
         const areaScores: Record<string, number[]> = {}
         for (const q of questions) {
           if (!areaScores[q.area]) areaScores[q.area] = []
@@ -133,14 +116,54 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
         for (const [area, vals] of Object.entries(areaScores)) {
           scores[area] = vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 5
         }
-        setAnalysis({
+        return {
           scores,
-          insight: "Análise calculada. Continue acompanhando pelo NexxaLife.",
+          insight: "Análise calculada com base nas suas respostas. Continue acompanhando pelo NexxaLife.",
           priorities: Object.entries(scores).sort(([, a], [, b]) => a - b).slice(0, 2).map(([area]) => area),
-        })
-        await saveDiagnosticResult({ answers, scores: scores as any })
-        setPhase("results")
+        }
       }
+
+      let result: any = null
+      try {
+        const res = await fetch("/api/diagnostic/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answers, questions }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          // Validate that we got proper scores back
+          if (data.scores && typeof data.scores === "object") {
+            result = data
+          }
+        }
+      } catch {
+        // Network error or parse error — will use local fallback
+      }
+
+      // Use local fallback if AI analysis failed
+      if (!result) {
+        result = computeLocalScores()
+      }
+
+      setAnalysis(result)
+      const scores = result.scores || {}
+
+      try {
+        await saveDiagnosticResult({
+          answers,
+          scores: {
+            health: scores.health ?? 5, mind: scores.mind ?? 5,
+            productivity: scores.productivity ?? 5, finances: scores.finances ?? 5,
+            relations: scores.relations ?? 5, purpose: scores.purpose ?? 5,
+          },
+        })
+      } catch {
+        // DB save failed (e.g. auth issue) — still show results to user
+        console.error("[DiagnosticWizard] Failed to save results, continuing anyway")
+      }
+
+      setTimeout(() => setPhase("results"), 800)
     }
   }
 
