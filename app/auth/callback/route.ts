@@ -21,7 +21,6 @@ export async function GET(request: Request) {
   const baseUrl = url.origin
 
   if (!code) {
-    // Sem code — fallback para a página client-side que lê o hash fragment
     const fallbackUrl = new URL("/auth/confirm", baseUrl)
     fallbackUrl.searchParams.set("next", next)
     return NextResponse.redirect(fallbackUrl)
@@ -29,6 +28,8 @@ export async function GET(request: Request) {
 
   try {
     const cookieStore = await cookies()
+    // Captura os cookies para setar no objeto NextResponse final
+    const pendingCookies: any[] = []
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,7 +41,10 @@ export async function GET(request: Request) {
           },
           setAll(cookiesToSet) {
             for (const { name, value, options } of cookiesToSet) {
+              // Seta no Next.js standard cookieStore
               cookieStore.set(name, value, options)
+              // Guarda para garantir na response
+              pendingCookies.push({ name, value, options })
             }
           },
         },
@@ -51,12 +55,17 @@ export async function GET(request: Request) {
 
     if (error || !data.session) {
       console.error("[auth/callback] exchangeCodeForSession error:", error?.message ?? "no session")
-      return NextResponse.redirect(
+      const errResponse = NextResponse.redirect(
         new URL(`/login?error=oauth_exchange_failed&next=${encodeURIComponent(next)}`, baseUrl)
       )
+      // Garantir cookies
+      pendingCookies.forEach(({ name, value, options }) => {
+        errResponse.cookies.set(name, value, options)
+      })
+      return errResponse
     }
 
-    // Cria/atualiza perfil do usuário de forma não-bloqueante
+    // Cria/atualiza perfil do usuário
     ensureAppUserProfile({
       userId: data.user.id,
       email: data.user.email ?? `${data.user.id}@example.local`,
@@ -76,7 +85,13 @@ export async function GET(request: Request) {
       console.error("[auth/callback] ensureAppUserProfile error:", err)
     })
 
-    return NextResponse.redirect(new URL(next, baseUrl))
+    const response = NextResponse.redirect(new URL(next, baseUrl))
+    // FIX: Aplicar explicitamente os cookies de sessão no NextResponse
+    pendingCookies.forEach(({ name, value, options }) => {
+      response.cookies.set(name, value, options)
+    })
+    
+    return response
   } catch (err) {
     console.error("[auth/callback] unexpected error:", err)
     return NextResponse.redirect(
