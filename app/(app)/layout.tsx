@@ -1,4 +1,5 @@
 import type React from "react"
+import { redirect } from "next/navigation"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-shell/app-sidebar"
 import { CommandMenu } from "@/components/app-shell/command-menu"
@@ -10,8 +11,10 @@ import { AnalysisToast } from "@/components/onboarding/analysis-toast"
 export const dynamic = "force-dynamic"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { onboarded, step } = await getUserOnboardingStatus()
   const auth = await getAuthenticatedAppUser()
+  if (!auth) redirect("/login")
+
+  const { onboarded, step } = await getUserOnboardingStatus()
   const diagnosticData = await getDiagnosticResult()
 
   return (
