@@ -3,37 +3,69 @@
 
 import * as React from "react"
 import { useChat } from "@ai-sdk/react"
+import { lastAssistantMessageIsCompleteWithApprovalResponses } from "ai"
 import { useRouter } from "next/navigation"
 import {
   Bot, Send, Sparkles, Loader2,
-  CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, Activity, RefreshCw, Pencil, Image as ImageIcon, X, AlertCircle
+  CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, ChevronDown, ChevronUp, Activity, RefreshCw, Pencil, Image as ImageIcon, X, AlertCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { markUserOnboarded } from "@/lib/db/actions"
 import { AreaRadarChart } from "@/components/nexxa-life/charts/area-radar-chart"
+import { ToolApprovalCard } from "@/components/ai/tool-approval-card"
 
 const TOOL_META: Record<string, { icon: any; label: string; color: string; desc: string }> = {
   addGoal:          { icon: Target,       label: "Meta Criada",       color: "text-emerald-500", desc: "Uma nova meta foi estabelecida" },
   addChecklistItem: { icon: CheckCircle2, label: "Tarefa Adicionada", color: "text-blue-500",    desc: "Nova ação na sua checklist" },
   addAgendaEvent:   { icon: Calendar,     label: "Evento Agendado",   color: "text-violet-500",  desc: "Tempo bloqueado na agenda" },
   addJournalEntry:  { icon: BookText,     label: "Diário Salvo",      color: "text-amber-500",   desc: "Nova reflexão capturada" },
+  getGoals:         { icon: Target,       label: "Metas Consultadas", color: "text-emerald-400", desc: "Metas existentes verificadas" },
+  getChecklist:     { icon: CheckCircle2, label: "Checklist Lido",    color: "text-blue-400",    desc: "Checklist do dia verificado" },
+  getAgenda:        { icon: Calendar,     label: "Agenda Consultada", color: "text-violet-400",  desc: "Agenda do dia verificada" },
 }
+
+const MUTATING_TOOLS = ["addGoal", "addChecklistItem", "addAgendaEvent", "addJournalEntry"]
+
+const STORAGE_KEY_PLANNING = "nexxa_chat_planning"
+const STORAGE_KEY_STUDIO = "nexxa_chat_studio"
 
 export function AiStudioView({ step, diagnosticData }: { step?: string; diagnosticData?: any }) {
   const router = useRouter()
-  const isPlanningMode = step !== "complete" // Show planning mode if not fully onboarded
+  const isPlanningMode = step !== "complete"
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const [inputValue, setInputValue] = React.useState("")
+  const [attachments, setAttachments] = React.useState<string[]>([])
+  const [isHydrated, setIsHydrated] = React.useState(false)
 
-  const [attachments, setAttachments] = React.useState<string[]>([]) // For pasted images (data URLs)
-  
-  const { messages, sendMessage, status, setMessages, error, reload } = useChat({
+  const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
+
+  // Restore saved messages from localStorage
+  const savedMessages = React.useMemo(() => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null
+      if (raw) return JSON.parse(raw)
+    } catch {}
+    return undefined
+  }, [storageKey])
+
+  const { messages, sendMessage, status, setMessages, error, reload, addToolApprovalResponse } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
+    initialMessages: savedMessages,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
   })
 
   const isLoading = status === "submitted" || status === "streaming"
+
+  // Mark hydrated after first render
+  React.useEffect(() => { setIsHydrated(true) }, [])
+
+  // Persist messages to localStorage
+  React.useEffect(() => {
+    if (!isHydrated || !messages || messages.length === 0) return
+    try { localStorage.setItem(storageKey, JSON.stringify(messages)) } catch {}
+  }, [messages, storageKey, isHydrated])
 
   // Auto-trigger first AI message (delay to let useChat fully hydrate)
   const hasSentInitial = React.useRef(false)
@@ -184,6 +216,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                 size="sm"
                 className="rounded-xl px-4 h-9 shadow-md"
                 onClick={async () => {
+                  try { localStorage.removeItem(STORAGE_KEY_PLANNING) } catch {}
                   await markUserOnboarded()
                   router.push("/dashboard")
                 }}
@@ -207,58 +240,85 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar">
           {(messages || []).map((m: any) => {
-            // AI SDK v6: text lives in parts[], not m.content
             const parts = m.parts || []
             const textParts = parts.filter((p: any) => p.type === 'text' && p.text?.trim())
-            const hasToolParts = parts.some((p: any) => p.type?.startsWith('tool-'))
+            const toolParts = parts.filter((p: any) => p.type?.startsWith('tool-') || p.type === 'dynamic-tool')
+            const mutatingToolParts = toolParts.filter((p: any) => MUTATING_TOOLS.includes(p.toolName))
+            const hasContent = textParts.length > 0 || toolParts.length > 0
             const text = textParts.map((p: any) => p.text).join('\n') || m.content || m.text || ''
 
-            // Skip assistant messages with no text AND no tool activity
-            if (!text && !hasToolParts && m.role === 'assistant') return null
+            if (!hasContent && m.role === 'assistant') return null
 
             return (
-              <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
-                {m.role !== "user" && (
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-1 flex-none border border-primary/20">
-                    <Bot className="h-4 w-4 text-primary" />
+              <div key={m.id} className="space-y-3">
+                {/* User message */}
+                {m.role === "user" && (
+                  <div className="flex w-full justify-end">
+                    <div className="relative group max-w-[80%] rounded-2xl rounded-tr-sm px-5 py-4 text-[15px] leading-relaxed shadow-sm bg-primary text-primary-foreground">
+                      <button 
+                        onClick={() => handleEditMessage(m.id)}
+                        className="absolute -left-10 top-2 p-1.5 rounded-full bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 hover:text-primary"
+                        title="Editar mensagem"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <div className="whitespace-pre-wrap">{text}</div>
+                      {m.experimental_attachments && m.experimental_attachments.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {m.experimental_attachments.map((att: any, i: number) => (
+                            <div key={i} className="relative rounded-lg overflow-hidden border border-border/50">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={att.url} alt="Attachment" className="h-20 w-auto object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
-                <div className={cn(
-                  "relative group max-w-[80%] rounded-2xl px-5 py-4 text-[15px] leading-relaxed shadow-sm",
-                  m.role === "user"
-                    ? "bg-primary text-primary-foreground rounded-tr-sm"
-                    : "bg-background border border-border/50 text-foreground rounded-tl-sm"
-                )}>
-                  {m.role === "user" && (
-                    <button 
-                      onClick={() => handleEditMessage(m.id)}
-                      className="absolute -left-10 top-2 p-1.5 rounded-full bg-muted text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 hover:text-primary"
-                      title="Editar mensagem"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                  )}
-                  {text ? (
-                    <div className="whitespace-pre-wrap">{text}</div>
-                  ) : hasToolParts && m.role === 'assistant' ? (
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Processando ações...</span>
+
+                {/* Assistant text */}
+                {m.role === "assistant" && text && (
+                  <div className="flex w-full justify-start">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-1 flex-none border border-primary/20">
+                      <Bot className="h-4 w-4 text-primary" />
                     </div>
-                  ) : null}
-                  
-                  {/* Render attachments if any */}
-                  {m.experimental_attachments && m.experimental_attachments.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {m.experimental_attachments.map((att: any, i: number) => (
-                        <div key={i} className="relative rounded-lg overflow-hidden border border-border/50">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={att.url} alt="Attachment" className="h-20 w-auto object-cover" />
-                        </div>
-                      ))}
+                    <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-background border border-border/50 text-foreground px-5 py-4 text-[15px] leading-relaxed shadow-sm">
+                      <div className="whitespace-pre-wrap">{text}</div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Approval cards for mutating tools */}
+                {m.role === "assistant" && mutatingToolParts.map((part: any) => (
+                  <div key={part.toolCallId} className="flex w-full justify-start pl-11">
+                    <ToolApprovalCard
+                      toolName={part.toolName}
+                      toolCallId={part.toolCallId}
+                      state={part.state}
+                      input={part.input}
+                      output={part.output}
+                      approvalId={part.approval?.id}
+                      onApprove={(id) => addToolApprovalResponse({ id, approved: true })}
+                      onReject={(id) => addToolApprovalResponse({ id, approved: false })}
+                    />
+                  </div>
+                ))}
+
+                {/* Thinking indicator for tool-only messages with no text */}
+                {m.role === "assistant" && !text && toolParts.length > 0 && mutatingToolParts.length === 0 && (
+                  <div className="flex w-full justify-start">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 mt-1 flex-none border border-primary/20">
+                      <Bot className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="rounded-2xl rounded-tl-sm bg-background border border-border/50 px-5 py-4 shadow-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Consultando dados...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )
           })}
@@ -361,114 +421,32 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="flex-1 overflow-y-auto p-8 z-10 custom-scrollbar relative">
+        <div className="flex-1 overflow-y-auto p-6 z-10 custom-scrollbar relative">
           
-          <div className="sticky top-0 bg-background/90 backdrop-blur-sm pb-4 mb-6 z-20 border-b border-border/40">
+          <div className="sticky top-0 bg-background/90 backdrop-blur-sm pb-3 mb-4 z-20 border-b border-border/40">
             <div className="flex items-center gap-2 opacity-70 text-primary">
               <Activity className="h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-widest">Painel de Insights</span>
+              <span className="text-xs font-bold uppercase tracking-widest">Insights</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Timeline de coleta de dados e ações da IA</p>
           </div>
 
-          <div className="relative pl-4 border-l-2 border-muted">
+          <div className="space-y-2">
             {timelineEvents.length === 0 ? (
-              <div className="py-10 text-center opacity-60 ml-[-16px]">
+              <div className="py-10 text-center opacity-60">
                 <Sparkles className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-                <p className="text-sm font-medium">Nenhum insight coletado ainda.</p>
+                <p className="text-sm font-medium">Nenhum insight ainda.</p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {timelineEvents.map((item, index) => {
-                  
-                  if (item.type === 'diagnostic') {
-                    return (
-                      <div key={item.id} className="relative animate-in slide-in-from-right-4 duration-500">
-                        {/* Timeline dot */}
-                        <div className="absolute -left-[25px] top-4 h-4 w-4 rounded-full bg-primary/20 border-2 border-primary ring-4 ring-background" />
-                        
-                        <div className="p-5 rounded-2xl border bg-muted/5 shadow-sm space-y-4">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                              <Network className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <h4 className="text-sm font-bold text-foreground">Diagnóstico Inicial</h4>
-                              <p className="text-xs text-muted-foreground">Contexto basal capturado</p>
-                            </div>
-                          </div>
-                          <div className="pt-2">
-                            <AreaRadarChart
-                              scores={{
-                                mind: item.data?.scores?.mind ?? 5,
-                                health: item.data?.scores?.health ?? 5,
-                                wealth: item.data?.scores?.wealth ?? 5,
-                                relationships: item.data?.scores?.relationships ?? 5,
-                                spirituality: item.data?.scores?.spirituality ?? 5,
-                                productivity: item.data?.scores?.productivity ?? 5
-                              }}
-                              className="mx-auto"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  }
-
-                  if (item.type === 'tool') {
-                    const inv = item.inv
-                    const meta = TOOL_META[inv.toolName] || { icon: Sparkles, label: inv.toolName, color: "text-primary", desc: "Ação do sistema" }
-                    const Icon = meta.icon
-                    const isDone = inv.state === "result"
-
-                    return (
-                      <div key={item.id} className="relative animate-in slide-in-from-right-4 duration-500">
-                        {/* Timeline dot */}
-                        <div className={cn(
-                          "absolute -left-[25px] top-4 h-4 w-4 rounded-full ring-4 ring-background border-2",
-                          isDone ? cn(meta.color.replace("text-", "bg-"), "border-background") : "bg-muted border-muted-foreground animate-pulse"
-                        )} />
-
-                        <div className={cn(
-                          "p-4 rounded-2xl border transition-all duration-500 relative overflow-hidden",
-                          isDone ? "bg-background border-border/80 shadow-sm" : "bg-muted/30 border-dashed border-border/50 opacity-70"
-                        )}>
-                          <div className="flex items-start gap-3">
-                            <div className={cn("p-2 rounded-xl flex-none", isDone ? cn(meta.color.replace("text-", "bg-").replace("500", "500/10"), meta.color) : "bg-muted text-muted-foreground")}>
-                              {isDone ? <Icon className="h-4 w-4" /> : <Loader2 className="h-4 w-4 animate-spin" />}
-                            </div>
-                            <div className="flex-1 min-w-0 pt-0.5">
-                              <p className="text-sm font-bold text-foreground">{meta.label}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{meta.desc}</p>
-                              
-                              {/* Preview args as collected insights */}
-                              {inv.args && typeof inv.args === "object" && (
-                                <div className="mt-3 grid grid-cols-1 gap-1.5 p-3 rounded-xl bg-muted/40 text-xs text-muted-foreground">
-                                  {Object.entries(inv.args).map(([k, v]) => (
-                                    <div key={k} className="flex gap-2 items-start">
-                                      <span className="font-medium text-foreground/60 w-20 shrink-0 capitalize">{k}:</span>
-                                      <span className="text-foreground/90">{String(v)}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  }
-
-                  return null
-                })}
-              </div>
+              timelineEvents.map((item) => (
+                <InsightCard key={item.id} item={item} />
+              ))
             )}
           </div>
           
           {isLoading && (
-            <div className="flex items-center gap-3 mt-6 pl-4 animate-in fade-in duration-500 opacity-60">
+            <div className="flex items-center gap-3 mt-4 animate-in fade-in duration-500 opacity-60">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span className="text-xs font-medium text-muted-foreground">Coletando novos insights...</span>
+              <span className="text-xs font-medium text-muted-foreground">Coletando insights...</span>
             </div>
           )}
 
@@ -477,4 +455,79 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
 
     </div>
   )
+}
+
+// ─── InsightCard (compact, expandable) ──────────────────────────
+
+function InsightCard({ item }: { item: any }) {
+  const [expanded, setExpanded] = React.useState(false)
+
+  if (item.type === 'diagnostic') {
+    return (
+      <div className="rounded-xl border bg-muted/5 p-3 animate-in fade-in duration-300">
+        <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center gap-3 text-left">
+          <div className="p-1.5 rounded-lg bg-primary/10 text-primary flex-none">
+            <Network className="h-3.5 w-3.5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">Diagnóstico Inicial</p>
+            <p className="text-[10px] text-muted-foreground truncate">Contexto basal capturado</p>
+          </div>
+          {expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground flex-none" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-none" />}
+        </button>
+        {expanded && (
+          <div className="mt-3 pt-3 border-t border-border/30 animate-in fade-in slide-in-from-top-2 duration-200">
+            <AreaRadarChart
+              scores={{
+                mind: item.data?.scores?.mind ?? 5,
+                health: item.data?.scores?.health ?? 5,
+                wealth: item.data?.scores?.wealth ?? 5,
+                relationships: item.data?.scores?.relationships ?? 5,
+                spirituality: item.data?.scores?.spirituality ?? 5,
+                productivity: item.data?.scores?.productivity ?? 5
+              }}
+              className="mx-auto"
+            />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  if (item.type === 'tool') {
+    const inv = item.inv
+    const meta = TOOL_META[inv.toolName] || { icon: Sparkles, label: inv.toolName, color: "text-primary", desc: "Ação do sistema" }
+    const Icon = meta.icon
+    const isDone = inv.state === "result" || inv.state === "output-available"
+    const summary = inv.args?.title || inv.args?.label || inv.args?.content?.slice(0, 40) || inv.args?._reason || meta.desc
+
+    return (
+      <div className="rounded-xl border bg-background p-3 animate-in fade-in duration-300">
+        <button onClick={() => setExpanded(!expanded)} className="w-full flex items-center gap-3 text-left">
+          <div className={cn("p-1.5 rounded-lg flex-none", isDone ? cn(meta.color.replace("text-", "bg-").replace("500", "500/10"), meta.color) : "bg-muted text-muted-foreground")}>
+            {isDone ? <Icon className="h-3.5 w-3.5" /> : <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground">{meta.label}</p>
+            <p className="text-[10px] text-muted-foreground truncate">{summary}</p>
+          </div>
+          {inv.args && (expanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground flex-none" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-none" />)}
+        </button>
+        {expanded && inv.args && typeof inv.args === "object" && (
+          <div className="mt-2 pt-2 border-t border-border/30 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="grid grid-cols-1 gap-1 text-[11px]">
+              {Object.entries(inv.args).filter(([k]) => k !== '_reason').map(([k, v]) => (
+                <div key={k} className="flex gap-1.5 items-start">
+                  <span className="font-medium text-muted-foreground capitalize shrink-0">{k}:</span>
+                  <span className="text-foreground/90 break-words">{String(v)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return null
 }

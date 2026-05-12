@@ -78,6 +78,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         // NOTE: AI SDK v6 uses `inputSchema` (not `parameters`)
         addGoal: tool({
           description: "Cria uma nova meta estratégica para o usuário. Use após discutir objetivos.",
+          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
@@ -94,6 +95,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         addChecklistItem: tool({
           description: "Adiciona uma tarefa concreta ao checklist semanal do usuário.",
+          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
@@ -111,6 +113,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         addAgendaEvent: tool({
           description: "Agenda um evento ou bloco de foco para o usuário.",
+          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
@@ -129,6 +132,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         }),
         addJournalEntry: tool({
           description: "Salva uma reflexão ou nota no diário do usuário.",
+          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
