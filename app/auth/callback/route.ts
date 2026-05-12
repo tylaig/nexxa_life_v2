@@ -41,10 +41,14 @@ export async function GET(request: Request) {
           },
           setAll(cookiesToSet) {
             for (const { name, value, options } of cookiesToSet) {
-              // Seta no Next.js standard cookieStore
-              cookieStore.set(name, value, options)
               // Guarda para garantir na response
               pendingCookies.push({ name, value, options })
+              try {
+                // Seta no Next.js standard cookieStore (pode falhar dependendo do contexto)
+                cookieStore.set(name, value, options)
+              } catch (err) {
+                console.error("[auth/callback] cookieStore.set falhou, mas será setado via NextResponse:", err)
+              }
             }
           },
         },
@@ -88,7 +92,12 @@ export async function GET(request: Request) {
     const response = NextResponse.redirect(new URL(next, baseUrl))
     // FIX: Aplicar explicitamente os cookies de sessão no NextResponse
     pendingCookies.forEach(({ name, value, options }) => {
-      response.cookies.set(name, value, options)
+      // Remover domain vazio para evitar que o Next.js gere um header inválido "Domain="
+      const safeOptions = { ...options }
+      if (!safeOptions.domain) {
+        delete safeOptions.domain
+      }
+      response.cookies.set(name, value, safeOptions)
     })
     
     return response

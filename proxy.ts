@@ -66,7 +66,12 @@ export async function proxy(request: NextRequest) {
       setAll(cookiesToSet) {
         for (const { name, value, options } of cookiesToSet) {
           request.cookies.set(name, value)
-          response.cookies.set(name, value, options)
+          
+          const safeOptions = { ...options }
+          if (!safeOptions.domain) {
+            delete safeOptions.domain
+          }
+          response.cookies.set(name, value, safeOptions)
         }
       },
     },
