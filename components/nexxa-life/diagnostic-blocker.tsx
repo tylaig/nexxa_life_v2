@@ -18,7 +18,9 @@ export function DiagnosticBlocker({
   const pathname = usePathname()
   
   const isOnboardingPage = pathname?.includes("/setup") || pathname?.includes("/diagnostic") || pathname?.includes("/planning") || pathname?.includes("/studio") || false
-  const isBlocked = !onboarded && !isOnboardingPage
+  // Block only if user never completed diagnostic (step is still welcome)
+  // Once they've done the diagnostic (step=goals/planning/complete), let them through
+  const isBlocked = !onboarded && step === "welcome" && !isOnboardingPage
 
   if (isBlocked) {
     const needsPlanning = step === "planning" || step === "goals"
