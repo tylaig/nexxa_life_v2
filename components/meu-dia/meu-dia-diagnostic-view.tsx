@@ -52,12 +52,49 @@ type Phase = "welcome" | "answering" | "transition" | "analyzing" | "results"
 
 export function DiagnosticWizard({ questions, onComplete }: { questions: Question[]; onComplete?: () => void }) {
   const router = useRouter()
-  const [phase, setPhase] = React.useState<Phase>("welcome")
-  const [currentIndex, setCurrentIndex] = React.useState(0)
-  const [answers, setAnswers] = React.useState<Record<string, number>>({})
+  const STORAGE_KEY = "nexxa_diagnostic_progress"
+
+  // Restore saved state from localStorage
+  const savedState = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) return JSON.parse(raw)
+    } catch {}
+    return null
+  }, [])
+
+  const [phase, setPhase] = React.useState<Phase>(() => {
+    const saved = savedState?.phase
+    // Only restore answering/welcome phases — skip transient phases
+    if (saved === "answering" || saved === "welcome") return saved
+    return "welcome"
+  })
+  const [currentIndex, setCurrentIndex] = React.useState(() => {
+    const idx = savedState?.currentIndex ?? 0
+    return idx < questions.length ? idx : 0
+  })
+  const [answers, setAnswers] = React.useState<Record<string, number>>(() => savedState?.answers ?? {})
   const [analysis, setAnalysis] = React.useState<any>(null)
   const [fadeIn, setFadeIn] = React.useState(true)
-  const [welcomeStep, setWelcomeStep] = React.useState(0)
+  const [welcomeStep, setWelcomeStep] = React.useState(() => savedState?.welcomeStep ?? 0)
+
+  // Auto-save progress to localStorage on every meaningful state change
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        phase,
+        currentIndex,
+        answers,
+        welcomeStep,
+        savedAt: Date.now(),
+      }))
+    } catch {}
+  }, [phase, currentIndex, answers, welcomeStep])
+
+  // Clear saved progress when diagnostic is complete
+  const clearSavedProgress = React.useCallback(() => {
+    try { localStorage.removeItem(STORAGE_KEY) } catch {}
+  }, [])
 
   const currentQ = questions[currentIndex]
   const totalQuestions = questions.length
@@ -144,7 +181,8 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
           body: JSON.stringify({ answers, questions }),
         }).catch(() => {})
 
-        // Redirect immediately — no waiting
+        // Clear saved progress and redirect immediately
+        clearSavedProgress()
         onComplete()
         return
       }
@@ -188,6 +226,7 @@ export function DiagnosticWizard({ questions, onComplete }: { questions: Questio
   }
 
   async function handleFinish() {
+    clearSavedProgress()
     if (onComplete) {
       onComplete()
     } else {
