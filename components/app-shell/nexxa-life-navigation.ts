@@ -74,13 +74,13 @@ export const settingsSections: NavSection[] = [
   },
 ]
 
-export type MeuDiaNavigation = {
+export type NexxaLifeNavigation = {
   primaryItems: NavItem[]
   accordionSections: NavSection[]
   settingsSections: NavSection[]
 }
 
-export function getMeuDiaNavigationForProfile(profile: Pick<AppUserProfile, "role"> | null | undefined): MeuDiaNavigation {
+export function getNexxaLifeNavigationForProfile(profile: Pick<AppUserProfile, "role"> | null | undefined): NexxaLifeNavigation {
   return {
     primaryItems,
     accordionSections,

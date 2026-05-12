@@ -15,7 +15,7 @@ import {
   reportsChartTabs,
   reportsComparisonSeries,
   reportsWeeklySeries,
-} from '@/components/meu-dia/reports-content'
+} from '@/components/nexxa-life/reports-content'
 import {
   ChartContainer,
   ChartLegend,

@@ -23,11 +23,11 @@ describe("framework admin role contracts", () => {
   })
 
   it("keeps framework admin out of the sidebar navigation for every role", async () => {
-    const navigation = await import("@/components/app-shell/meu-dia-navigation")
+    const navigation = await import("@/components/app-shell/nexxa-life-navigation")
 
-    const adminRoutes = navigation.getMeuDiaNavigationForProfile({ ...baseProfile, role: "admin" })
+    const adminRoutes = navigation.getNexxaLifeNavigationForProfile({ ...baseProfile, role: "admin" })
       .settingsSections.flatMap((section) => section.children.map((item) => item.href))
-    const userRoutes = navigation.getMeuDiaNavigationForProfile({ ...baseProfile, role: "user" })
+    const userRoutes = navigation.getNexxaLifeNavigationForProfile({ ...baseProfile, role: "user" })
       .settingsSections.flatMap((section) => section.children.map((item) => item.href))
 
     expect(adminRoutes).not.toContain("/framework-admin")

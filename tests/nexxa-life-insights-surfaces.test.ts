@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 describe("nexxa_life insight surfaces contracts", () => {
   it("publishes a diagnostic workspace contract with phases, impact outputs and strategic axes", async () => {
-    const module = await import("@/components/meu-dia/diagnostic-content")
+    const module = await import("@/components/nexxa-life/diagnostic-content")
 
     expect(module.diagnosticHero.kicker).toBe("Diagnóstico")
     expect(module.diagnosticSteps.map((step) => step.label)).toEqual([
@@ -21,7 +21,7 @@ describe("nexxa_life insight surfaces contracts", () => {
   })
 
   it("publishes a journal workspace contract with emotion map, prompts and writing cues", async () => {
-    const module = await import("@/components/meu-dia/journal-content")
+    const module = await import("@/components/nexxa-life/journal-content")
 
     expect(module.journalHero.kicker).toBe("Diário")
     expect(module.journalEmotions).toHaveLength(8)
@@ -39,7 +39,7 @@ describe("nexxa_life insight surfaces contracts", () => {
   })
 
   it("publishes a reports workspace contract with chart modes, KPI cards and AI insights", async () => {
-    const module = await import("@/components/meu-dia/reports-content")
+    const module = await import("@/components/nexxa-life/reports-content")
 
     expect(module.reportsHero.kicker).toBe("Relatórios")
     expect(module.reportsChartTabs).toEqual(["Evolução 7 Dias", "Comparativo %"])

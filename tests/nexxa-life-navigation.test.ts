@@ -7,7 +7,7 @@ const userProfile = { role: "user" } satisfies Pick<AppUserProfile, "role">
 
 describe("nexxa_life navigation taxonomy", () => {
   it("exposes the current primary routes in the official shell", async () => {
-    const navigation = await import("@/components/app-shell/meu-dia-navigation")
+    const navigation = await import("@/components/app-shell/nexxa-life-navigation")
 
     expect(navigation.primaryItems.map((item) => item.href)).toEqual([
       "/dashboard",
@@ -21,11 +21,11 @@ describe("nexxa_life navigation taxonomy", () => {
   })
 
   it("removes the old CRM/commerce taxonomy from the sidebar model", async () => {
-    const navigation = await import("@/components/app-shell/meu-dia-navigation")
+    const navigation = await import("@/components/app-shell/nexxa-life-navigation")
     const labels = [
       ...navigation.primaryItems.map((item) => item.label),
       ...navigation.accordionSections.flatMap((section) => [section.label, ...section.children.map((child) => child.label)]),
-      ...navigation.getMeuDiaNavigationForProfile(adminProfile).settingsSections.flatMap((section) => [
+      ...navigation.getNexxaLifeNavigationForProfile(adminProfile).settingsSections.flatMap((section) => [
         section.label,
         ...section.children.map((child) => child.label),
       ]),
@@ -38,7 +38,7 @@ describe("nexxa_life navigation taxonomy", () => {
   })
 
   it("keeps cycle and ecosystem surfaces mapped for migration waves", async () => {
-    const navigation = await import("@/components/app-shell/meu-dia-navigation")
+    const navigation = await import("@/components/app-shell/nexxa-life-navigation")
 
     expect(navigation.accordionSections.map((section) => section.label)).toEqual([
       "Meu Ciclo",
@@ -62,10 +62,10 @@ describe("nexxa_life navigation taxonomy", () => {
   })
 
   it("keeps framework-admin out of the sidebar navigation for every profile", async () => {
-    const navigation = await import("@/components/app-shell/meu-dia-navigation")
+    const navigation = await import("@/components/app-shell/nexxa-life-navigation")
 
     for (const profile of [adminProfile, userProfile, null]) {
-      const sidebarNavigation = navigation.getMeuDiaNavigationForProfile(profile)
+      const sidebarNavigation = navigation.getNexxaLifeNavigationForProfile(profile)
       const sidebarHrefs = [
         ...sidebarNavigation.primaryItems.map((item) => item.href),
         ...sidebarNavigation.accordionSections.flatMap((section) => section.children.map((item) => item.href)),

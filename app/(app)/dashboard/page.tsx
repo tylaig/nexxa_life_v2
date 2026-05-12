@@ -1,5 +1,5 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { NexxaLifeDashboardView } from "@/components/meu-dia/meu-dia-dashboard-view"
+import { NexxaLifeDashboardView } from "@/components/nexxa-life/nexxa-life-dashboard-view"
 
 export default async function DashboardPage() {
   return (

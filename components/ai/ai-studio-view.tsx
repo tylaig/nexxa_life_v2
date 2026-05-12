@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { markUserOnboarded } from "@/lib/db/actions"
-import { AreaRadarChart } from "@/components/meu-dia/charts/area-radar-chart"
+import { AreaRadarChart } from "@/components/nexxa-life/charts/area-radar-chart"
 
 const TOOL_META: Record<string, { icon: any; label: string; color: string; desc: string }> = {
   addGoal:          { icon: Target,       label: "Meta Criada",       color: "text-emerald-500", desc: "Uma nova meta foi estabelecida" },

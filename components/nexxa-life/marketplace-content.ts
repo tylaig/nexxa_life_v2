@@ -1,6 +1,6 @@
 import { BriefcaseBusiness, HeartPulse, ShieldCheck, Sparkles, Star, Stethoscope, UserRound, Zap } from "lucide-react"
 
-import { diagnosticGoalRecommendations } from "@/components/meu-dia/system-connections"
+import { diagnosticGoalRecommendations } from "@/components/nexxa-life/system-connections"
 
 export const marketplaceHero = {
   kicker: "Marketplace",

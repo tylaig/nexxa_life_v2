@@ -1,6 +1,6 @@
 import { BookOpen, Brain, Compass, Flame, HeartPulse, Layers3, Search, Sparkles, TrendingUp, Zap } from "lucide-react"
 
-import { diagnosticGoalRecommendations } from "@/components/meu-dia/system-connections"
+import { diagnosticGoalRecommendations } from "@/components/nexxa-life/system-connections"
 
 export const newsHero = {
   kicker: "News",

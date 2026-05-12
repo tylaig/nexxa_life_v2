@@ -1,6 +1,6 @@
 import { BookOpen, Brain, Compass, Flame, GraduationCap, Heart, ShieldCheck, Sparkles, Star, Zap } from "lucide-react"
 
-import { diagnosticGoalRecommendations } from "@/components/meu-dia/system-connections"
+import { diagnosticGoalRecommendations } from "@/components/nexxa-life/system-connections"
 
 export const academyHero = {
   kicker: "Academia",

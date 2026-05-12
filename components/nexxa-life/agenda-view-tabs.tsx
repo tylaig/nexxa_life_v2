@@ -1,6 +1,6 @@
 'use client'
 
-import { agendaViewTabs } from '@/components/meu-dia/agenda-content'
+import { agendaViewTabs } from '@/components/nexxa-life/agenda-content'
 import { NavTabsList, NavTabsTrigger, Tabs, TabsContent } from '@/components/ui/tabs'
 
 export function AgendaViewTabs({

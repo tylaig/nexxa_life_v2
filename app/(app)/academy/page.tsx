@@ -1,6 +1,6 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { academyHero } from "@/components/meu-dia/academy-content"
-import { NexxaLifeAcademyView } from "@/components/meu-dia/meu-dia-academy-view"
+import { academyHero } from "@/components/nexxa-life/academy-content"
+import { NexxaLifeAcademyView } from "@/components/nexxa-life/nexxa-life-academy-view"
 
 export default function AcademyPage() {
   return (

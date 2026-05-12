@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 describe("nexxa_life news surface contracts", () => {
   it("publishes a news workspace contract with editorial hero, filters, featured article and contextual signals", async () => {
-    const module = await import("@/components/meu-dia/news-content")
+    const module = await import("@/components/nexxa-life/news-content")
 
     expect(module.newsHero.kicker).toBe("News")
     expect(module.newsHero.title).toBe("Curadoria estratégica para transformar leitura em decisão, repertório e execução.")
@@ -40,7 +40,7 @@ describe("nexxa_life news surface contracts", () => {
   })
 
   it("derives contextual reading priorities from the current nexxa_life system signals", async () => {
-    const module = await import("@/components/meu-dia/news-content")
+    const module = await import("@/components/nexxa-life/news-content")
 
     expect(module.newsPrioritySignals).toHaveLength(3)
     expect(module.newsPrioritySignals[0]).toMatchObject({

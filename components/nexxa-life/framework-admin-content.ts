@@ -1,6 +1,6 @@
 import { BarChart3, Brain, GitBranch, Layers3, ListChecks, ShieldCheck } from "lucide-react"
 
-import { diagnosticStrategicAxes } from "@/components/meu-dia/diagnostic-content"
+import { diagnosticStrategicAxes } from "@/components/nexxa-life/diagnostic-content"
 
 export const frameworkAdminHero = {
   kicker: "Framework Admin",

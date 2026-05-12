@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 describe("nexxa_life connected system contracts", () => {
   it("publishes a connected execution graph linking diagnostic axes, goals, checklist, agenda, journal and reports", async () => {
-    const module = await import("@/components/meu-dia/system-connections")
+    const module = await import("@/components/nexxa-life/system-connections")
 
     expect(module.meuDiaExecutionGraph.start).toBe("diagnostic")
     expect(module.meuDiaExecutionGraph.sequence).toEqual([
@@ -22,7 +22,7 @@ describe("nexxa_life connected system contracts", () => {
   })
 
   it("derives ranked recommendations from diagnostic scores and keeps them connected to execution surfaces", async () => {
-    const module = await import("@/components/meu-dia/system-connections")
+    const module = await import("@/components/nexxa-life/system-connections")
 
     expect(module.diagnosticGoalRecommendations).toHaveLength(4)
     expect(module.diagnosticGoalRecommendations.map((item) => item.axis)).toEqual([
@@ -54,7 +54,7 @@ describe("nexxa_life connected system contracts", () => {
   })
 
   it("publishes a consolidated weekly system summary combining execution, reflection and reporting signals", async () => {
-    const module = await import("@/components/meu-dia/system-connections")
+    const module = await import("@/components/nexxa-life/system-connections")
 
     expect(module.meuDiaWeeklySystemSummary.completedTasks).toBe(3)
     expect(module.meuDiaWeeklySystemSummary.pendingTasks).toBe(5)
@@ -67,7 +67,7 @@ describe("nexxa_life connected system contracts", () => {
   })
 
   it("publishes a deterministic priority journey with confidence and rationale for the dashboard", async () => {
-    const module = await import("@/components/meu-dia/system-connections")
+    const module = await import("@/components/nexxa-life/system-connections")
 
     expect(module.meuDiaPriorityFlow).toMatchObject({
       anchorAxis: "Energia",

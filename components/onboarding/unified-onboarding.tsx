@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { DiagnosticWizard } from "@/components/meu-dia/meu-dia-diagnostic-view"
+import { DiagnosticWizard } from "@/components/nexxa-life/nexxa-life-diagnostic-view"
 import { updateOnboardingStep, markUserOnboarded } from "@/lib/db/actions"
 import { Sparkles, ArrowRight, Bot } from "lucide-react"
 import { Button } from "@/components/ui/button"

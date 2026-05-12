@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 describe("nexxa_life expansion surface contracts", () => {
   it("publishes a framework admin workspace contract for governing diagnostic axes, dimensions and questions", async () => {
-    const module = await import("@/components/meu-dia/framework-admin-content")
+    const module = await import("@/components/nexxa-life/framework-admin-content")
 
     expect(module.frameworkAdminHero.kicker).toBe("Framework Admin")
     expect(module.frameworkAdminHero.title).toBe("Governe a matriz estrutural que sustenta o diagnóstico NexxaLife.")
@@ -18,7 +18,7 @@ describe("nexxa_life expansion surface contracts", () => {
   })
 
   it("publishes an academy workspace contract with featured learning tracks and contextual recommendations", async () => {
-    const module = await import("@/components/meu-dia/academy-content")
+    const module = await import("@/components/nexxa-life/academy-content")
 
     expect(module.academyHero.kicker).toBe("Academia")
     expect(module.academyHero.title).toBe("Transforme repertório em aprendizado aplicado ao seu ciclo atual.")
@@ -33,7 +33,7 @@ describe("nexxa_life expansion surface contracts", () => {
   })
 
   it("publishes a marketplace workspace contract with curated specialists, categories and contextual fit", async () => {
-    const module = await import("@/components/meu-dia/marketplace-content")
+    const module = await import("@/components/nexxa-life/marketplace-content")
 
     expect(module.marketplaceHero.kicker).toBe("Marketplace")
     expect(module.marketplaceHero.title).toBe("Acesse especialistas e serviços alinhados ao momento do seu sistema pessoal.")

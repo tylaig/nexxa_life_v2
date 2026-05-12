@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { placeholderConfig as agendaPlaceholder } from "@/components/meu-dia/placeholders/agenda-placeholder"
-import { placeholderConfig as checklistPlaceholder } from "@/components/meu-dia/placeholders/checklist-placeholder"
-import { placeholderConfig as diagnosticPlaceholder } from "@/components/meu-dia/placeholders/diagnostic-placeholder"
-import { placeholderConfig as goalsPlaceholder } from "@/components/meu-dia/placeholders/goals-placeholder"
-import { placeholderConfig as journalPlaceholder } from "@/components/meu-dia/placeholders/journal-placeholder"
-import { placeholderConfig as reportsPlaceholder } from "@/components/meu-dia/placeholders/reports-placeholder"
+import { placeholderConfig as agendaPlaceholder } from "@/components/nexxa-life/placeholders/agenda-placeholder"
+import { placeholderConfig as checklistPlaceholder } from "@/components/nexxa-life/placeholders/checklist-placeholder"
+import { placeholderConfig as diagnosticPlaceholder } from "@/components/nexxa-life/placeholders/diagnostic-placeholder"
+import { placeholderConfig as goalsPlaceholder } from "@/components/nexxa-life/placeholders/goals-placeholder"
+import { placeholderConfig as journalPlaceholder } from "@/components/nexxa-life/placeholders/journal-placeholder"
+import { placeholderConfig as reportsPlaceholder } from "@/components/nexxa-life/placeholders/reports-placeholder"
 
 const placeholders = [
   {
@@ -52,7 +52,7 @@ describe("nexxa_life first-wave placeholders", () => {
     expect(module.title).toBe(expectedTitle)
     expect(module.description).toBe(expectedDescription)
     expect(module.status).toBe("Em adaptação")
-    expect(module.legacySource).toMatch(/^old\/meu-dia-flow\/src\/pages\//)
+    expect(module.legacySource).toMatch(/^old\/nexxa-life-flow\/src\/pages\//)
     expect(module.nextStep).toMatch(/Fase 6/)
   })
 })

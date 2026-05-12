@@ -1,6 +1,6 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { marketplaceHero } from "@/components/meu-dia/marketplace-content"
-import { NexxaLifeMarketplaceView } from "@/components/meu-dia/meu-dia-marketplace-view"
+import { marketplaceHero } from "@/components/nexxa-life/marketplace-content"
+import { NexxaLifeMarketplaceView } from "@/components/nexxa-life/nexxa-life-marketplace-view"
 
 export default function MarketplacePage() {
   return (

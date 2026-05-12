@@ -1,5 +1,5 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { NexxaLifeGoalsView } from "@/components/meu-dia/meu-dia-goals-view"
+import { NexxaLifeGoalsView } from "@/components/nexxa-life/nexxa-life-goals-view"
 import { getGoals } from "@/lib/db/actions"
 
 export default async function GoalsPage() {

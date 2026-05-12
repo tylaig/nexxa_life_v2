@@ -19,7 +19,7 @@ import {
 
 import { AppBreadcrumbs } from "@/components/app-shell/app-breadcrumbs"
 import { PageContainer, PageHeader, StatCard } from "@/components/app-shell/page-container"
-import { frameworkAdminHero } from "@/components/meu-dia/framework-admin-content"
+import { frameworkAdminHero } from "@/components/nexxa-life/framework-admin-content"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

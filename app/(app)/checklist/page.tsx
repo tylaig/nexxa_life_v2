@@ -1,5 +1,5 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { NexxaLifeChecklistView } from "@/components/meu-dia/meu-dia-checklist-view"
+import { NexxaLifeChecklistView } from "@/components/nexxa-life/nexxa-life-checklist-view"
 import { getChecklist } from "@/lib/db/actions"
 
 export default async function ChecklistPage() {

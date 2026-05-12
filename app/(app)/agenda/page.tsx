@@ -1,5 +1,5 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { NexxaLifeAgendaView } from "@/components/meu-dia/meu-dia-agenda-view"
+import { NexxaLifeAgendaView } from "@/components/nexxa-life/nexxa-life-agenda-view"
 import { getAgenda } from "@/lib/db/actions"
 
 export default async function AgendaPage() {

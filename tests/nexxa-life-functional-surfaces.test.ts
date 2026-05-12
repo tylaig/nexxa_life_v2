@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 describe("nexxa_life functional surface contracts", () => {
   it("publishes a checklist workspace contract with day periods and summary signals", async () => {
-    const checklist = await import("@/components/meu-dia/checklist-content")
+    const checklist = await import("@/components/nexxa-life/checklist-content")
 
     expect(checklist.checklistHero.title).toBe("Organize o dia com menos ruído e mais execução prática.")
     expect(checklist.checklistHero.description).toContain("prioridades")
@@ -15,7 +15,7 @@ describe("nexxa_life functional surface contracts", () => {
   })
 
   it("publishes an agenda workspace contract with time views, legend and timeline", async () => {
-    const agenda = await import("@/components/meu-dia/agenda-content")
+    const agenda = await import("@/components/nexxa-life/agenda-content")
 
     expect(agenda.agendaHero.title).toBe("Visualize o dia com mais clareza e menos atrito para agir.")
     expect(agenda.agendaViewTabs).toEqual(["Dia", "Semana", "Mês", "Ano"])
@@ -29,7 +29,7 @@ describe("nexxa_life functional surface contracts", () => {
   })
 
   it("publishes a goals workspace contract grouped by life axes and measurable progress", async () => {
-    const goals = await import("@/components/meu-dia/goals-content")
+    const goals = await import("@/components/nexxa-life/goals-content")
 
     expect(goals.goalsHero.title).toBe("Seu plano estratégico conectado à execução real.")
     expect(goals.goalsKpis.map((item) => item.label)).toEqual([

@@ -1,9 +1,9 @@
-import { agendaTimeline } from "@/components/meu-dia/agenda-content"
-import { checklistPeriods, checklistSummaryCards } from "@/components/meu-dia/checklist-content"
-import { diagnosticStrategicAxes } from "@/components/meu-dia/diagnostic-content"
-import { goalsAxes } from "@/components/meu-dia/goals-content"
-import { journalWritingCues } from "@/components/meu-dia/journal-content"
-import { reportsKpis } from "@/components/meu-dia/reports-content"
+import { agendaTimeline } from "@/components/nexxa-life/agenda-content"
+import { checklistPeriods, checklistSummaryCards } from "@/components/nexxa-life/checklist-content"
+import { diagnosticStrategicAxes } from "@/components/nexxa-life/diagnostic-content"
+import { goalsAxes } from "@/components/nexxa-life/goals-content"
+import { journalWritingCues } from "@/components/nexxa-life/journal-content"
+import { reportsKpis } from "@/components/nexxa-life/reports-content"
 
 export const meuDiaExecutionGraph = {
   start: "diagnostic",
