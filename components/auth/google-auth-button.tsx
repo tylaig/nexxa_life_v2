@@ -37,20 +37,21 @@ function GoogleIcon({ className }: { className?: string }) {
 export function GoogleAuthButton({
   next = "/dashboard",
   label = "Continuar com Google",
+  termsAccepted = true,
 }: {
   next?: string
   label?: string
+  termsAccepted?: boolean
 }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [termsAccepted, setTermsAccepted] = useState(false)
 
   async function handleClick() {
     if (!termsAccepted) {
-      setError("Você precisa aceitar os Termos de Uso e Política de Privacidade.")
+      setError("Aceite os termos antes de continuar.")
       return
     }
-    
+
     setSubmitting(true)
     setError(null)
 
@@ -63,26 +64,7 @@ export function GoogleAuthButton({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-start space-x-2 px-1">
-        <input 
-          type="checkbox" 
-          id="terms" 
-          checked={termsAccepted}
-          onChange={(e) => {
-            setTermsAccepted(e.target.checked)
-            if (e.target.checked && error?.includes("Termos")) setError(null)
-          }}
-          className="mt-1 h-4 w-4 rounded border-border/80 bg-background text-primary focus:ring-primary/20 transition-all cursor-pointer"
-        />
-        <label 
-          htmlFor="terms" 
-          className="text-xs text-muted-foreground leading-tight cursor-pointer"
-        >
-          Li e aceito os <a href="#" className="underline hover:text-foreground">Termos de Uso</a> e a <a href="#" className="underline hover:text-foreground">Política de Privacidade</a> do NexxaLife.
-        </label>
-      </div>
-
+    <div className="space-y-2">
       <Button
         type="button"
         variant="outline"

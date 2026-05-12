@@ -111,6 +111,7 @@ export function SignupForm() {
   }
 
   return (
+    <Form {...form}>
     <div className="space-y-4">
       {serverError ? (
         <Alert variant="destructive">
@@ -120,8 +121,35 @@ export function SignupForm() {
         </Alert>
       ) : null}
 
+      {/* Checkbox de Termos — Compartilhado */}
+      <FormField
+        control={form.control}
+        name="acceptedTerms"
+        render={({ field }) => (
+          <FormItem>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground transition-colors hover:bg-muted/30 has-[:checked]:border-primary/40 has-[:checked]:bg-primary/5">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  className="mt-0.5"
+                />
+              </FormControl>
+              <span className="leading-5">
+                Li e aceito os{" "}
+                <a href="#" className="font-medium text-foreground underline">Termos de Uso</a>
+                {" "}e a{" "}
+                <a href="#" className="font-medium text-foreground underline">Política de Privacidade</a>
+                {" "}do NexxaLife.
+              </span>
+            </label>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       {/* Google — método principal */}
-      <GoogleAuthButton next="/onboarding" label="Criar conta com Google" />
+      <GoogleAuthButton next="/onboarding" label="Criar conta com Google" termsAccepted={form.watch('acceptedTerms')} />
 
       <div className="relative py-1">
         <div className="absolute inset-0 flex items-center">
@@ -132,8 +160,7 @@ export function SignupForm() {
         </div>
       </div>
 
-      <Form {...form}>
-        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name="fullName"
@@ -242,31 +269,7 @@ export function SignupForm() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="acceptedTerms"
-            render={({ field }) => (
-              <FormItem>
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-background/40 p-4 text-sm text-muted-foreground transition-colors hover:bg-muted/30 has-[:checked]:border-primary/40 has-[:checked]:bg-primary/5">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={(checked) => field.onChange(checked === true)}
-                      className="mt-0.5"
-                    />
-                  </FormControl>
-                  <span className="leading-5">
-                    Concordo com os{" "}
-                    <span className="font-medium text-foreground">termos de uso</span>
-                    {" "}e{" "}
-                    <span className="font-medium text-foreground">política de privacidade</span>
-                    {" "}do NexxaLife.
-                  </span>
-                </label>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+
 
           <Button
             type="submit"
@@ -286,7 +289,7 @@ export function SignupForm() {
             )}
           </Button>
         </form>
-      </Form>
     </div>
+    </Form>
   )
 }
