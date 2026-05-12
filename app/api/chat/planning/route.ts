@@ -78,7 +78,6 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
         // NOTE: AI SDK v6 uses `inputSchema` (not `parameters`)
         addGoal: tool({
           description: "Cria uma nova meta estratégica para o usuário. Use após discutir objetivos.",
-          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
@@ -88,14 +87,10 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
             },
             required: ["title", "description", "category"],
           }),
-          execute: async (params) => {
-            await addGoal(params)
-            return { success: true, message: `Meta "${params.title}" criada com sucesso` }
-          },
+          // No execute → client-side tool (requires user approval)
         }),
         addChecklistItem: tool({
           description: "Adiciona uma tarefa concreta ao checklist semanal do usuário.",
-          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
@@ -106,14 +101,10 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
             },
             required: ["label", "priority", "category", "date"],
           }),
-          execute: async (params) => {
-            await addChecklistItem(params)
-            return { success: true, message: `Tarefa "${params.label}" adicionada` }
-          },
+          // No execute → client-side tool
         }),
         addAgendaEvent: tool({
           description: "Agenda um evento ou bloco de foco para o usuário.",
-          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
@@ -125,14 +116,10 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
             },
             required: ["title", "date", "startTime", "endTime", "type"],
           }),
-          execute: async (params) => {
-            await addAgendaEvent(params)
-            return { success: true, message: `Evento "${params.title}" agendado` }
-          },
+          // No execute → client-side tool
         }),
         addJournalEntry: tool({
           description: "Salva uma reflexão ou nota no diário do usuário.",
-          needsApproval: true,
           inputSchema: jsonSchema({
             type: "object",
             properties: {
@@ -141,10 +128,7 @@ Você é uma consultora de vida estratégica. Conduza uma conversa natural e emp
             },
             required: ["content", "mood"],
           }),
-          execute: async (params) => {
-            await addJournalEntry(params)
-            return { success: true, message: "Reflexão salva no diário" }
-          },
+          // No execute → client-side tool
         }),
         getGoals: tool({
           description: "Consulta as metas já criadas do usuário.",

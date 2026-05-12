@@ -87,9 +87,10 @@ export function ToolApprovalCard({
   if (!meta) return null
 
   const Icon = meta.icon
-  const isApprovalPending = state === "approval-requested"
-  const isApproved = state === "output-available"
-  const isRejected = state === "approval-denied"
+  // Client-side tools: input-available = waiting for user action, output-available = done
+  const isApprovalPending = state === "input-available" || state === "approval-requested"
+  const isApproved = state === "output-available" && output && !output?.rejected
+  const isRejected = (state === "output-available" && output?.rejected) || state === "approval-denied"
   const isLoading = state === "input-streaming"
   const isError = state === "output-error"
 

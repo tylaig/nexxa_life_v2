@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { useChat } from "@ai-sdk/react"
-import { lastAssistantMessageIsCompleteWithApprovalResponses } from "ai"
+import { lastAssistantMessageIsCompleteWithToolCalls } from "ai"
 import { useRouter } from "next/navigation"
 import {
   Bot, Send, Sparkles, Loader2,
@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { markUserOnboarded } from "@/lib/db/actions"
+import { markUserOnboarded, addGoal, addChecklistItem, addAgendaEvent, addJournalEntry } from "@/lib/db/actions"
 import { AreaRadarChart } from "@/components/nexxa-life/charts/area-radar-chart"
 import { ToolApprovalCard } from "@/components/ai/tool-approval-card"
 
@@ -26,6 +26,14 @@ const TOOL_META: Record<string, { icon: any; label: string; color: string; desc:
 }
 
 const MUTATING_TOOLS = ["addGoal", "addChecklistItem", "addAgendaEvent", "addJournalEntry"]
+
+// Map tool names to server actions
+const TOOL_EXECUTORS: Record<string, (args: any) => Promise<any>> = {
+  addGoal: async (args) => { await addGoal(args); return { success: true, message: `Meta "${args.title}" criada` } },
+  addChecklistItem: async (args) => { await addChecklistItem(args); return { success: true, message: `Tarefa "${args.label}" adicionada` } },
+  addAgendaEvent: async (args) => { await addAgendaEvent(args); return { success: true, message: `Evento "${args.title}" agendado` } },
+  addJournalEntry: async (args) => { await addJournalEntry(args); return { success: true, message: "Reflexão salva" } },
+}
 
 const STORAGE_KEY_PLANNING = "nexxa_chat_planning"
 const STORAGE_KEY_STUDIO = "nexxa_chat_studio"
@@ -49,11 +57,11 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     return undefined
   }, [storageKey])
 
-  const { messages, sendMessage, status, setMessages, error, reload, addToolApprovalResponse } = useChat({
+  const { messages, sendMessage, status, setMessages, error, reload, addToolResult } = useChat({
     api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
     body: isPlanningMode ? { diagnosticData } : undefined,
     initialMessages: savedMessages,
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
   })
 
   const isLoading = status === "submitted" || status === "streaming"
@@ -298,9 +306,21 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                       state={part.state}
                       input={part.input}
                       output={part.output}
-                      approvalId={part.approval?.id}
-                      onApprove={(id) => addToolApprovalResponse({ id, approved: true })}
-                      onReject={(id) => addToolApprovalResponse({ id, approved: false })}
+                      approvalId={part.toolCallId}
+                      onApprove={async (toolCallId) => {
+                        const executor = TOOL_EXECUTORS[part.toolName]
+                        if (executor) {
+                          try {
+                            const result = await executor(part.input)
+                            addToolResult({ toolCallId, result })
+                          } catch (e) {
+                            addToolResult({ toolCallId, result: { success: false, message: "Erro ao salvar" } })
+                          }
+                        }
+                      }}
+                      onReject={(toolCallId) => {
+                        addToolResult({ toolCallId, result: { rejected: true, message: "Rejeitado pelo usuário" } })
+                      }}
                     />
                   </div>
                 ))}
