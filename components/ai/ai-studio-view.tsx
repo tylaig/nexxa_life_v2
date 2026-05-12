@@ -7,7 +7,8 @@ import { lastAssistantMessageIsCompleteWithToolCalls } from "ai"
 import { useRouter } from "next/navigation"
 import {
   Bot, Send, Sparkles, Loader2, Brain,
-  CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, ChevronDown, ChevronUp, Activity, RefreshCw, Pencil, Image as ImageIcon, X, AlertCircle
+  CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, ChevronDown, ChevronUp, Activity, RefreshCw, Pencil, Image as ImageIcon, X, AlertCircle,
+  Paperclip, Mic, Square, Trash2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -50,6 +51,17 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const [isHydrated, setIsHydrated] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState<'insights' | 'memory'>('insights')
   const [liveMemory, setLiveMemory] = React.useState<{soul: string, memory: string, skills: string}>({ soul: '', memory: '', skills: '' })
+
+  // New States for File/Audio
+  const [isDragging, setIsDragging] = React.useState(false)
+  const [isRecording, setIsRecording] = React.useState(false)
+  const [recordingDuration, setRecordingDuration] = React.useState(0)
+  const [audioData, setAudioData] = React.useState<number[]>(new Array(40).fill(2))
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null)
+  const audioContextRef = React.useRef<AudioContext | null>(null)
+  const analyserRef = React.useRef<AnalyserNode | null>(null)
+  const animationFrameRef = React.useRef<number | null>(null)
 
   const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
   const sessionType = isPlanningMode ? "planning" : "studio"
@@ -176,6 +188,123 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     const msg = messages[index]
     setInputValue(msg.content || msg.text || "")
     setMessages(messages.slice(0, index))
+  }
+
+  // ─── AUDIO RECORDING LOGIC ─────────────────────────────────
+  
+  const updateWaveform = () => {
+    if (!analyserRef.current) return
+    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount)
+    analyserRef.current.getByteFrequencyData(dataArray)
+    
+    // Normalize to 40 bars
+    const newAudioData = []
+    const step = Math.floor(dataArray.length / 40)
+    for (let i = 0; i < 40; i++) {
+      const val = dataArray[i * step] / 4 // Scale for height
+      newAudioData.push(Math.max(val, 2))
+    }
+    setAudioData(newAudioData)
+    animationFrameRef.current = requestAnimationFrame(updateWaveform)
+  }
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      
+      // Setup Analyser
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const source = audioContext.createMediaStreamSource(stream)
+      const analyser = audioContext.createAnalyser()
+      analyser.fftSize = 256
+      source.connect(analyser)
+      
+      audioContextRef.current = audioContext
+      analyserRef.current = analyser
+      
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            const base64 = reader.result as string
+            setAttachments(prev => [...prev, base64])
+          }
+          reader.readAsDataURL(e.data)
+        }
+      }
+
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setRecordingDuration(0)
+      updateWaveform()
+    } catch (err) {
+      console.error("Microphone access denied:", err)
+      alert("Permissão de microfone negada.")
+    }
+  }
+
+  const stopRecording = (shouldSend: boolean) => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+    }
+    
+    if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
+    if (audioContextRef.current) audioContextRef.current.close()
+    
+    setIsRecording(false)
+    if (!shouldSend) {
+      // If cancelled, we need to remove the last attachment if it was added by ondataavailable
+      // But ondataavailable fires after stop, so we'll just handle it there.
+    }
+  }
+
+  React.useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isRecording) {
+      interval = setInterval(() => {
+        setRecordingDuration(prev => prev + 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [isRecording])
+
+  const formatDuration = (sec: number) => {
+    const mins = Math.floor(sec / 60)
+    const s = sec % 60
+    return `${mins}:${s.toString().padStart(2, '0')}`
+  }
+
+  // ─── FILE HANDLING LOGIC ────────────────────────────────────
+
+  const handleFileUpload = (files: FileList | File[]) => {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setAttachments(prev => [...prev, event.target!.result as string])
+        }
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const onDragLeave = () => {
+    setIsDragging(false)
+  }
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files)
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -438,57 +567,149 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-background border-t border-border/50 relative">
-          
+        <div 
+          className={cn(
+            "p-4 bg-background border-t border-border/50 relative transition-all duration-200",
+            isDragging && "bg-primary/5 ring-2 ring-primary/20 ring-inset"
+          )}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+        >
+          {/* Hidden File Input */}
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            multiple 
+            onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+          />
+
           {/* Attachments Preview */}
           {attachments.length > 0 && (
-            <div className="flex gap-2 mb-3 px-2 overflow-x-auto">
-              {attachments.map((url, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden border border-border/60 bg-muted/30 w-16 h-16 flex-none">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="Pasted attachment" className="w-full h-full object-cover" />
-                  <button 
-                    type="button"
-                    onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
-                    className="absolute top-1 right-1 p-0.5 rounded-full bg-background/80 text-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
+            <div className="flex gap-2 mb-3 px-2 overflow-x-auto pb-2 scrollbar-hide">
+              {attachments.map((url, idx) => {
+                const isAudio = url.startsWith("data:audio")
+                return (
+                  <div key={idx} className="relative group rounded-xl overflow-hidden border border-border/60 bg-muted/30 w-16 h-16 flex-none flex items-center justify-center">
+                    {isAudio ? (
+                      <Mic className="h-6 w-6 text-primary" />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={url} alt="Attachment" className="w-full h-full object-cover" />
+                    )}
+                    <button 
+                      type="button"
+                      onClick={() => setAttachments(prev => prev.filter((_, i) => i !== idx))}
+                      className="absolute top-1 right-1 p-0.5 rounded-full bg-background/80 text-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           )}
 
-          <form onSubmit={submitMessage} className="relative max-w-4xl mx-auto flex items-end gap-2">
-            <textarea
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              placeholder="O que vamos construir hoje? (Cole uma imagem ou digite)"
-              rows={1}
-              disabled={isLoading}
-              className="w-full min-h-[56px] resize-none rounded-2xl border border-border/60 bg-muted/30 py-4 pl-5 pr-14 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
-              style={{ overflow: 'hidden' }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement
-                target.style.height = '56px'
-                target.style.height = `${Math.min(target.scrollHeight, 200)}px`
-              }}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={isLoading || (!inputValue?.trim?.() && attachments.length === 0)}
-              className="absolute right-2 bottom-2 h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-md hover:scale-105 transition-transform"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
-          <div className="text-center mt-3 text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium flex items-center justify-center gap-2">
-            <span>NexxaLife Engine v2.0</span>
-            <span className="w-1 h-1 rounded-full bg-border/50"></span>
-            <span className="flex items-center"><ImageIcon className="h-3 w-3 mr-1 opacity-70" /> Suporta imagens</span>
+          <div className="relative max-w-4xl mx-auto">
+            {/* Recording Overlay (WhatsApp Style) */}
+            {isRecording ? (
+              <div className="flex items-center gap-3 w-full min-h-[56px] rounded-2xl border border-primary/40 bg-primary/5 py-2 px-4 animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex items-center gap-2 text-primary font-medium min-w-[60px]">
+                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  <span className="text-sm font-mono">{formatDuration(recordingDuration)}</span>
+                </div>
+                
+                {/* Waveform Visualization */}
+                <div className="flex-1 flex items-center justify-center gap-[2px] h-8">
+                  {audioData.map((val, i) => (
+                    <div 
+                      key={i} 
+                      className="w-[3px] bg-primary/60 rounded-full transition-all duration-75"
+                      style={{ height: `${val}%` }}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => stopRecording(false)}
+                    className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="icon"
+                    onClick={() => stopRecording(true)}
+                    className="h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-md"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={submitMessage} className="flex items-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5 flex-none mb-1.5"
+                  disabled={isLoading}
+                >
+                  <Paperclip className="h-5 w-5" />
+                </Button>
+
+                <textarea
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  placeholder={isDragging ? "Solte para anexar" : "O que vamos construir hoje?"}
+                  rows={1}
+                  disabled={isLoading}
+                  className={cn(
+                    "w-full min-h-[56px] resize-none rounded-2xl border border-border/60 bg-muted/30 py-4 px-5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50",
+                    isDragging && "border-primary bg-primary/5"
+                  )}
+                  style={{ overflow: 'hidden' }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement
+                    target.style.height = '56px'
+                    target.style.height = `${Math.min(target.scrollHeight, 200)}px`
+                  }}
+                />
+
+                <div className="flex items-center gap-1.5 flex-none mb-1.5">
+                  {!inputValue.trim() && attachments.length === 0 ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={startRecording}
+                      disabled={isLoading}
+                      className="h-10 w-10 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    >
+                      <Mic className="h-5 w-5" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      size="icon"
+                      disabled={isLoading || (!inputValue?.trim?.() && attachments.length === 0)}
+                      className="h-10 w-10 rounded-xl bg-primary text-primary-foreground shadow-md hover:scale-105 transition-transform"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </form>
+            )}
           </div>
         </div>
 
