@@ -353,3 +353,52 @@ export async function updateOnboardingStep(step: string) {
   if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/")
 }
+
+// -----------------------------------------------------------------------------
+// CHAT SESSIONS
+// -----------------------------------------------------------------------------
+
+export async function saveChatSession(sessionType: string, messages: any[]) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return
+
+  const supabase = await getSupabaseServerClient()
+  await supabase
+    .from("chat_sessions")
+    .upsert({
+      user_id: auth.user.id,
+      session_type: sessionType,
+      messages: JSON.stringify(messages),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,session_type" })
+}
+
+export async function loadChatSession(sessionType: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return null
+
+  const supabase = await getSupabaseServerClient()
+  const { data } = await supabase
+    .from("chat_sessions")
+    .select("messages")
+    .eq("user_id", auth.user.id)
+    .eq("session_type", sessionType)
+    .single()
+
+  if (data?.messages) {
+    return typeof data.messages === "string" ? JSON.parse(data.messages) : data.messages
+  }
+  return null
+}
+
+export async function deleteChatSession(sessionType: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return
+
+  const supabase = await getSupabaseServerClient()
+  await supabase
+    .from("chat_sessions")
+    .delete()
+    .eq("user_id", auth.user.id)
+    .eq("session_type", sessionType)
+}

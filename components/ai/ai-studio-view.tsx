@@ -11,7 +11,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { markUserOnboarded, addGoal, addChecklistItem, addAgendaEvent, addJournalEntry } from "@/lib/db/actions"
+import { markUserOnboarded, addGoal, addChecklistItem, addAgendaEvent, addJournalEntry, saveChatSession, deleteChatSession } from "@/lib/db/actions"
 import { AreaRadarChart } from "@/components/nexxa-life/charts/area-radar-chart"
 import { ToolApprovalCard } from "@/components/ai/tool-approval-card"
 
@@ -47,6 +47,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   const [isHydrated, setIsHydrated] = React.useState(false)
 
   const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
+  const sessionType = isPlanningMode ? "planning" : "studio"
 
   // Restore saved messages from localStorage
   const savedMessages = React.useMemo(() => {
@@ -69,11 +70,16 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
   // Mark hydrated after first render
   React.useEffect(() => { setIsHydrated(true) }, [])
 
-  // Persist messages to localStorage
+  // Persist messages to localStorage + DB (debounced)
+  const saveTimerRef = React.useRef<NodeJS.Timeout>()
   React.useEffect(() => {
     if (!isHydrated || !messages || messages.length === 0) return
     try { localStorage.setItem(storageKey, JSON.stringify(messages)) } catch {}
-  }, [messages, storageKey, isHydrated])
+    clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      saveChatSession(sessionType, messages).catch(() => {})
+    }, 2000)
+  }, [messages, storageKey, sessionType, isHydrated])
 
   // Auto-trigger first AI message (delay to let useChat fully hydrate)
   const hasSentInitial = React.useRef(false)
@@ -225,6 +231,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                 className="rounded-xl px-4 h-9 shadow-md"
                 onClick={async () => {
                   try { localStorage.removeItem(STORAGE_KEY_PLANNING) } catch {}
+                  deleteChatSession("planning").catch(() => {})
                   await markUserOnboarded()
                   router.push("/dashboard")
                 }}
