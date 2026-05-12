@@ -151,7 +151,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
     return events
   }, [messages, diagnosticData])
 
-  const [isPanelOpen, setIsPanelOpen] = React.useState(true)
+  const [isPanelOpen, setIsPanelOpen] = React.useState(false)
 
   return (
     <div className="flex h-[calc(100vh-16px)] m-2 rounded-3xl overflow-hidden border border-border/50 bg-background shadow-2xl relative">
@@ -208,9 +208,14 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar">
           {(messages || []).map((m: any) => {
             // AI SDK v6: text lives in parts[], not m.content
-            const textPart = (m.parts || []).find((p: any) => p.type === 'text')
-            const text = textPart?.text || m.content || m.text
-            if (!text) return null
+            const parts = m.parts || []
+            const textParts = parts.filter((p: any) => p.type === 'text' && p.text?.trim())
+            const hasToolParts = parts.some((p: any) => p.type?.startsWith('tool-'))
+            const text = textParts.map((p: any) => p.text).join('\n') || m.content || m.text || ''
+
+            // Skip assistant messages with no text AND no tool activity
+            if (!text && !hasToolParts && m.role === 'assistant') return null
+
             return (
               <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
                 {m.role !== "user" && (
@@ -233,7 +238,14 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
                       <Pencil className="h-4 w-4" />
                     </button>
                   )}
-                  {text && <div className="whitespace-pre-wrap">{text}</div>}
+                  {text ? (
+                    <div className="whitespace-pre-wrap">{text}</div>
+                  ) : hasToolParts && m.role === 'assistant' ? (
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Processando ações...</span>
+                    </div>
+                  ) : null}
                   
                   {/* Render attachments if any */}
                   {m.experimental_attachments && m.experimental_attachments.length > 0 && (
