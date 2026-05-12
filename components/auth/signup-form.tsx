@@ -149,7 +149,7 @@ export function SignupForm() {
       />
 
       {/* Google — método principal */}
-      <GoogleAuthButton next="/onboarding" label="Criar conta com Google" termsAccepted={form.watch('acceptedTerms')} />
+      <GoogleAuthButton next="/dashboard" label="Criar conta com Google" termsAccepted={form.watch('acceptedTerms')} />
 
       <div className="relative py-1">
         <div className="absolute inset-0 flex items-center">
