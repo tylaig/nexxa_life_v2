@@ -5,6 +5,115 @@ import { getSupabaseServerClient, getAuthenticatedAppUser } from "@/lib/server/a
 import { diagnosticScoresToAreas, levelForXp, scoreDeltaFromAnswerValue, defaultXpForQuestion, clampScore, calculateAreaScore } from "@/lib/gamification/scoring"
 import { LIFE_AREAS, type LifeArea, type MissionInput, type ScoreEventInput } from "@/lib/gamification/types"
 
+type UserPreferencesInput = {
+  theme?: "dark" | "light" | "system"
+  timezone?: string
+  dateFormat?: string
+  weekStartsOn?: number
+  language?: string
+  dailySummaryEnabled?: boolean
+  dailySummaryTime?: string
+  goalRemindersEnabled?: boolean
+  eventRemindersEnabled?: boolean
+  soundEnabled?: boolean
+  reduceMotion?: boolean
+  cycleDefaultArea?: LifeArea | null
+  cycleReviewDay?: number
+  cycleAutoScoreEnabled?: boolean
+  cycleAutoPlanEnabled?: boolean
+  checklistGrouping?: "goal" | "priority" | "area" | "manual"
+  calendarProvider?: "google" | "outlook" | "apple" | "other" | null
+  calendarSyncEnabled?: boolean
+  calendarSyncDirection?: "import_only" | "export_only" | "two_way"
+  calendarDefaultId?: string | null
+  calendarConflictStrategy?: "ask" | "prefer_nexxa" | "prefer_external"
+  aiProactivity?: "low" | "balanced" | "high"
+  aiContextMemoryEnabled?: boolean
+  aiAutoCreateTasks?: boolean
+}
+
+// -----------------------------------------------------------------------------
+// USER PREFERENCES / SETTINGS
+// -----------------------------------------------------------------------------
+
+export async function getUserPreferences() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return null
+
+  const supabase = await getSupabaseServerClient()
+
+  const { data: existing, error: readError } = await supabase
+    .from("user_preferences")
+    .select("*")
+    .eq("user_id", auth.user.id)
+    .maybeSingle()
+
+  if (readError) {
+    console.error("[getUserPreferences] Error:", readError)
+    return null
+  }
+
+  if (existing) return existing
+
+  const { data, error } = await supabase
+    .from("user_preferences")
+    .insert({ user_id: auth.user.id })
+    .select("*")
+    .single()
+
+  if (error) {
+    console.error("[getUserPreferences] Insert error:", error)
+    return null
+  }
+
+  return data
+}
+
+export async function updateUserPreferences(input: UserPreferencesInput) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized") }
+
+  const supabase = await getSupabaseServerClient()
+  const patch = {
+    theme: input.theme,
+    timezone: input.timezone,
+    date_format: input.dateFormat,
+    week_starts_on: input.weekStartsOn,
+    language: input.language,
+    daily_summary_enabled: input.dailySummaryEnabled,
+    daily_summary_time: input.dailySummaryTime,
+    goal_reminders_enabled: input.goalRemindersEnabled,
+    event_reminders_enabled: input.eventRemindersEnabled,
+    sound_enabled: input.soundEnabled,
+    reduce_motion: input.reduceMotion,
+    cycle_default_area: input.cycleDefaultArea,
+    cycle_review_day: input.cycleReviewDay,
+    cycle_auto_score_enabled: input.cycleAutoScoreEnabled,
+    cycle_auto_plan_enabled: input.cycleAutoPlanEnabled,
+    checklist_grouping: input.checklistGrouping,
+    calendar_provider: input.calendarProvider,
+    calendar_sync_enabled: input.calendarSyncEnabled,
+    calendar_sync_direction: input.calendarSyncDirection,
+    calendar_default_id: input.calendarDefaultId,
+    calendar_conflict_strategy: input.calendarConflictStrategy,
+    ai_proactivity: input.aiProactivity,
+    ai_context_memory_enabled: input.aiContextMemoryEnabled,
+    ai_auto_create_tasks: input.aiAutoCreateTasks,
+  }
+
+  const cleanedPatch = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined))
+
+  const { error } = await supabase
+    .from("user_preferences")
+    .upsert({ user_id: auth.user.id, ...cleanedPatch }, { onConflict: "user_id" })
+
+  if (error) { console.error("[updateUserPreferences] Error:", error); throw error }
+
+  revalidatePath("/settings")
+  revalidatePath("/dashboard")
+  revalidatePath("/goals")
+}
+
 // -----------------------------------------------------------------------------
 // CHECKLIST
 // -----------------------------------------------------------------------------

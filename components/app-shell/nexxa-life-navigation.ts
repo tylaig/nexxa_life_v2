@@ -7,7 +7,9 @@ import {
   Goal,
   LayoutDashboard,
   Settings,
+  ShieldCheck,
   Sparkles,
+  UserCircle2,
   Store,
   Target,
 } from "lucide-react"
@@ -64,6 +66,8 @@ export const adminOnlySettingsItems: NavItem[] = []
 
 export const sharedSettingsItems: NavItem[] = [
   { href: "/settings", label: "Configurações", icon: Settings },
+  { href: "/settings/profile", label: "Perfil", icon: UserCircle2 },
+  { href: "/settings/security", label: "Segurança", icon: ShieldCheck },
 ]
 
 export const settingsSections: NavSection[] = [
