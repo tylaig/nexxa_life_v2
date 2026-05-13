@@ -264,7 +264,7 @@ Você opera em um loop de pensamento e ação. ANTES de enviar uma mensagem fina
       },
     })
 
-    return result.toDataStreamResponse()
+    return result.toUIMessageStreamResponse()
   } catch (error) {
     console.error("[Planning Chat Error]:", error)
 

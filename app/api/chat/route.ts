@@ -184,7 +184,7 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
       },
     })
 
-    return result.toDataStreamResponse()
+    return result.toUIMessageStreamResponse()
   } catch (error) {
     console.error("[General Chat Error]:", error)
 

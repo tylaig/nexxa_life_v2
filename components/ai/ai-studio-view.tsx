@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { useChat } from "@ai-sdk/react"
-import { lastAssistantMessageIsCompleteWithToolCalls } from "ai"
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from "ai"
 import { useRouter } from "next/navigation"
 import {
   Bot, Send, Sparkles, Loader2, Brain,
@@ -42,6 +42,51 @@ const TOOL_EXECUTORS: Record<string, (args: any) => Promise<any>> = {
 const STORAGE_KEY_PLANNING = "nexxa_chat_planning"
 const STORAGE_KEY_STUDIO = "nexxa_chat_studio"
 
+function getMessageText(message: any) {
+  if (!message) return ""
+  if (typeof message.content === "string") return message.content
+  if (typeof message.text === "string") return message.text
+  if (Array.isArray(message.parts)) {
+    return message.parts
+      .filter((part: any) => part?.type === "text")
+      .map((part: any) => part.text || "")
+      .join("")
+  }
+  return ""
+}
+
+function getMessageFiles(message: any) {
+  if (!message) return []
+  if (Array.isArray(message.experimental_attachments)) return message.experimental_attachments
+  if (Array.isArray(message.parts)) {
+    return message.parts
+      .filter((part: any) => part?.type === "file")
+      .map((part: any) => ({
+        url: part.url,
+        name: part.filename || "attachment",
+        contentType: part.mediaType,
+      }))
+  }
+  return []
+}
+
+function getToolInvocations(message: any) {
+  if (!message) return []
+  if (Array.isArray(message.toolInvocations)) return message.toolInvocations
+  if (!Array.isArray(message.parts)) return []
+
+  return message.parts
+    .filter((part: any) => typeof part?.type === "string" && part.type.startsWith("tool-"))
+    .map((part: any) => ({
+      ...part,
+      toolName: part.toolName || part.type.replace(/^tool-/, ""),
+      args: part.args ?? part.input,
+      input: part.input ?? part.args,
+      output: part.output ?? part.result,
+      state: part.state === "output-available" ? "result" : part.state,
+    }))
+}
+
 export function AiStudioView({
   step,
   diagnosticData,
@@ -74,9 +119,11 @@ export function AiStudioView({
   const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
   const sessionType = isPlanningMode ? "planning" : "studio"
 
-  const { messages, append, status, setMessages, error, reload, addToolResult } = useChat({
-    api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
-    body: isPlanningMode ? { diagnosticData } : undefined,
+  const { messages, sendMessage, status, setMessages, error, regenerate, addToolOutput } = useChat({
+    transport: new DefaultChatTransport({
+      api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
+      body: isPlanningMode ? { diagnosticData } : undefined,
+    }),
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
   })
 
@@ -132,14 +179,18 @@ export function AiStudioView({
         : "Sessão iniciada. O que vamos construir, organizar ou revisar hoje?"
         
       const timer = setTimeout(() => {
-        append({
-          role: "assistant",
-          content: greeting,
-        })
+        setMessages((current: any[]) => [
+          ...current,
+          {
+            id: `assistant-greeting-${Date.now()}`,
+            role: "assistant",
+            parts: [{ type: "text", text: greeting }],
+          },
+        ])
       }, 1200) // Delay to show the empty state animation
       return () => clearTimeout(timer)
     }
-  }, [isPlanningMode, isHydrated, messages.length, isLoading, append])
+  }, [isPlanningMode, isHydrated, messages.length, isLoading, setMessages])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -152,25 +203,7 @@ export function AiStudioView({
     if (!content && attachments.length === 0 && !isLoading) return
     if (isLoading) return
     
-    const messageOpts: any = { 
-      role: 'user',
-      content: content || (attachments.length > 0 ? "[Arquivo(s) Anexado(s)]" : "")
-    }
-    
-    // In AI SDK v3/v4, if you want to pass images, you can pass dataUrls
-    // or use experimental_attachments. For now, we'll map them if provided.
-    if (attachments.length > 0) {
-      messageOpts.experimental_attachments = attachments.map(url => {
-        const isAudio = url.startsWith("data:audio")
-        return {
-          url,
-          contentType: isAudio ? "audio/mpeg" : (url.startsWith("data:image/png") ? "image/png" : "image/jpeg"),
-          name: isAudio ? "voice-note" : "attachment"
-        }
-      })
-    }
-    
-    append(messageOpts)
+    sendMessage({ text: content || (attachments.length > 0 ? "[Arquivo(s) Anexado(s)]" : "") })
     setInputValue("")
     setAttachments([])
   }
@@ -200,7 +233,7 @@ export function AiStudioView({
     if (index === -1) return
     
     const msg = messages[index]
-    setInputValue(msg.content || msg.text || "")
+    setInputValue(getMessageText(msg))
     setMessages(messages.slice(0, index))
   }
 
@@ -344,7 +377,7 @@ export function AiStudioView({
 
     // Add tool invocations from AI SDK
     messages.forEach((m: any) => {
-      const toolInvocations = m.toolInvocations || []
+      const toolInvocations = getToolInvocations(m)
       toolInvocations.forEach((inv: any) => {
         events.push({
           type: 'tool',
@@ -494,10 +527,11 @@ export function AiStudioView({
           )}
 
           {(messages || []).map((m: any) => {
-            const toolInvocations = m.toolInvocations || []
+            const toolInvocations = getToolInvocations(m)
             const mutatingToolParts = toolInvocations.filter((inv: any) => MUTATING_TOOLS.includes(inv.toolName))
-            const hasContent = !!m.content?.trim() || toolInvocations.length > 0
-            const text = m.content || ''
+            const text = getMessageText(m)
+            const files = getMessageFiles(m)
+            const hasContent = !!text.trim() || files.length > 0 || toolInvocations.length > 0
 
             if (!hasContent && m.role === 'assistant') return null
 
@@ -515,9 +549,9 @@ export function AiStudioView({
                         <Pencil className="h-4 w-4" />
                       </button>
                       <div className="whitespace-pre-wrap">{text}</div>
-                      {m.experimental_attachments && m.experimental_attachments.length > 0 && (
+                      {files.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-3">
-                          {m.experimental_attachments.map((att: any, i: number) => (
+                          {files.map((att: any, i: number) => (
                             <div key={i} className="relative rounded-lg overflow-hidden border border-border/50">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={att.url} alt="Attachment" className="h-20 w-auto object-cover" />
@@ -556,14 +590,14 @@ export function AiStudioView({
                         if (executor) {
                           try {
                             const result = await executor(part.input)
-                            addToolResult({ toolCallId, result })
+                            addToolOutput({ tool: part.toolName, toolCallId, output: result })
                           } catch (e) {
-                            addToolResult({ toolCallId, result: { success: false, message: "Erro ao salvar" } })
+                            addToolOutput({ tool: part.toolName, toolCallId, output: { success: false, message: "Erro ao salvar" } })
                           }
                         }
                       }}
                       onReject={(toolCallId) => {
-                        addToolResult({ toolCallId, result: { rejected: true, message: "Rejeitado pelo usuário" } })
+                        addToolOutput({ tool: part.toolName, toolCallId, output: { rejected: true, message: "Rejeitado pelo usuário" } })
                       }}
                     />
                   </div>
@@ -595,7 +629,7 @@ export function AiStudioView({
               <div className="rounded-2xl rounded-tl-sm bg-destructive/5 border border-destructive/20 px-5 py-4 shadow-sm max-w-[80%]">
                 <p className="text-sm font-medium text-destructive mb-2">Ops! Tivemos um problema de conexão com a IA.</p>
                 <p className="text-xs text-destructive/80 mb-3">{error.message || "A requisição falhou. Tente novamente."}</p>
-                <Button variant="outline" size="sm" onClick={() => reload()} className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10">
+                <Button variant="outline" size="sm" onClick={() => regenerate()} className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10">
                   <RefreshCw className="h-3 w-3 mr-2" />
                   Tentar novamente
                 </Button>
