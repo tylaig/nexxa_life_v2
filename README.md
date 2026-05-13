@@ -30,6 +30,33 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## NexxaLife gamificado
+
+A plataforma agora possui uma fundação para produtividade gamificada e evolução pessoal progressiva.
+
+Documentos principais:
+
+- `docs/NEXXALIFE_GAMIFICATION_SCORE_SYSTEM_PLAN.md` — plano completo de gamificação, score vivo, XP, missões e conquistas.
+- `docs/NEXXA_AGENT_OPENCLAW_LIKE_IMPLEMENTATION_PLAN.md` — plano do agente human-in-the-loop estilo OpenClaw.
+- `docs/implementation/gamification-progress.md` — checklist vivo de implementação e evidências.
+
+Arquivos técnicos principais:
+
+- `db/migrations/014_gamification.sql` — schema de scores, eventos, perguntas, missões e conquistas.
+- `lib/gamification/types.ts` — tipos centrais de áreas, missões e eventos.
+- `lib/gamification/scoring.ts` — engine de score/XP/level.
+- `lib/db/actions.ts` — server actions para scores, missões, perguntas e achievements.
+
+Fluxo de produto:
+
+```text
+diagnóstico inicial → baseline por área → perguntas adaptativas → missões → aprovação humana → execução → score event → acompanhamento
+```
+
+Regra de segurança:
+
+> Toda ação mutável criada pela IA deve passar por aprovação humana antes de persistir dados.
+
 ## Local pgvector / Supabase-ready RAG setup
 
 This project now includes a local pgvector foundation for the Knowledge/RAG module.

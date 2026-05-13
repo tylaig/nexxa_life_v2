@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
+import { LifeAreaCockpit } from "@/components/gamification/life-area-cockpit"
 import { getChecklist, toggleChecklistItem, getGoals, getAgenda, getJournalEntries, getUserStreak } from "@/lib/db/actions"
 
 // ─── Sub-componentes ────────────────────────────────────────────────────────
@@ -294,6 +295,9 @@ export function NexxaLifeDashboardView() {
           />
         ))}
       </div>
+
+      {/* Cockpit gamificado */}
+      <LifeAreaCockpit />
 
       {/* Grid principal 2 colunas */}
       <div className="grid gap-4 lg:grid-cols-2">

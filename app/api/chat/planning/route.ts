@@ -14,6 +14,9 @@ import {
   appendMemory,
   searchMemory,
   getAllMemory,
+  getLifeAreaScores,
+  getActiveMissions,
+  getAdaptiveQuestions,
 } from "@/lib/db/actions"
 
 const customOpenAI = createOpenAI({
@@ -94,24 +97,30 @@ Você é um agente autônomo e consultor proativo. Você não apenas responde a 
 
 ## COMPORTAMENTO AGENTE (LOOP AUTÔNOMO):
 Você opera em um loop de pensamento e ação. ANTES de enviar uma mensagem final ao usuário, você DEVE usar suas ferramentas (tools) para ler o estado atual do usuário e entender o contexto. 
-1. Sempre que a sessão iniciar ou o usuário fizer um pedido, use \`readMemory\`, \`searchMemory\`, \`getGoals\`, \`getChecklist\` ou \`getAgenda\` para se atualizar ANTES de responder.
+1. Sempre que a sessão iniciar ou o usuário fizer um pedido, use \`readMemory\`, \`searchMemory\`, \`getLifeAreaScores\`, \`getActiveMissions\`, \`getGoals\`, \`getChecklist\` ou \`getAgenda\` para se atualizar ANTES de responder.
 2. Você pode (e deve) chamar múltiplas ferramentas em sequência. Chame uma, analise o resultado, chame outra se necessário, e SÓ ENTÃO responda ao usuário.
 3. Se o usuário confirmar uma meta ou insight, SEMPRE use \`appendMemory\` para gravar essa nova informação imediatamente.
 
 ## FLUXO OBRIGATÓRIO DE ONBOARDING/DIAGNÓSTICO:
 
 ### ETAPA 1 - Diagnóstico e Investigação (Primeira mensagem):
-- Cumprimente de forma empolgante e faça um breve resumo empático do perfil.
+- A primeira resposta NUNCA pode ser uma saudação genérica.
+- Comece diretamente com uma leitura estratégica do diagnóstico já preenchido.
+- Inclua: score geral, 3 prioridades, 2 alavancas/forças, insight central e plano inicial curto.
+- Use os números do diagnóstico explicitamente em porcentagens e/ou notas.
 - NUNCA mande uma lista de passos para o usuário fazer. NUNCA peça para o usuário listar suas metas.
-- Faça **APENAS UMA** pergunta profunda sobre a área mais fraca do diagnóstico para entender a causa raiz.
+- Termine com **APENAS UMA** pergunta profunda sobre a área mais fraca do diagnóstico para entender a causa raiz.
 
 ### ETAPA 2 - Sugestão Proativa (Após a resposta do usuário):
 - Baseado na resposta, VOCÊ cria as metas.
 - Use a ferramenta \`addGoal\` para sugerir 1 a 3 metas baseadas na dor do usuário.
 - Use \`addChecklistItem\` e \`addAgendaEvent\` para sugerir a rotina.
+- Use \`createMission\` para transformar a recomendação em uma missão gamificada com XP e impacto de score.
+- Use \`recordScoreEvent\` apenas quando houver um evento real que justifique atualizar XP/score.
 - Chame as ferramentas simultaneamente no fundo enquanto explica no texto o que está sugerindo.
 
 ## REGRAS CRÍTICAS:
+- Ações mutáveis são human-in-the-loop: você pode propor \`addGoal\`, \`addChecklistItem\`, \`addAgendaEvent\`, \`addJournalEntry\`, \`createMission\`, \`recordScoreEvent\` e \`answerAdaptiveQuestion\`, mas a UI só executa depois que o usuário revisar o pacote e digitar OK.
 - PROIBIDO enviar listas grandes de passos.
 - PROIBIDO dar trabalho para o usuário (ex: "defina 3 metas").
 - PROIBIDO fazer mais de 1 pergunta por vez.
@@ -246,6 +255,84 @@ Você opera em um loop de pensamento e ação. ANTES de enviar uma mensagem fina
             await appendMemory(memoryType, entry)
             return { success: true, message: `Registrado em ${memoryType}.md` }
           },
+        }),
+        getLifeAreaScores: tool({
+          description: "Consulta os scores gamificados por área: score atual, XP, nível, streak e estágio. Use antes de sugerir missões ou plano de evolução.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              _reason: { type: "string", description: "Motivo da consulta" },
+            },
+            required: ["_reason"],
+          }),
+          execute: async () => await getLifeAreaScores(),
+        }),
+        getActiveMissions: tool({
+          description: "Consulta missões gamificadas ativas do usuário.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              _reason: { type: "string", description: "Motivo da consulta" },
+            },
+            required: ["_reason"],
+          }),
+          execute: async () => await getActiveMissions(),
+        }),
+        getAdaptiveQuestions: tool({
+          description: "Consulta perguntas adaptativas disponíveis por área e tipo para recalibrar o score.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              area: { type: "string", enum: ["health", "mind", "productivity", "finances", "relations", "purpose"], description: "Área da vida" },
+              type: { type: "string", description: "Tipo opcional: daily_checkin, root_cause, weekly_review, maintenance" },
+            },
+            required: ["area"],
+          }),
+          execute: async ({ area, type }) => await getAdaptiveQuestions(area, type || undefined),
+        }),
+        createMission: tool({
+          description: "Propõe criar uma missão gamificada. A execução é client-side e exige aprovação humana com OK.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              area: { type: "string", enum: ["health", "mind", "productivity", "finances", "relations", "purpose"] },
+              type: { type: "string", enum: ["daily", "weekly", "recovery", "boss", "maintenance"] },
+              title: { type: "string" },
+              description: { type: "string" },
+              xpReward: { type: "number" },
+              scoreImpact: { type: "number" },
+              dueAt: { type: "string", description: "Data/hora ISO opcional" },
+            },
+            required: ["area", "type", "title", "description", "xpReward", "scoreImpact"],
+          }),
+        }),
+        recordScoreEvent: tool({
+          description: "Propõe registrar um evento de score/XP. A execução é client-side e exige aprovação humana com OK.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              area: { type: "string", enum: ["health", "mind", "productivity", "finances", "relations", "purpose"] },
+              eventType: { type: "string", enum: ["manual_adjustment", "weekly_review", "mission_completed", "journal_entry", "checklist_completed", "agenda_completed"] },
+              xpDelta: { type: "number" },
+              scoreDelta: { type: "number" },
+              reason: { type: "string" },
+            },
+            required: ["area", "eventType", "xpDelta", "scoreDelta", "reason"],
+          }),
+        }),
+        answerAdaptiveQuestion: tool({
+          description: "Propõe registrar uma resposta de pergunta adaptativa. A execução é client-side e exige aprovação humana com OK.",
+          inputSchema: jsonSchema({
+            type: "object",
+            properties: {
+              questionId: { type: "string" },
+              area: { type: "string", enum: ["health", "mind", "productivity", "finances", "relations", "purpose"] },
+              answerText: { type: "string" },
+              answerValue: { type: "number" },
+              questionType: { type: "string" },
+            },
+            required: ["area", "answerText", "answerValue"],
+          }),
         }),
         searchMemory: tool({
           description: "Busca texto nas memórias do usuário. Use para encontrar informações específicas antes de sugerir algo.",

@@ -8,19 +8,23 @@ import { useRouter } from "next/navigation"
 import {
   Bot, Send, Sparkles, Loader2, Brain,
   CheckCircle2, Target, Calendar, BookText, Network, ChevronRight, ChevronDown, ChevronUp, Activity, RefreshCw, Pencil, Image as ImageIcon, X, AlertCircle,
-  Paperclip, Mic, Square, Trash2
+  Paperclip, Mic, Square, Trash2, Heart, Wallet, Users, Compass, TrendingUp, Gauge, Flame
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { markUserOnboarded, addGoal, addChecklistItem, addAgendaEvent, addJournalEntry, saveChatSession, deleteChatSession, getAllMemory } from "@/lib/db/actions"
+import { Progress } from "@/components/ui/progress"
+import { markUserOnboarded, addGoal, addChecklistItem, addAgendaEvent, addJournalEntry, saveChatSession, deleteChatSession, getAllMemory, createMission, recordScoreEvent, answerAdaptiveQuestion } from "@/lib/db/actions"
 import { AreaRadarChart } from "@/components/nexxa-life/charts/area-radar-chart"
-import { ToolApprovalCard } from "@/components/ai/tool-approval-card"
+import { ToolApprovalBatch } from "@/components/ai/tool-approval-card"
 
 const TOOL_META: Record<string, { icon: any; label: string; color: string; desc: string }> = {
   addGoal:          { icon: Target,       label: "Meta Criada",       color: "text-emerald-500", desc: "Uma nova meta foi estabelecida" },
   addChecklistItem: { icon: CheckCircle2, label: "Tarefa Adicionada", color: "text-blue-500",    desc: "Nova ação na sua checklist" },
   addAgendaEvent:   { icon: Calendar,     label: "Evento Agendado",   color: "text-violet-500",  desc: "Tempo bloqueado na agenda" },
   addJournalEntry:  { icon: BookText,     label: "Diário Salvo",      color: "text-amber-500",   desc: "Nova reflexão capturada" },
+  createMission:    { icon: Flame,        label: "Missão Criada",     color: "text-orange-500",  desc: "Novo desafio gamificado" },
+  recordScoreEvent: { icon: TrendingUp,   label: "Score Atualizado",  color: "text-cyan-500",    desc: "Evolução registrada" },
+  answerAdaptiveQuestion: { icon: Gauge,  label: "Avaliação Salva",   color: "text-fuchsia-500", desc: "Resposta impactou o score" },
   getGoals:         { icon: Target,       label: "Metas Consultadas", color: "text-emerald-400", desc: "Metas existentes verificadas" },
   getChecklist:     { icon: CheckCircle2, label: "Checklist Lido",    color: "text-blue-400",    desc: "Checklist do dia verificado" },
   getAgenda:        { icon: Calendar,     label: "Agenda Consultada", color: "text-violet-400",  desc: "Agenda do dia verificada" },
@@ -29,7 +33,46 @@ const TOOL_META: Record<string, { icon: any; label: string; color: string; desc:
   searchMemory:     { icon: Brain,        label: "Memória Buscada",   color: "text-pink-400",    desc: "Busca na memória do agente" },
 }
 
-const MUTATING_TOOLS = ["addGoal", "addChecklistItem", "addAgendaEvent", "addJournalEntry"]
+const MUTATING_TOOLS = ["addGoal", "addChecklistItem", "addAgendaEvent", "addJournalEntry", "createMission", "recordScoreEvent", "answerAdaptiveQuestion"]
+
+const DIAGNOSTIC_AREAS = [
+  { key: "health", scoreKey: "score_health", label: "Saúde", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", ring: "ring-rose-500/20", action: "recuperar energia física" },
+  { key: "mind", scoreKey: "score_mind", label: "Mente", icon: Brain, color: "text-violet-500", bg: "bg-violet-500/10", ring: "ring-violet-500/20", action: "reduzir ruído mental" },
+  { key: "productivity", scoreKey: "score_productivity", label: "Produtividade", icon: Target, color: "text-blue-500", bg: "bg-blue-500/10", ring: "ring-blue-500/20", action: "criar execução diária" },
+  { key: "finances", scoreKey: "score_finances", label: "Finanças", icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10", ring: "ring-emerald-500/20", action: "dar clareza financeira" },
+  { key: "relations", scoreKey: "score_relations", label: "Relações", icon: Users, color: "text-amber-500", bg: "bg-amber-500/10", ring: "ring-amber-500/20", action: "fortalecer vínculos" },
+  { key: "purpose", scoreKey: "score_purpose", label: "Propósito", icon: Compass, color: "text-cyan-500", bg: "bg-cyan-500/10", ring: "ring-cyan-500/20", action: "alinhar direção" },
+]
+
+function getDiagnosticScore(diagnosticData: any, area: any) {
+  const raw = diagnosticData?.[area.scoreKey] ?? diagnosticData?.scores?.[area.key] ?? 0
+  const score = Number(raw)
+  return Number.isFinite(score) ? Math.max(0, Math.min(10, score)) : 0
+}
+
+function getDiagnosticSummary(diagnosticData: any) {
+  const areas = DIAGNOSTIC_AREAS.map((area) => ({
+    ...area,
+    score: getDiagnosticScore(diagnosticData, area),
+  }))
+  const total = areas.reduce((sum, area) => sum + area.score, 0)
+  const overall = Math.round((total / Math.max(areas.length, 1)) * 10)
+  const sorted = [...areas].sort((a, b) => a.score - b.score)
+  const priorities = sorted.slice(0, 3)
+  const strengths = [...sorted].reverse().slice(0, 2)
+  const primary = priorities[0] || areas[0]
+  const readiness = overall >= 75 ? "aceleração" : overall >= 55 ? "reorganização" : "recuperação estratégica"
+
+  return { areas, overall, priorities, strengths, primary, readiness }
+}
+
+function getInitialPlanningPrompt(diagnosticData: any) {
+  const summary = getDiagnosticSummary(diagnosticData)
+  const priorities = summary.priorities.map((area) => `${area.label} ${area.score}/10`).join(", ")
+  const strengths = summary.strengths.map((area) => `${area.label} ${area.score}/10`).join(", ")
+
+  return `Acabei de finalizar meu diagnóstico inicial no NexxaLife. Comece a sessão já com uma leitura estratégica do meu perfil, baseada nesses dados: score geral ${summary.overall}%, prioridades ${priorities}, alavancas ${strengths}. Quero que você entregue um plano inicial curto com: 1 insight central, 3 prioridades, primeiras ações recomendadas e uma pergunta profunda sobre ${summary.primary.label}. Não faça saudação genérica.`
+}
 
 // Map tool names to server actions
 const TOOL_EXECUTORS: Record<string, (args: any) => Promise<any>> = {
@@ -37,6 +80,9 @@ const TOOL_EXECUTORS: Record<string, (args: any) => Promise<any>> = {
   addChecklistItem: async (args) => { await addChecklistItem(args); return { success: true, message: `Tarefa "${args.label}" adicionada` } },
   addAgendaEvent: async (args) => { await addAgendaEvent(args); return { success: true, message: `Evento "${args.title}" agendado` } },
   addJournalEntry: async (args) => { await addJournalEntry(args); return { success: true, message: "Reflexão salva" } },
+  createMission: async (args) => { const mission = await createMission(args); return { success: true, message: `Missão "${args.title}" criada`, mission } },
+  recordScoreEvent: async (args) => { const score = await recordScoreEvent(args); return { success: true, message: "Score atualizado", score } },
+  answerAdaptiveQuestion: async (args) => { const answer = await answerAdaptiveQuestion(args); return { success: true, message: "Avaliação registrada", answer } },
 }
 
 const STORAGE_KEY_PLANNING = "nexxa_chat_planning"
@@ -167,30 +213,31 @@ export function AiStudioView({
     }, 2000)
   }, [messages, storageKey, sessionType, isHydrated])
 
-  // Auto-trigger first AI message ONLY if no saved messages were restored
+  // Auto-trigger first AI planning turn ONLY if no saved messages were restored
   const hasSentInitial = React.useRef(false)
   React.useEffect(() => {
     if (!isHydrated) return // Wait for restore attempt to finish
     if ((messages || []).length === 0 && !isLoading && !hasSentInitial.current) {
       hasSentInitial.current = true
       
-      const greeting = isPlanningMode
-        ? "Olá! Terminei meu diagnóstico. Vamos começar a organizar seu plano estratégico."
-        : "Sessão iniciada. O que vamos construir, organizar ou revisar hoje?"
-        
       const timer = setTimeout(() => {
+        if (isPlanningMode && diagnosticData) {
+          sendMessage({ text: getInitialPlanningPrompt(diagnosticData) })
+          return
+        }
+
         setMessages((current: any[]) => [
           ...current,
           {
             id: `assistant-greeting-${Date.now()}`,
             role: "assistant",
-            parts: [{ type: "text", text: greeting }],
+            parts: [{ type: "text", text: "Sessão iniciada. O que vamos construir, organizar ou revisar hoje?" }],
           },
         ])
-      }, 1200) // Delay to show the empty state animation
+      }, 700)
       return () => clearTimeout(timer)
     }
-  }, [isPlanningMode, isHydrated, messages.length, isLoading, setMessages])
+  }, [isPlanningMode, diagnosticData, isHydrated, messages.length, isLoading, sendMessage, setMessages])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -469,6 +516,7 @@ export function AiStudioView({
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar relative">
+          {isPlanningMode && diagnosticData && <InitialDiagnosticBrief diagnosticData={diagnosticData} />}
           
           {prefillSession && (
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm shadow-sm">
@@ -575,33 +623,50 @@ export function AiStudioView({
                   </div>
                 )}
 
-                {/* Approval cards for mutating tools */}
-                {m.role === "assistant" && mutatingToolParts.map((part: any) => (
-                  <div key={part.toolCallId} className="flex w-full justify-start pl-11">
-                    <ToolApprovalCard
-                      toolName={part.toolName}
-                      toolCallId={part.toolCallId}
-                      state={part.state}
-                      input={part.input}
-                      output={part.output}
-                      approvalId={part.toolCallId}
-                      onApprove={async (toolCallId) => {
-                        const executor = TOOL_EXECUTORS[part.toolName]
-                        if (executor) {
-                          try {
-                            const result = await executor(part.input)
-                            addToolOutput({ tool: part.toolName, toolCallId, output: result })
-                          } catch (e) {
-                            addToolOutput({ tool: part.toolName, toolCallId, output: { success: false, message: "Erro ao salvar" } })
-                          }
+                {/* Approval package for mutating tools */}
+                {m.role === "assistant" && mutatingToolParts.length > 0 && (
+                  <ToolApprovalBatch
+                    tools={mutatingToolParts}
+                    onApproveMany={async (items) => {
+                      for (const item of items) {
+                        const executor = TOOL_EXECUTORS[item.toolName]
+                        if (!executor) continue
+                        try {
+                          const result = await executor(item.input)
+                          addToolOutput({
+                            tool: item.toolName,
+                            toolCallId: item.toolCallId,
+                            output: {
+                              ...result,
+                              note: item.note || undefined,
+                              reviewedInput: item.input,
+                            },
+                          })
+                        } catch (e) {
+                          addToolOutput({
+                            tool: item.toolName,
+                            toolCallId: item.toolCallId,
+                            output: { success: false, message: "Erro ao salvar", note: item.note || undefined },
+                          })
                         }
-                      }}
-                      onReject={(toolCallId) => {
-                        addToolOutput({ tool: part.toolName, toolCallId, output: { rejected: true, message: "Rejeitado pelo usuário" } })
-                      }}
-                    />
-                  </div>
-                ))}
+                      }
+                    }}
+                    onRejectMany={(items) => {
+                      for (const item of items) {
+                        addToolOutput({
+                          tool: item.toolName,
+                          toolCallId: item.toolCallId,
+                          output: {
+                            rejected: true,
+                            message: "Removido do pacote de aprovação pelo usuário",
+                            note: item.note || undefined,
+                            reviewedInput: item.input,
+                          },
+                        })
+                      }
+                    }}
+                  />
+                )}
 
                 {/* Thinking indicator for tool-only messages with no text */}
                 {m.role === "assistant" && !text && toolInvocations.length > 0 && mutatingToolParts.length === 0 && (
@@ -878,6 +943,119 @@ export function AiStudioView({
   )
 }
 
+// ─── InitialDiagnosticBrief ─────────────────────────────────────
+
+function InitialDiagnosticBrief({ diagnosticData }: { diagnosticData: any }) {
+  const summary = getDiagnosticSummary(diagnosticData)
+  const PrimaryIcon = summary.primary.icon
+
+  return (
+    <div className="overflow-hidden rounded-[28px] border border-primary/15 bg-gradient-to-br from-primary/10 via-background to-background shadow-sm animate-in fade-in slide-in-from-bottom-3 duration-500">
+      <div className="relative p-5 md:p-6">
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute -bottom-12 left-1/4 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" />
+
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              Diagnóstico interpretado pela Nexxa
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+                Seu plano inicial começa por {summary.primary.label.toLowerCase()}.
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Detectei um momento de <span className="font-medium text-foreground">{summary.readiness}</span>: antes de empilhar metas, o sistema precisa transformar o diagnóstico em prioridades, ritmo e primeiras ações concretas.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-3xl border border-border/60 bg-background/75 p-4 shadow-sm backdrop-blur">
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 ring-8 ring-primary/5">
+              <Gauge className="absolute h-9 w-9 text-primary/15" />
+              <div className="text-center">
+                <div className="text-3xl font-bold tracking-tight text-primary">{summary.overall}%</div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">score</div>
+              </div>
+            </div>
+            <div className="min-w-32">
+              <div className="text-xs font-semibold text-foreground">Leitura geral</div>
+              <div className="mt-1 text-xs leading-5 text-muted-foreground">Base inicial para priorizar evolução sem dispersão.</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {summary.areas.map((area) => {
+            const Icon = area.icon
+            return (
+              <div key={area.key} className="rounded-2xl border border-border/50 bg-background/70 p-3 shadow-sm backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl ring-1", area.bg, area.color, area.ring)}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-foreground">{area.label}</div>
+                      <div className="text-[11px] text-muted-foreground">{area.action}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold tabular-nums text-foreground">{Math.round(area.score * 10)}%</div>
+                    <div className="text-[10px] text-muted-foreground">{area.score}/10</div>
+                  </div>
+                </div>
+                <Progress value={area.score * 10} className="mt-3 h-1.5 bg-muted" />
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="relative mt-5 grid gap-3 lg:grid-cols-[1.1fr_.9fr]">
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Flame className="h-4 w-4 text-amber-500" />
+              Prioridades imediatas
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {summary.priorities.map((area, index) => (
+                <div key={area.key} className="rounded-xl bg-background/70 p-3">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">#{index + 1}</div>
+                  <div className="mt-1 text-sm font-semibold text-foreground">{area.label}</div>
+                  <div className="text-xs text-muted-foreground">{area.action}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              Alavancas do perfil
+            </div>
+            <div className="space-y-2">
+              {summary.strengths.map((area) => (
+                <div key={area.key} className="flex items-center justify-between rounded-xl bg-background/70 px-3 py-2">
+                  <span className="text-sm font-medium text-foreground">{area.label}</span>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{Math.round(area.score * 10)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex items-start gap-3 rounded-2xl border border-primary/15 bg-primary/5 p-4">
+          <PrimaryIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p className="text-sm leading-6 text-muted-foreground">
+            A IA vai usar esse mapa para abrir a conversa com <span className="font-medium text-foreground">insights, plano inicial e pergunta de causa raiz</span>, não com uma saudação genérica.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── InsightCard (compact, expandable) ──────────────────────────
 
 function InsightCard({ item }: { item: any }) {
@@ -900,12 +1078,12 @@ function InsightCard({ item }: { item: any }) {
           <div className="mt-3 pt-3 border-t border-border/30 animate-in fade-in slide-in-from-top-2 duration-200">
             <AreaRadarChart
               scores={{
-                mind: item.data?.scores?.mind ?? 5,
-                health: item.data?.scores?.health ?? 5,
-                wealth: item.data?.scores?.wealth ?? 5,
-                relationships: item.data?.scores?.relationships ?? 5,
-                spirituality: item.data?.scores?.spirituality ?? 5,
-                productivity: item.data?.scores?.productivity ?? 5
+                mind: item.data?.score_mind ?? item.data?.scores?.mind ?? 5,
+                health: item.data?.score_health ?? item.data?.scores?.health ?? 5,
+                wealth: item.data?.score_finances ?? item.data?.scores?.wealth ?? 5,
+                relationships: item.data?.score_relations ?? item.data?.scores?.relationships ?? 5,
+                spirituality: item.data?.score_purpose ?? item.data?.scores?.spirituality ?? 5,
+                productivity: item.data?.score_productivity ?? item.data?.scores?.productivity ?? 5
               }}
               className="mx-auto"
             />

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { CheckSquare, Plus, Flame, Filter } from "lucide-react"
+import { CheckSquare, Plus, Flame, Filter, Target, Sparkles } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { SectionCard } from "@/components/ui/section-card"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -13,7 +13,20 @@ import { cn } from "@/lib/utils"
 import { addChecklistItem, toggleChecklistItem } from "@/lib/db/actions"
 
 type Priority = "high" | "medium" | "low"
-type ChecklistItem = { id: string; label: string; done: boolean; priority: Priority; category: string; recurrent: boolean }
+type ChecklistItem = {
+  id: string
+  label: string
+  done: boolean
+  priority: Priority
+  category: string
+  recurrent: boolean
+  goalTitle?: string | null
+  goalCategory?: string | null
+  missionTitle?: string | null
+  lifeArea?: string | null
+  xpReward?: number
+  impactScore?: number
+}
 
 // No more INITIAL_ITEMS — data comes from props
 
@@ -50,12 +63,31 @@ function ChecklistItemRow({
         {item.done ? <span className="text-[10px] font-bold">✓</span> : null}
       </button>
 
-      <span className={cn(
-        "flex-1 text-sm leading-snug",
-        item.done ? "text-muted-foreground line-through" : "text-foreground"
-      )}>
-        {item.label}
-      </span>
+      <div className="min-w-0 flex-1">
+        <span className={cn(
+          "block text-sm leading-snug",
+          item.done ? "text-muted-foreground line-through" : "text-foreground"
+        )}>
+          {item.label}
+        </span>
+        {(item.goalTitle || item.lifeArea || item.xpReward) && (
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+            {item.goalTitle && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                <Target className="h-2.5 w-2.5" /> {item.goalTitle}
+              </span>
+            )}
+            {item.lifeArea && (
+              <span className="rounded-full bg-muted px-2 py-0.5">Área: {item.lifeArea}</span>
+            )}
+            {!!item.xpReward && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 text-orange-600">
+                <Sparkles className="h-2.5 w-2.5" /> +{item.xpReward} XP
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="flex shrink-0 items-center gap-2">
         {item.recurrent ? (
@@ -100,6 +132,12 @@ export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }
     id: i.id, label: i.label, done: i.done ?? false,
     priority: (i.priority || "medium") as Priority,
     category: i.category || "Geral", recurrent: i.recurrent ?? false,
+    goalTitle: i.goal_title,
+    goalCategory: i.goal_category,
+    missionTitle: i.mission_title,
+    lifeArea: i.connected_area || i.life_area,
+    xpReward: i.xp_reward || 0,
+    impactScore: i.impact_score || 0,
   }))
   const [items, setItems] = useState<ChecklistItem[]>(mapped)
   const [newLabel, setNewLabel] = useState("")
@@ -128,6 +166,7 @@ export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }
   const high = filtered.filter((i) => i.priority === "high")
   const medium = filtered.filter((i) => i.priority === "medium")
   const low = filtered.filter((i) => i.priority === "low")
+  const connectedCount = items.filter((i) => i.goalTitle || i.missionTitle || i.lifeArea).length
 
   const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
 
@@ -136,7 +175,7 @@ export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }
       <PageHeader
         eyebrow="Hoje"
         title="Checklist"
-        description={`${today} — ${done} de ${total} tarefas concluídas`}
+        description={`${today} — ${done} de ${total} tarefas concluídas · ${connectedCount} conectadas a metas/áreas`}
         badge={
           <Badge variant="secondary" className="gap-1 rounded-full px-2.5 py-0.5 text-xs">
             <Flame className="h-3 w-3 text-amber-500" />
@@ -160,6 +199,20 @@ export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }
             </div>
             <Progress value={pct} className="h-2" />
           </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard noPadding className="overflow-hidden border-primary/15 bg-primary/5">
+        <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Checklist conectado ao Meu Ciclo</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Cada tarefa deve mover uma meta, uma missão ou uma área da vida. Tarefas soltas ainda funcionam, mas o core agora prioriza execução com contexto.
+            </p>
+          </div>
+          <Badge variant="secondary" className="w-fit rounded-full px-3 py-1 text-xs">
+            {connectedCount}/{total} conectadas
+          </Badge>
         </div>
       </SectionCard>
 
