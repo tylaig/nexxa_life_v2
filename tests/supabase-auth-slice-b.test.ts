@@ -6,8 +6,8 @@ describe("supabase auth slice B contracts", () => {
     const signup = await import("@/app/signup/page")
     const recovery = await import("@/app/recover/page")
 
-    expect(login.metadata).toMatchObject({ title: "Login | NexxaLife" })
-    expect(signup.metadata).toMatchObject({ title: "Cadastro | NexxaLife" })
+    expect(login.metadata).toMatchObject({ title: "Entrar | NexxaLife" })
+    expect(signup.metadata).toMatchObject({ title: "Criar conta | NexxaLife" })
     expect(recovery.metadata).toMatchObject({ title: "Recuperar acesso | NexxaLife" })
   })
 

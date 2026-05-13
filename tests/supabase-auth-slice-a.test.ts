@@ -46,8 +46,8 @@ describe("supabase auth slice A contracts", () => {
     const onboarding = await import("@/app/onboarding/page")
     const callback = await import("@/app/auth/callback/route")
 
-    expect(login.metadata).toMatchObject({ title: "Login | NexxaLife" })
-    expect(signup.metadata).toMatchObject({ title: "Cadastro | NexxaLife" })
+    expect(login.metadata).toMatchObject({ title: "Entrar | NexxaLife" })
+    expect(signup.metadata).toMatchObject({ title: "Criar conta | NexxaLife" })
     expect(onboarding.metadata).toMatchObject({ title: "Onboarding | NexxaLife" })
     expect(typeof callback.GET).toBe("function")
   })
@@ -66,7 +66,8 @@ describe("supabase auth slice A contracts", () => {
         "/reports/:path*",
         "/framework-admin/:path*",
         "/apps/:path*",
-        "/(app)/:path*",
+        "/studio/:path*",
+        "/nexxa/:path*",
       ]),
     })
 
@@ -86,9 +87,9 @@ describe("supabase auth slice A contracts", () => {
       }),
     }))
 
-    vi.doMock("@/lib/server/env", () => ({
-      hasSupabaseBrowserConfig: () => true,
-      getAppBaseUrl: () => "https://configured.example.com",
+    vi.doMock("@/lib/client/env", () => ({
+      hasClientSupabaseConfig: () => true,
+      getClientAppUrl: () => "https://configured.example.com",
     }))
 
     Object.defineProperty(globalThis, "window", {
@@ -107,9 +108,13 @@ describe("supabase auth slice A contracts", () => {
     expect(signOut).toHaveBeenCalledTimes(1)
     expect(signInWithOAuth).toHaveBeenCalledWith({
       provider: "google",
-      options: {
+      options: expect.objectContaining({
         redirectTo: "http://localhost:3001/auth/callback?next=%2Freports%3Ftab%3Dweekly",
-      },
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
+      }),
     })
   })
 })

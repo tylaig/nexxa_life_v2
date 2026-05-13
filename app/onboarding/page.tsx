@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 
 import { GoogleAuthButton } from "@/components/auth/google-auth-button"
+import { nexxaOnboardingPrefillEntry } from "@/components/nexxa-life/onboarding-prefill"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
@@ -140,6 +141,22 @@ export default async function OnboardingPage({
               <Button asChild variant="outline" className="h-11 rounded-xl px-6">
                 <Link href="/dashboard">Ir para o dashboard</Link>
               </Button>
+            </div>
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                    Rascunho assistido pela Nexxa
+                  </div>
+                  <h2 className="font-semibold text-foreground">{nexxaOnboardingPrefillEntry.label}</h2>
+                  <p className="max-w-xl leading-6 text-muted-foreground">
+                    {nexxaOnboardingPrefillEntry.description} Nada é salvo automaticamente.
+                  </p>
+                </div>
+                <Button asChild variant="secondary" className="h-10 shrink-0 rounded-xl px-4">
+                  <Link href={nexxaOnboardingPrefillEntry.href}>Revisar rascunho</Link>
+                </Button>
+              </div>
             </div>
           </div>
 

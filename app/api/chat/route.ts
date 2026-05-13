@@ -188,7 +188,7 @@ Responda sempre em Português do Brasil. Mantenha um tom encorajador e direto.`,
   } catch (error) {
     console.error("[General Chat Error]:", error)
 
-    const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Aqui no AI Studio eu consigo te ajudar a criar metas, registrar diários e organizar sua agenda. O que vamos construir hoje?"
+    const mockResponse = "Olá! Como nossa conexão de IA não está configurada no momento, estou em modo de simulação. Aqui na Nexxa eu consigo te ajudar a criar metas, registrar diários e organizar sua agenda. O que vamos construir hoje?"
 
     const { createDataStreamResponse } = await import("ai")
 

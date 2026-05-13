@@ -45,7 +45,7 @@ const mainCommandGroups: CommandMenuGroup[] = [
     heading: "Meu Ciclo",
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/studio", label: "AI Studio", icon: Sparkles },
+      { href: "/nexxa", label: "Nexxa", icon: Sparkles },
       { href: "/agenda", label: "Agenda", icon: CalendarDays },
       { href: "/goals", label: "Metas", icon: Goal },
       { href: "/journal", label: "Diário", icon: FileText },

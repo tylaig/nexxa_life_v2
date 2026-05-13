@@ -11,13 +11,33 @@ describe("nexxa_life navigation taxonomy", () => {
 
     expect(navigation.primaryItems.map((item) => item.href)).toEqual([
       "/dashboard",
-      "/studio",
+      "/nexxa",
     ])
 
     expect(navigation.primaryItems.map((item) => item.label)).toEqual([
       "Dashboard",
-      "AI Studio",
+      "Nexxa",
     ])
+  })
+
+  it("publishes /nexxa as the canonical Nexxa route while keeping /studio compatible", async () => {
+    const navigation = await import("@/components/app-shell/nexxa-life-navigation")
+    const commandMenu = await import("@/components/app-shell/command-menu")
+    const nexxaPage = await import("@/app/(app)/nexxa/page")
+    const studioPage = await import("@/app/(app)/studio/page")
+    const proxyModule = await import("../proxy")
+
+    const sidebarItem = navigation.primaryItems.find((item) => item.label === "Nexxa")
+    const commandItem = commandMenu
+      .getCommandMenuForProfile(userProfile)
+      .flatMap((group) => group.items)
+      .find((item) => item.label === "Nexxa")
+
+    expect(sidebarItem?.href).toBe("/nexxa")
+    expect(commandItem?.href).toBe("/nexxa")
+    expect(typeof nexxaPage.default).toBe("function")
+    expect(typeof studioPage.default).toBe("function")
+    expect(proxyModule.config.matcher).toEqual(expect.arrayContaining(["/nexxa/:path*", "/studio/:path*"]))
   })
 
   it("removes the old CRM/commerce taxonomy from the sidebar model", async () => {

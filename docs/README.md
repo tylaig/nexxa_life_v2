@@ -55,6 +55,8 @@ Criar uma solução de mercado que permita a marcas e operadores centralizar ate
 - `implementation/phase6-meu-dia-flow-route-mapping-matrix.md` — matriz operacional de mapeamento entre páginas legadas do nexxa_life flow, novas rotas da raiz e componentes-alvo do design atual
 - `implementation/phase7-nexxalife-product-entry-auth-audit-plan.md` — estudo product-owner da entrada pública, autenticação, onboarding, IA de rotas e planejamento completo de melhorias
 - `implementation/phase7-nexxalife-product-entry-auth-progress.md` — registro vivo da rodada de estudo e da priorização da implementação de auth/onboarding/proteção de rotas
+- `implementation/phase8-nexxalife-evolution-master-strategic-plan.md` — plano estratégico mestre para evolução do NexxaLife em Nexxa, Meu Ciclo funcional, reflexão/análise, ecossistema, infraestrutura/admin e loop obrigatório de verificação
+- `implementation/phase8-nexxalife-evolution-progress.md` — registro vivo de evidências, decisões de rota e validações das fatias da Fase 8
 
 ## Público deste pacote
 

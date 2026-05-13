@@ -42,7 +42,15 @@ const TOOL_EXECUTORS: Record<string, (args: any) => Promise<any>> = {
 const STORAGE_KEY_PLANNING = "nexxa_chat_planning"
 const STORAGE_KEY_STUDIO = "nexxa_chat_studio"
 
-export function AiStudioView({ step, diagnosticData }: { step?: string; diagnosticData?: any }) {
+export function AiStudioView({
+  step,
+  diagnosticData,
+  prefillSession,
+}: {
+  step?: string
+  diagnosticData?: any
+  prefillSession?: any
+}) {
   const router = useRouter()
   const isPlanningMode = step !== "complete"
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
@@ -374,7 +382,7 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
             </div>
             <div>
               <h2 className="text-base font-bold tracking-tight text-foreground">
-                {isPlanningMode ? "Sessão de Planejamento" : "AI Studio"}
+                {isPlanningMode ? "Sessão de Planejamento" : "Nexxa"}
               </h2>
               <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 NexxaLife Inteligência Estratégica
@@ -429,8 +437,47 @@ export function AiStudioView({ step, diagnosticData }: { step?: string; diagnost
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 pt-24 pb-6 space-y-6 custom-scrollbar relative">
           
+          {prefillSession && (
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <Target className="h-4 w-4" />
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                      Pré-preenchimento em revisão
+                    </div>
+                    <h3 className="mt-1 font-semibold text-foreground">{prefillSession.headline}</h3>
+                    <p className="mt-1 leading-6 text-muted-foreground">{prefillSession.disclosure}</p>
+                  </div>
+                  <div className="grid gap-2 md:grid-cols-3">
+                    <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                      <div className="text-[11px] font-medium text-muted-foreground">Meta sugerida</div>
+                      <div className="mt-1 font-medium text-foreground">{prefillSession.drafts.goal.title}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">Não persistida</div>
+                    </div>
+                    <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                      <div className="text-[11px] font-medium text-muted-foreground">Checklist sugerido</div>
+                      <div className="mt-1 font-medium text-foreground">{prefillSession.drafts.checklist.title}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">Não persistido</div>
+                    </div>
+                    <div className="rounded-xl border border-border/60 bg-background/70 p-3">
+                      <div className="text-[11px] font-medium text-muted-foreground">Agenda sugerida</div>
+                      <div className="mt-1 font-medium text-foreground">{prefillSession.drafts.agenda.title}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">Não persistida</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Confirmação obrigatória: a Nexxa só deve criar metas, checklist ou agenda após sua aprovação explícita.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Empty State Animation */}
-          {(!messages || messages.length === 0) && !isLoading && (
+          {(!messages || messages.length === 0) && !isLoading && !prefillSession && (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center animate-in fade-in zoom-in duration-500 delay-150 pointer-events-none">
               <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-primary/20 to-violet-500/20 flex items-center justify-center mb-6 shadow-inner relative">
                 <Sparkles className="h-10 w-10 text-primary animate-pulse" />

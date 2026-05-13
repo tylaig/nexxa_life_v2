@@ -26,10 +26,10 @@ export type NavSection = {
   children: NavItem[]
 }
 
-/** Item único de destaque: Dashboard e Studio */
+/** Item único de destaque: Dashboard e Nexxa, com /nexxa canônico e /studio compatível. */
 export const primaryItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/studio", label: "AI Studio", icon: Sparkles },
+  { href: "/nexxa", label: "Nexxa", icon: Sparkles },
 ]
 
 /**

@@ -7,10 +7,10 @@ describe("nexxa_life auth and route adaptation contracts", () => {
     const onboarding = await import("@/app/onboarding/page")
 
     expect(login.metadata).toMatchObject({
-      title: "Login | NexxaLife",
+      title: "Entrar | NexxaLife",
     })
     expect(signup.metadata).toMatchObject({
-      title: "Cadastro | NexxaLife",
+      title: "Criar conta | NexxaLife",
     })
     expect(onboarding.metadata).toMatchObject({
       title: "Onboarding | NexxaLife",

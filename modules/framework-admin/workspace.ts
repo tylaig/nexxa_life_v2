@@ -146,7 +146,7 @@ export const frameworkAdminModules: FrameworkAdminModule[] = [
   {
     id: "ai-prompts",
     title: "IA, prompts e guardrails",
-    description: "Workspace para prompts do AI Studio, políticas, modelos, custos e qualidade das respostas.",
+    description: "Workspace para prompts da Nexxa, políticas, modelos, custos e qualidade das respostas.",
     status: "planned",
     owner: "AI Ops",
     primaryAction: "Mapear prompts",

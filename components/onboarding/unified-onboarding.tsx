@@ -40,7 +40,7 @@ export function UnifiedOnboarding({ questions, diagnosticData, initialStep }: Pr
     return <DiagnosticWizard questions={questions} onComplete={handleDiagnosticDone} />
   }
 
-  // If already in planning phase, just redirect to the AI Studio
+  // If already in planning phase, redirect to the Nexxa route.
   React.useEffect(() => {
     if (phase === "planning") {
       router.push("/studio")

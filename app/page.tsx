@@ -82,7 +82,7 @@ const steps = [
   {
     step: "02",
     title: "Plano Estratégico",
-    description: "O AI Studio pega seu diagnóstico e desenha metas realistas. Nada de listas genéricas, apenas o que faz sentido para o seu contexto.",
+    description: "A Nexxa pega seu diagnóstico e desenha metas realistas. Nada de listas genéricas, apenas o que faz sentido para o seu contexto.",
     icon: Target,
   },
   {
