@@ -19,6 +19,21 @@ export const metadata: Metadata = {
   title: "NexxaLife — sistema operacional de evolução pessoal",
   description:
     "NexxaLife é o sistema operacional de evolução pessoal com diagnóstico, planejamento, execução diária e leitura contínua de evolução.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/manifest.webmanifest",
+  openGraph: {
+    title: "NexxaLife",
+    description: "Sistema operacional de evolução pessoal.",
+    images: [{ url: "/brand/nexxalife-app-icon-1024.png", width: 1024, height: 1024, alt: "NexxaLife" }],
+  },
 }
 
 export const viewport: Viewport = {

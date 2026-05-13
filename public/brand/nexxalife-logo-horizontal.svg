@@ -1,0 +1,13 @@
+<svg width="1320" height="320" viewBox="0 0 1320 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NexxaLife logo">
+  <defs>
+    <linearGradient id="nl-core" x1="62" y1="42" x2="260" y2="278" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4BC7F5"/><stop offset=".5" stop-color="#16B8A6"/><stop offset="1" stop-color="#18C58F"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="272" height="272" rx="72" fill="#071B1F"/>
+  <path d="M84 216V104c0-14 18-21 28-10l90 97V105h43v112c0 14-18 20-28 10l-90-97v86H84Z" fill="url(#nl-core)"/>
+  <path d="M98 224c32-5 59-18 82-39 22-21 37-47 45-77" stroke="white" stroke-width="10" stroke-linecap="round" opacity=".72"/>
+  <circle cx="232" cy="98" r="12" fill="#D7B56D"/>
+  <text x="340" y="181" font-family="Georgia, 'Times New Roman', serif" font-size="104" font-weight="700" letter-spacing="-5" fill="#101820">Nexxa<tspan fill="#16B8A6">Life</tspan></text>
+  <text x="346" y="226" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="8" fill="#66807E">CLARITY · EXECUTION · EVOLUTION</text>
+</svg>

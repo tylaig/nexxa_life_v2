@@ -20,6 +20,7 @@ import {
 
 import { redirect } from "next/navigation"
 
+import { NexxaLifeLogoLockup } from "@/components/brand/nexxalife-logo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getAuthenticatedAppUser } from "@/lib/server/auth-user"
@@ -136,11 +137,8 @@ export default async function RootPage(props: { searchParams?: Promise<{ [key: s
       {/* ═══ HEADER ═══ */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-md transition-all group-hover:scale-105 group-hover:shadow-primary/30">
-              N
-            </div>
-            <span className="text-sm font-semibold tracking-tight">NexxaLife</span>
+          <Link href="/" className="group">
+            <NexxaLifeLogoLockup />
           </Link>
           <nav className="flex items-center gap-3">
             {isLoggedIn ? (
@@ -539,7 +537,7 @@ export default async function RootPage(props: { searchParams?: Promise<{ [key: s
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold">
                 N
               </div>
-              <span className="text-sm font-medium text-muted-foreground">NexxaLife</span>
+              <NexxaLifeLogoLockup />
             </div>
             <p className="text-xs text-muted-foreground/60">
               © 2025 NexxaLife — Sistema operacional de evolução pessoal

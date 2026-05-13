@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
 import { ArrowRight, CheckCircle2, Brain, Target, CheckSquare, BarChart3 } from "lucide-react"
+import { NexxaLifeLogoLockup, NexxaLifeMark } from "@/components/brand/nexxalife-logo"
 
 const cycleSteps = [
   { icon: Brain, label: "Diagnóstico", color: "text-teal-400" },
@@ -41,11 +42,8 @@ export function AuthShell({
         <div className="relative flex w-full flex-col justify-between px-6 py-8 md:px-10 lg:w-[54%] lg:px-16 xl:px-20">
           {/* Header / Logo */}
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-lg transition-all group-hover:scale-105 group-hover:shadow-primary/30">
-                N
-              </div>
-              <span className="text-sm font-semibold tracking-tight text-foreground">NexxaLife</span>
+            <Link href="/" className="group">
+              <NexxaLifeLogoLockup />
             </Link>
             <span className="rounded-full border border-border/70 bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
               {eyebrow}
@@ -109,9 +107,7 @@ export function AuthShell({
           {/* Conteúdo do aside */}
           <div className="relative flex flex-col justify-between h-full px-10 py-10 xl:px-14">
             {/* Logo topo */}
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-400/20 border border-teal-400/20 text-teal-300 text-sm font-bold">
-              N
-            </div>
+            <NexxaLifeMark className="h-10 w-10 rounded-2xl ring-1 ring-white/15" />
 
             {/* Texto central */}
             <div className="space-y-8">

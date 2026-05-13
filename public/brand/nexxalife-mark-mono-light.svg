@@ -14,12 +14,12 @@
       <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#062225" flood-opacity=".22"/>
     </filter>
   </defs>
-  <rect width="512" height="512" rx="128" fill="#071B1F"/>
+  <rect width="512" height="512" rx="128" fill="transparent"/>
   <circle cx="256" cy="256" r="210" fill="url(#nl-glow)" opacity=".45"/>
   <g filter="url(#soft-shadow)">
-    <path d="M122 350V162c0-23 29-34 45-17l150 161V163h73v187c0 23-29 34-45 17L195 206v144h-73Z" fill="url(#nl-core)"/>
+    <path d="M122 350V162c0-23 29-34 45-17l150 161V163h73v187c0 23-29 34-45 17L195 206v144h-73Z" fill="#FFFFFF"/>
     <path d="M122 350V162c0-23 29-34 45-17l150 161V163h73v187c0 23-29 34-45 17L195 206v144h-73Z" fill="white" opacity=".08"/>
     <path d="M147 363c52-8 97-30 134-65 37-35 61-78 74-129" stroke="white" stroke-width="18" stroke-linecap="round" opacity=".72"/>
-    <circle cx="370" cy="151" r="20" fill="#D7B56D"/>
+    <circle cx="370" cy="151" r="20" fill="#FFFFFF"/>
   </g>
 </svg>

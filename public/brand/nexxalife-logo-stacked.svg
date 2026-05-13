@@ -1,0 +1,19 @@
+<svg width="720" height="860" viewBox="0 0 720 860" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NexxaLife stacked logo">
+  <rect width="720" height="860" rx="96" fill="#F7FBFA"/>
+  <g transform="translate(164 84) scale(.765625)">
+  <circle cx="256" cy="256" r="210" fill="url(#nl-glow)" opacity=".45"/>
+  <g filter="url(#soft-shadow)">
+    <path d="M122 350V162c0-23 29-34 45-17l150 161V163h73v187c0 23-29 34-45 17L195 206v144h-73Z" fill="url(#nl-core)"/>
+    <path d="M122 350V162c0-23 29-34 45-17l150 161V163h73v187c0 23-29 34-45 17L195 206v144h-73Z" fill="white" opacity=".08"/>
+    <path d="M147 363c52-8 97-30 134-65 37-35 61-78 74-129" stroke="white" stroke-width="18" stroke-linecap="round" opacity=".72"/>
+    <circle cx="370" cy="151" r="20" fill="#D7B56D"/>
+  </g>
+</g>
+  <rect x="164" y="84" width="392" height="392" rx="98" fill="#071B1F"/>
+  <path d="M256 380V210c0-21 27-31 41-15l136 146V211h66v170c0 21-27 31-41 15L322 250v130h-66Z" fill="url(#nl-core)"/>
+  <path d="M278 398c48-7 88-27 123-59 34-32 56-72 68-119" stroke="white" stroke-width="16" stroke-linecap="round" opacity=".72"/>
+  <circle cx="484" cy="198" r="18" fill="#D7B56D"/>
+  <text x="360" y="610" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="700" letter-spacing="-4" fill="#101820">Nexxa<tspan fill="#16B8A6">Life</tspan></text>
+  <text x="360" y="666" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" letter-spacing="7" fill="#66807E">SISTEMA OPERACIONAL</text>
+  <text x="360" y="703" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="700" letter-spacing="7" fill="#66807E">DE EVOLUÇÃO PESSOAL</text>
+</svg>

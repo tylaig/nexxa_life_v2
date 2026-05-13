@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { getNexxaLifeNavigationForProfile, type NavSection } from "@/components/app-shell/nexxa-life-navigation"
+import { NexxaLifeLogoLockup } from "@/components/brand/nexxalife-logo"
 import type { AppUserProfile } from "@/modules/auth-profile/contracts"
 
 function SidebarExpandableItem({
@@ -131,15 +132,7 @@ export function AppSidebar({ profile }: { profile?: AppUserProfile | null }) {
           "flex items-center gap-2.5 rounded-xl px-2 py-2",
           collapsed ? "justify-center" : ""
         )}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <span className="text-[11px] font-bold">NL</span>
-          </div>
-          {!collapsed ? (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">NexxaLife</p>
-              <p className="truncate text-[10px] text-muted-foreground">Sistema de evolução pessoal</p>
-            </div>
-          ) : null}
+          <NexxaLifeLogoLockup collapsed={collapsed} />
         </div>
       </SidebarHeader>
 
