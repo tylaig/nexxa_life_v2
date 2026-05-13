@@ -14,13 +14,14 @@ import {
   MonitorCog,
   RotateCcw,
   Save,
+  Trash2,
   ShieldCheck,
   Sparkles,
   Volume2,
   Wand2,
 } from "lucide-react"
 
-import { updateUserPreferences } from "@/lib/db/actions"
+import { resetUserProgress, updateUserPreferences } from "@/lib/db/actions"
 import { PageHeader } from "@/components/ui/page-header"
 import { SectionCard } from "@/components/ui/section-card"
 import { Button } from "@/components/ui/button"
@@ -158,7 +159,9 @@ export function NexxaLifeSettingsView({ preferences }: { preferences: any }) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("cycle")
   const [settings, setSettings] = useState<SettingsState>(() => normalizeSettings(preferences))
   const [savedAt, setSavedAt] = useState<string | null>(null)
+  const [resetText, setResetText] = useState("")
   const [isPending, startTransition] = useTransition()
+  const [isResetPending, startResetTransition] = useTransition()
 
   const connectedScore = useMemo(() => {
     let score = 0
@@ -174,6 +177,14 @@ export function NexxaLifeSettingsView({ preferences }: { preferences: any }) {
 
   function patch(partial: Partial<SettingsState>) {
     setSettings((current) => ({ ...current, ...partial }))
+  }
+
+  function resetProgress() {
+    startResetTransition(async () => {
+      await resetUserProgress(resetText)
+      setResetText("")
+      setSavedAt("progresso resetado")
+    })
   }
 
   function save() {
@@ -209,7 +220,7 @@ export function NexxaLifeSettingsView({ preferences }: { preferences: any }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 sm:p-6 lg:p-8">
+    <div className="flex min-h-[calc(100vh-64px)] w-full flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Configurações"
         title="Centro de controle NexxaLife"
@@ -250,7 +261,7 @@ export function NexxaLifeSettingsView({ preferences }: { preferences: any }) {
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
+      <div className="grid flex-1 gap-5 lg:grid-cols-[300px_1fr]">
         <SectionCard noPadding className="h-fit overflow-hidden">
           <div className="space-y-1 p-2">
             {TABS.map((tab) => {
@@ -417,24 +428,49 @@ export function NexxaLifeSettingsView({ preferences }: { preferences: any }) {
           )}
 
           {activeTab === "security" && (
-            <SectionCard title="Segurança" description="Resumo rápido. Ações sensíveis continuam em Segurança e Perfil.">
-              <div className="space-y-3">
-                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
-                    <ShieldCheck className="h-4 w-4" /> Conta protegida
+            <div className="space-y-5">
+              <SectionCard title="Segurança" description="Resumo rápido. Ações sensíveis continuam em Segurança e Perfil.">
+                <div className="space-y-3">
+                  <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600">
+                      <ShieldCheck className="h-4 w-4" /> Conta protegida
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Esta central concentra preferências. Use a página full page de Segurança para senha, sessões e acessos.
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Esta central não altera senha nem sessões diretamente. Use as páginas de segurança para ações destrutivas ou sensíveis.
-                  </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/settings/profile">Editar perfil</a></Button>
+                    <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/settings/security">Segurança e sessões</a></Button>
+                    <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/settings/billing">Plano e faturamento</a></Button>
+                    <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/integrations">Integrações</a></Button>
+                  </div>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/settings/profile">Editar perfil</a></Button>
-                  <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/settings/security">Segurança e sessões</a></Button>
-                  <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/settings/billing">Plano e faturamento</a></Button>
-                  <Button variant="outline" className="justify-start rounded-2xl" asChild><a href="/integrations">Integrações</a></Button>
+              </SectionCard>
+
+              <SectionCard title="Resetar progresso" description="Zona de risco para recomeçar diagnóstico, metas, tarefas, agenda, diário, score e conquistas.">
+                <div className="rounded-2xl border border-destructive/25 bg-destructive/5 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground">Recomeçar evolução</p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        Isso limpa progresso operacional e gamificado do usuário atual, mantendo conta e preferências. Para confirmar, digite <strong>RESETAR PROGRESSO</strong>.
+                      </p>
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                        <Input value={resetText} onChange={(event) => setResetText(event.target.value)} placeholder="RESETAR PROGRESSO" className="rounded-xl" />
+                        <Button variant="destructive" className="rounded-xl" disabled={resetText !== "RESETAR PROGRESSO" || isResetPending} onClick={resetProgress}>
+                          {isResetPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                          Resetar
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </SectionCard>
+              </SectionCard>
+            </div>
           )}
 
           <div className="rounded-2xl border border-dashed border-border bg-muted/20 p-4">

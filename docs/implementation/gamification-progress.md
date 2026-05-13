@@ -89,6 +89,15 @@ diagnóstico → scores vivos → perguntas → missões → aprovação humana 
 - [x] Refatorar `/goals` para mostrar execução conectada.
 - [x] Expandir eventos de metas com recorrência e campos de preparação para Google Calendar.
 - [ ] Refatorar `/agenda` para mostrar vínculos com metas/missões.
+- [x] Refatorar `/settings/profile` como identidade gamificada com 16 avatares/arquetipos de tarot.
+- [x] Corrigir fallback de `getProfileIdentity` quando migration/view de perfil gamificado ainda não foi aplicada.
+- [x] Limpar a aba de perfil em painéis: Identidade, Avatar e Missão.
+- [x] Transformar Configurações em full page sem limite estreito.
+- [x] Transformar Perfil em full page sem limite estreito.
+- [x] Transformar Segurança em full page com painel dedicado.
+- [x] Adicionar opção de reset de progresso em Configurações → Segurança com confirmação textual.
+- [x] Criar pesquisa e banco inicial de perguntas para diagnóstico de arquétipo tarot.
+- [x] Criar migration `019_archetype_diagnostic.sql` para armazenar arquétipo no diagnóstico.
 - [ ] Refatorar `/journal` para reflexão contextual.
 - [ ] Refatorar dashboard para mostrar ciclo do dia completo.
 
@@ -96,6 +105,7 @@ diagnóstico → scores vivos → perguntas → missões → aprovação humana 
 
 1. Aplicar migrations `014_gamification.sql` e `015_interconnected_cycle.sql` em ambiente com `DATABASE_URL`.
 2. Criar UI de adicionar tarefa/evento diretamente dentro de cada meta.
-3. Atualizar tools do agente para criar checklist e eventos já conectados a `goalId`/`lifeArea`.
+3. Conectar avatar/arquetipo escolhido em dashboard, sidebar e respostas da IA.
+4. Atualizar tools do agente para criar checklist e eventos já conectados a `goalId`/`lifeArea`.
 4. Integrar painel gamificado no Studio lateral.
 5. Testar fluxo real no navegador: meta → tarefa conectada → conclusão → score/XP atualiza.

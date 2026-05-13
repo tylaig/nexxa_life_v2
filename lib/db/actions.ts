@@ -5,6 +5,20 @@ import { getSupabaseServerClient, getAuthenticatedAppUser } from "@/lib/server/a
 import { diagnosticScoresToAreas, levelForXp, scoreDeltaFromAnswerValue, defaultXpForQuestion, clampScore, calculateAreaScore } from "@/lib/gamification/scoring"
 import { LIFE_AREAS, type LifeArea, type MissionInput, type ScoreEventInput } from "@/lib/gamification/types"
 
+type UserProfileIdentityInput = {
+  fullName?: string
+  nickname?: string | null
+  phone?: string | null
+  avatarKey?: string | null
+  archetypeKey?: string | null
+  archetypeName?: string | null
+  archetypeTitle?: string | null
+  profileTitle?: string | null
+  personalMission?: string | null
+  identityColor?: string | null
+  identityMotto?: string | null
+}
+
 type UserPreferencesInput = {
   theme?: "dark" | "light" | "system"
   timezone?: string
@@ -30,6 +44,215 @@ type UserPreferencesInput = {
   aiProactivity?: "low" | "balanced" | "high"
   aiContextMemoryEnabled?: boolean
   aiAutoCreateTasks?: boolean
+}
+
+
+// -----------------------------------------------------------------------------
+// DANGER ZONE / RESET PROGRESS
+// -----------------------------------------------------------------------------
+
+export async function resetUserProgress(confirmation: string) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth?.user) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized") }
+
+  if (confirmation !== "RESETAR PROGRESSO") {
+    throw new Error("Confirmação inválida. Digite RESETAR PROGRESSO para continuar.")
+  }
+
+  const supabase = await getSupabaseServerClient()
+  const userId = auth.user.id
+
+  const tables = [
+    "score_events",
+    "user_question_answers",
+    "user_achievements",
+    "life_area_scores",
+    "missions",
+    "adaptive_questions",
+    "achievements",
+    "daily_activity_log",
+    "user_streaks",
+    "journal_entries",
+    "agenda_events",
+    "checklist_items",
+    "goal_milestones",
+    "goals",
+    "diagnostic_results",
+  ]
+
+  for (const table of tables) {
+    const { error } = await supabase.from(table).delete().eq("user_id", userId)
+    if (error) {
+      console.warn(`[resetUserProgress] Could not clear ${table}:`, {
+        code: error.code,
+        message: error.message,
+      })
+    }
+  }
+
+  await supabase
+    .from("app_user_profiles")
+    .update({
+      onboarded: false,
+      onboarding_step: "profile",
+      avatar_key: null,
+      archetype_key: null,
+      archetype_name: null,
+      archetype_title: null,
+      identity_motto: null,
+    })
+    .eq("user_id", userId)
+    .then(({ error }) => {
+      if (error) console.warn("[resetUserProgress] Profile reset warning:", { code: error.code, message: error.message })
+    })
+
+  revalidatePath("/settings")
+  revalidatePath("/settings/profile")
+  revalidatePath("/dashboard")
+  revalidatePath("/goals")
+  revalidatePath("/checklist")
+  revalidatePath("/agenda")
+  revalidatePath("/journal")
+}
+
+// -----------------------------------------------------------------------------
+// PROFILE IDENTITY
+// -----------------------------------------------------------------------------
+
+export async function getProfileIdentity() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth?.user) return null
+
+  const fallbackProfile = {
+    user_id: auth.user.id,
+    email: auth.user.email,
+    full_name: auth.user.fullName || auth.user.email,
+    nickname: auth.user.nickname,
+    phone: auth.user.phone,
+    avatar_url: null,
+    avatar_key: "magician",
+    archetype_key: "magician",
+    archetype_name: "O Mago",
+    archetype_title: "Executor Alquímico",
+    profile_title: "Admin do workspace",
+    personal_mission: null,
+    identity_color: "text-violet-500",
+    identity_motto: "Eu transformo intenção em ação.",
+    total_xp: 0,
+    highest_level: 1,
+    average_life_score: 0,
+    achievements_unlocked: 0,
+  }
+
+  const supabase = await getSupabaseServerClient()
+
+  // Prefer the summary view when migration 018 is applied. If the view is not
+  // available yet, silently fall back to base profile + gamification queries.
+  const { data, error } = await supabase
+    .from("v_profile_identity_summary")
+    .select("*")
+    .eq("user_id", auth.user.id)
+    .maybeSingle()
+
+  if (!error && data) return data
+
+  if (error) {
+    const isExpectedMissingView =
+      error.code === "42P01" ||
+      error.code === "PGRST205" ||
+      error.message?.toLowerCase().includes("v_profile_identity_summary") ||
+      error.message?.toLowerCase().includes("schema cache")
+
+    if (!isExpectedMissingView) {
+      console.warn("[getProfileIdentity] profile summary fallback activated:", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+      })
+    }
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("app_user_profiles")
+    .select("user_id, email, full_name, nickname, phone, avatar_url")
+    .eq("user_id", auth.user.id)
+    .maybeSingle()
+
+  if (profileError) {
+    const isExpectedMissingColumn =
+      profileError.code === "42703" ||
+      profileError.message?.toLowerCase().includes("schema cache")
+
+    if (!isExpectedMissingColumn) {
+      console.warn("[getProfileIdentity] base profile fallback failed:", {
+        code: profileError.code,
+        message: profileError.message,
+        details: profileError.details,
+      })
+    }
+  }
+
+  const [{ data: scores }, { data: achievements }] = await Promise.all([
+    supabase
+      .from("life_area_scores")
+      .select("total_xp, level, score")
+      .eq("user_id", auth.user.id),
+    supabase
+      .from("user_achievements")
+      .select("id")
+      .eq("user_id", auth.user.id),
+  ])
+
+  const totalXp = (scores || []).reduce((sum: number, item: any) => sum + Number(item.total_xp || 0), 0)
+  const highestLevel = Math.max(1, ...(scores || []).map((item: any) => Number(item.level || 1)))
+  const averageLifeScore = scores?.length
+    ? (scores || []).reduce((sum: number, item: any) => sum + Number(item.score || 0), 0) / scores.length
+    : 0
+
+  return {
+    ...fallbackProfile,
+    ...(profile || {}),
+    total_xp: totalXp,
+    highest_level: highestLevel,
+    average_life_score: averageLifeScore,
+    achievements_unlocked: achievements?.length || 0,
+  }
+}
+
+export async function updateProfileIdentity(input: UserProfileIdentityInput) {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized") }
+
+  const supabase = await getSupabaseServerClient()
+  const patch = {
+    full_name: input.fullName,
+    nickname: input.nickname,
+    phone: input.phone,
+    avatar_key: input.avatarKey,
+    archetype_key: input.archetypeKey,
+    archetype_name: input.archetypeName,
+    archetype_title: input.archetypeTitle,
+    profile_title: input.profileTitle,
+    personal_mission: input.personalMission,
+    identity_color: input.identityColor,
+    identity_motto: input.identityMotto,
+  }
+  const cleanedPatch = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== undefined))
+
+  const { error } = await supabase
+    .from("app_user_profiles")
+    .upsert({
+      user_id: auth.user.id,
+      email: auth.user.email,
+      full_name: auth.user.fullName || auth.user.email,
+      ...cleanedPatch,
+    }, { onConflict: "user_id" })
+
+  if (error) { console.error("[updateProfileIdentity] Error:", error); throw error }
+
+  revalidatePath("/settings/profile")
+  revalidatePath("/settings")
+  revalidatePath("/dashboard")
 }
 
 // -----------------------------------------------------------------------------
