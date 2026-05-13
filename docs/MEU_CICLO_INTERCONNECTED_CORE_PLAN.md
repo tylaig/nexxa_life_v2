@@ -182,7 +182,9 @@ Cada meta deve mostrar:
 
 - tarefas vinculadas;
 - tarefas concluídas;
-- agenda conectada;
+- eventos/blocos de agenda vinculados;
+- recorrências da meta;
+- status de preparação para Google Calendar;
 - score impactado;
 - próxima ação recomendada.
 
@@ -193,6 +195,15 @@ Cada evento deve indicar:
 ```text
 Bloco de foco ligado à meta X
 ```
+
+Também deve manter metadados para integração futura com calendários externos:
+
+- provedor (`google`, `outlook`, etc.);
+- id do calendário externo;
+- id do evento externo;
+- status de sincronização;
+- regra de recorrência;
+- timezone.
 
 ### Diário
 
@@ -234,11 +245,15 @@ Meta principal → ações de hoje → agenda → reflexão → score
 
 ### Fase 3 — Metas com execução
 
-- [ ] Atualizar `/goals` para mostrar tarefas vinculadas.
-- [ ] Mostrar progresso real baseado em checklist/marcos.
+- [x] Atualizar `/goals` para mostrar tarefas vinculadas.
+- [x] Mostrar progresso real baseado em checklist/marcos.
+- [x] Mostrar eventos/blocos de agenda vinculados à meta.
+- [x] Mostrar recorrências da meta.
+- [x] Adicionar metadados de preparação para Google Calendar.
 - [ ] Adicionar botão “Gerar ações da meta”.
+- [ ] Adicionar criação visual de tarefa/evento dentro da meta.
 - [ ] Mostrar próxima ação recomendada.
-- [ ] Validar build.
+- [x] Validar build.
 
 ### Fase 4 — Agenda conectada
 

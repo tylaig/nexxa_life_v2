@@ -110,7 +110,7 @@ export async function getGoals() {
       *,
       goal_milestones(*),
       checklist_items(id, label, done, priority, item_date, life_area, xp_reward, impact_score),
-      agenda_events(id, title, event_date, start_time, end_time, type, life_area)
+      agenda_events(id, title, event_date, start_time, end_time, type, recurrence, recurrence_rule, recurrence_until, timezone, life_area, sync_status, external_calendar_provider, external_event_id)
     `)
     .eq("user_id", auth.user.id)
     .order("created_at", { ascending: false })
@@ -217,7 +217,7 @@ export async function getAgenda(dateStr?: string) {
   return data
 }
 
-export async function addAgendaEvent(params: { title: string; date: string; startTime: string; endTime: string; type?: string }) {
+export async function addAgendaEvent(params: { title: string; date: string; startTime: string; endTime: string; type?: string; goalId?: string; missionId?: string; lifeArea?: LifeArea; recurrence?: "none" | "daily" | "weekly" | "monthly"; recurrenceRule?: string; recurrenceUntil?: string; timezone?: string; notes?: string }) {
   const auth = await getAuthenticatedAppUser()
   if (!auth) { console.error("Unauthorized in server action: auth is null"); throw new Error("Unauthorized"); }
 
@@ -231,11 +231,52 @@ export async function addAgendaEvent(params: { title: string; date: string; star
       start_time: params.startTime,
       end_time: params.endTime,
       type: params.type || "personal",
+      goal_id: params.goalId,
+      mission_id: params.missionId,
+      life_area: params.lifeArea,
+      recurrence: params.recurrence || "none",
+      recurrence_rule: params.recurrenceRule,
+      recurrence_until: params.recurrenceUntil,
+      timezone: params.timezone || "America/Sao_Paulo",
+      notes: params.notes,
     })
 
   if (error) { console.error("Supabase Error:", error); throw error; }
   revalidatePath("/agenda")
   revalidatePath("/dashboard")
+  revalidatePath("/goals")
+}
+
+export async function addConnectedAgendaEvent(params: {
+  title: string
+  goalId: string
+  date: string
+  startTime: string
+  endTime: string
+  type?: string
+  missionId?: string
+  lifeArea?: LifeArea
+  recurrence?: "none" | "daily" | "weekly" | "monthly"
+  recurrenceRule?: string
+  recurrenceUntil?: string
+  timezone?: string
+  notes?: string
+}) {
+  return addAgendaEvent({
+    title: params.title,
+    date: params.date,
+    startTime: params.startTime,
+    endTime: params.endTime,
+    type: params.type || "focus",
+    goalId: params.goalId,
+    missionId: params.missionId,
+    lifeArea: params.lifeArea,
+    recurrence: params.recurrence || "none",
+    recurrenceRule: params.recurrenceRule,
+    recurrenceUntil: params.recurrenceUntil,
+    timezone: params.timezone,
+    notes: params.notes,
+  })
 }
 
 // -----------------------------------------------------------------------------

@@ -86,7 +86,8 @@ diagnóstico → scores vivos → perguntas → missões → aprovação humana 
 - [x] Atualizar UI do checklist para mostrar meta, área e XP por tarefa.
 - [x] Validar build.
 - [ ] Aplicar migration em banco com `DATABASE_URL`.
-- [ ] Refatorar `/goals` para mostrar execução conectada.
+- [x] Refatorar `/goals` para mostrar execução conectada.
+- [x] Expandir eventos de metas com recorrência e campos de preparação para Google Calendar.
 - [ ] Refatorar `/agenda` para mostrar vínculos com metas/missões.
 - [ ] Refatorar `/journal` para reflexão contextual.
 - [ ] Refatorar dashboard para mostrar ciclo do dia completo.
@@ -94,7 +95,7 @@ diagnóstico → scores vivos → perguntas → missões → aprovação humana 
 ## Próximo checkpoint
 
 1. Aplicar migrations `014_gamification.sql` e `015_interconnected_cycle.sql` em ambiente com `DATABASE_URL`.
-2. Refatorar `/goals` para mostrar tarefas/agenda vinculadas por meta.
-3. Atualizar tools do agente para criar checklist já conectado a `goalId`/`lifeArea`.
+2. Criar UI de adicionar tarefa/evento diretamente dentro de cada meta.
+3. Atualizar tools do agente para criar checklist e eventos já conectados a `goalId`/`lifeArea`.
 4. Integrar painel gamificado no Studio lateral.
 5. Testar fluxo real no navegador: meta → tarefa conectada → conclusão → score/XP atualiza.
