@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from "ai"
+import { DefaultChatTransport } from "ai"
 import { useRouter } from "next/navigation"
 import {
   Bot, Send, Sparkles, Loader2, Brain,
@@ -165,12 +165,41 @@ export function AiStudioView({
   const storageKey = isPlanningMode ? STORAGE_KEY_PLANNING : STORAGE_KEY_STUDIO
   const sessionType = isPlanningMode ? "planning" : "studio"
 
+  // Custom predicate: only auto-send when ALL tool calls in the last assistant
+  // message are server-side tools (have results). Client-side tools (mutating
+  // tools like addGoal, createMission, etc.) require human approval before
+  // their results are available, so we must NOT auto-send until the user
+  // approves and addToolOutput is called for each one.
+  const shouldAutoSend = React.useCallback(({ messages: msgs }: { messages: any[] }) => {
+    if (!msgs || msgs.length === 0) return false
+    const lastMsg = msgs[msgs.length - 1]
+    if (lastMsg.role !== "assistant") return false
+
+    const parts = lastMsg.parts || []
+    const toolParts = parts.filter((p: any) => p.type === "tool-invocation")
+    if (toolParts.length === 0) return false
+
+    // Check if ALL tool invocations have results already (server-side executed)
+    // and none are still pending (client-side awaiting approval)
+    const allComplete = toolParts.every((p: any) => {
+      // If it's a mutating tool, it needs human approval - don't auto-send
+      if (MUTATING_TOOLS.includes(p.toolInvocation?.toolName || p.toolName)) {
+        // Only auto-send if it already has output (user approved)
+        return p.toolInvocation?.state === "result" || p.state === "result" || p.state === "output-available"
+      }
+      // Server-side tools: check if they have a result
+      return p.toolInvocation?.state === "result" || p.state === "result" || p.state === "output-available"
+    })
+
+    return allComplete
+  }, [])
+
   const { messages, sendMessage, status, setMessages, error, regenerate, addToolOutput } = useChat({
     transport: new DefaultChatTransport({
       api: isPlanningMode ? "/api/chat/planning" : "/api/chat",
       body: isPlanningMode ? { diagnosticData } : undefined,
     }),
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    sendAutomaticallyWhen: shouldAutoSend,
   })
 
   const isLoading = status === "submitted" || status === "streaming"
@@ -192,9 +221,30 @@ export function AiStudioView({
       if (raw) {
         const saved = JSON.parse(raw)
         if (Array.isArray(saved) && saved.length > 0) {
-          setMessages(saved)
-          setIsHydrated(true)
-          return
+          // Sanitize: if the last message is assistant with unresolved client-side
+          // tool calls (no output), trim it to prevent "Tool result is missing" on resume
+          let cleaned = [...saved]
+          while (cleaned.length > 0) {
+            const last = cleaned[cleaned.length - 1]
+            if (last.role !== "assistant") break
+            const parts = last.parts || []
+            const toolParts = parts.filter((p: any) => p.type === "tool-invocation")
+            const hasPendingMutatingTool = toolParts.some((p: any) => {
+              const name = p.toolInvocation?.toolName || p.toolName || ""
+              const state = p.toolInvocation?.state || p.state || ""
+              return MUTATING_TOOLS.includes(name) && state !== "result" && state !== "output-available"
+            })
+            if (hasPendingMutatingTool) {
+              cleaned.pop() // Remove last message with stuck tool calls
+            } else {
+              break
+            }
+          }
+          if (cleaned.length > 0) {
+            setMessages(cleaned)
+            setIsHydrated(true)
+            return
+          }
         }
       }
     } catch {}
