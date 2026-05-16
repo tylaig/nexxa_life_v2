@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import { CheckSquare, Plus, Flame, Filter, Target, Sparkles } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
@@ -170,6 +170,13 @@ export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }
 
   const today = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
 
+  const inputRef = React.useRef<HTMLInputElement>(null)
+
+  const handleNewTask = () => {
+    inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+    setTimeout(() => inputRef.current?.focus(), 300)
+  }
+
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
@@ -183,7 +190,7 @@ export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }
           </Badge>
         }
         actions={
-          <Button size="sm" className="h-8 gap-1.5 rounded-xl px-3 text-xs">
+          <Button size="sm" className="h-8 gap-1.5 rounded-xl px-3 text-xs" onClick={handleNewTask}>
             <Plus className="h-3.5 w-3.5" /> Nova tarefa
           </Button>
         }
@@ -260,6 +267,7 @@ export function NexxaLifeChecklistView({ initialItems }: { initialItems: any[] }
             <div className="h-5 w-5 shrink-0 rounded-full border-2 border-dashed border-border" />
             <input
               type="text"
+              ref={inputRef}
               placeholder="Adicionar tarefa..."
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}

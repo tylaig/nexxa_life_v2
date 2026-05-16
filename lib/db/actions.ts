@@ -1382,3 +1382,92 @@ export async function getUserAchievements() {
   }
   return data || []
 }
+
+// -----------------------------------------------------------------------------
+// REPORTS DATA (aggregated from real user data)
+// -----------------------------------------------------------------------------
+
+export async function getReportData() {
+  const auth = await getAuthenticatedAppUser()
+  if (!auth) return null
+
+  const supabase = await getSupabaseServerClient()
+  const userId = auth.user.id
+  const today = new Date()
+
+  // Fetch all data in parallel
+  const [
+    streakResult,
+    goalsResult,
+    journalResult,
+    checklistLast30Result,
+    lifeAreaResult,
+  ] = await Promise.all([
+    supabase.from("user_streaks").select("*").eq("user_id", userId).single(),
+    supabase.from("goals").select("id, title, status, progress, category").eq("user_id", userId).order("created_at", { ascending: false }),
+    supabase.from("journal_entries").select("id, mood, entry_date, created_at").eq("user_id", userId).order("entry_date", { ascending: false }).limit(90),
+    // Get checklist items for last 30 days
+    supabase.from("checklist_items").select("id, done, item_date, created_at").eq("user_id", userId).gte("item_date", new Date(today.getTime() - 30 * 86400000).toISOString().split("T")[0]).order("item_date", { ascending: true }),
+    supabase.from("life_area_scores").select("area, score, xp, level, streak").eq("user_id", userId),
+  ])
+
+  const streak = streakResult.data || { current_streak: 0, longest_streak: 0 }
+  const goals = goalsResult.data || []
+  const journal = journalResult.data || []
+  const checklistItems = checklistLast30Result.data || []
+  const lifeAreas = lifeAreaResult.data || []
+
+  // Calculate checklist consistency per day (last 30 days)
+  const dayMap: Record<string, { done: number; total: number }> = {}
+  for (const item of checklistItems) {
+    const day = item.item_date
+    if (!dayMap[day]) dayMap[day] = { done: 0, total: 0 }
+    dayMap[day].total++
+    if (item.done) dayMap[day].done++
+  }
+
+  const days = Object.entries(dayMap).sort(([a], [b]) => a.localeCompare(b))
+  const heatmapData = days.map(([date, { done }]) => done)
+  const consistencyPct = days.length > 0
+    ? Math.round(days.reduce((sum, [, { done, total }]) => sum + (total > 0 ? (done / total) * 100 : 0), 0) / days.length)
+    : 0
+
+  // Goals stats
+  const activeGoals = goals.filter(g => g.status === "active")
+  const completedGoals = goals.filter(g => g.status === "completed")
+
+  // Journal mood mapping
+  const MOOD_MAP: Record<string, number> = { awful: 1, bad: 2, neutral: 3, good: 4, great: 5 }
+  const moodTimeline = journal.slice(0, 15).reverse().map(j => MOOD_MAP[j.mood] || 3)
+
+  // Goals with progress
+  const goalProgress = goals.slice(0, 5).map(g => ({
+    title: g.title,
+    progress: g.progress ?? 0,
+    status: g.status,
+    category: g.category,
+  }))
+
+  return {
+    streak: streak.current_streak || 0,
+    longestStreak: streak.longest_streak || 0,
+    consistency: consistencyPct,
+    goalsActive: activeGoals.length,
+    goalsCompleted: completedGoals.length,
+    goalsTotal: goals.length,
+    journalEntries: journal.length,
+    checklistAvg: consistencyPct,
+    heatmapData,
+    goalProgress,
+    moodTimeline,
+    lifeAreas: lifeAreas.map(a => ({
+      area: a.area,
+      score: a.score || 0,
+      xp: a.xp || 0,
+      level: a.level || 1,
+      streak: a.streak || 0,
+    })),
+    daysTracked: days.length,
+  }
+}
+

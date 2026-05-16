@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   ArrowRight,
   CalendarClock,
@@ -13,6 +14,7 @@ import {
   Plus,
   Repeat,
   Sparkles,
+  X,
 } from "lucide-react"
 
 import { PageHeader } from "@/components/ui/page-header"
@@ -22,6 +24,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
+import { addGoal } from "@/lib/db/actions"
 
 type GoalStatus = "active" | "completed" | "paused"
 type GoalCategory = "Trabalho" | "Saúde" | "Crescimento" | "Finanças" | "Pessoal" | string
@@ -74,6 +77,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   Finanças: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   Pessoal: "bg-teal-500/10 text-teal-600 dark:text-teal-400",
 }
+
+const CATEGORY_OPTIONS = ["Trabalho", "Saúde", "Crescimento", "Finanças", "Pessoal"]
 
 const RECURRENCE_LABEL: Record<string, string> = {
   none: "único",
@@ -283,8 +288,106 @@ function GoalCard({ goal }: { goal: GoalItem }) {
   )
 }
 
+// ─── Modal de criação de meta ─────────────────────────────────────
+function CreateGoalModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [category, setCategory] = useState("Pessoal")
+  const [saving, setSaving] = useState(false)
+
+  if (!open) return null
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setSaving(true)
+    try {
+      await addGoal({ title: title.trim(), description: description.trim() || undefined, category })
+      setTitle("")
+      setDescription("")
+      setCategory("Pessoal")
+      onCreated()
+      onClose()
+    } catch (err) {
+      console.error("Error creating goal:", err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+      <div className="w-full max-w-lg mx-4 rounded-3xl border border-border bg-background p-6 shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-bold text-foreground">Nova Meta</h2>
+          <button onClick={onClose} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Título *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Ler 12 livros este ano"
+              className="w-full h-11 rounded-xl border border-border bg-muted/30 px-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Descrição</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Descreva sua meta em mais detalhes..."
+              rows={3}
+              className="w-full rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Categoria</label>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORY_OPTIONS.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategory(cat)}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium transition-all border",
+                    category === cat
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                  )}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 h-11 rounded-xl">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={!title.trim() || saving} className="flex-1 h-11 rounded-xl shadow-md">
+              {saving ? "Salvando..." : "Criar meta"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export function NexxaLifeGoalsView({ goals: rawGoals }: { goals: any[] }) {
+  const router = useRouter()
   const [filter, setFilter] = useState<"all" | GoalStatus>("all")
+  const [showCreate, setShowCreate] = useState(false)
 
   const allGoals: GoalItem[] = rawGoals.map((goal: any) => {
     const tasks = (goal.checklist_items || []).map((task: any) => ({
@@ -357,7 +460,7 @@ export function NexxaLifeGoalsView({ goals: rawGoals }: { goals: any[] }) {
         eyebrow="Meu Ciclo"
         title="Metas operacionais"
         description={`${activeCount} metas ativas · ${connectedTasks} tarefas · ${connectedEvents} eventos ligados`}
-        actions={<Button size="sm" className="h-8 gap-1.5 rounded-xl px-3 text-xs"><Plus className="h-3.5 w-3.5" /> Nova meta</Button>}
+        actions={<Button size="sm" className="h-8 gap-1.5 rounded-xl px-3 text-xs" onClick={() => setShowCreate(true)}><Plus className="h-3.5 w-3.5" /> Nova meta</Button>}
       />
 
       <SectionCard noPadding className="overflow-hidden border-primary/15 bg-primary/5">
@@ -404,12 +507,14 @@ export function NexxaLifeGoalsView({ goals: rawGoals }: { goals: any[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <EmptyState icon={Goal} title="Nenhuma meta aqui" description="Crie sua primeira meta e conecte tarefas, agenda e recorrências." action={{ label: "Criar meta", href: "/goals" }} />
+        <EmptyState icon={Goal} title="Nenhuma meta aqui" description="Crie sua primeira meta e conecte tarefas, agenda e recorrências." action={{ label: "Criar meta", onClick: () => setShowCreate(true) }} />
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
           {filtered.map((goal) => <GoalCard key={goal.id} goal={goal} />)}
         </div>
       )}
+
+      <CreateGoalModal open={showCreate} onClose={() => setShowCreate(false)} onCreated={() => router.refresh()} />
     </div>
   )
 }

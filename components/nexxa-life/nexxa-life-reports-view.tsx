@@ -1,45 +1,50 @@
 "use client"
 
-import { useState } from "react"
-import { BarChart3, Flame, Goal, CheckSquare, BookText, TrendingUp } from "lucide-react"
+import { BarChart3, Flame, Goal, CheckSquare, BookText, TrendingUp, Heart, Brain, Target, Wallet, Users, Compass } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { SectionCard } from "@/components/ui/section-card"
 import { KpiTile } from "@/components/ui/kpi-tile"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
-type Period = "7d" | "30d" | "90d"
+const MOOD_EMOJIS = ["😰", "😟", "😐", "🙂", "😄"]
 
-const PERIOD_LABELS: Record<Period, string> = { "7d": "7 dias", "30d": "30 dias", "90d": "90 dias" }
-
-const MOCK_DATA: Record<Period, {
-  streak: number; consistency: number; goalsCompleted: number; journalEntries: number; checklistAvg: number
-  heatmap: number[]; goals: { title: string; progress: number }[]
-}> = {
-  "7d": {
-    streak: 12, consistency: 85, goalsCompleted: 1, journalEntries: 5, checklistAvg: 71,
-    heatmap: [3, 5, 4, 6, 5, 4, 5],
-    goals: [{ title: "Rotina fitness", progress: 75 }, { title: "Leitura 12 livros", progress: 42 }],
-  },
-  "30d": {
-    streak: 12, consistency: 78, goalsCompleted: 2, journalEntries: 22, checklistAvg: 65,
-    heatmap: Array.from({ length: 30 }, () => Math.floor(Math.random() * 7)),
-    goals: [{ title: "Rotina fitness", progress: 75 }, { title: "Leitura 12 livros", progress: 42 }, { title: "Reserva emergência", progress: 100 }],
-  },
-  "90d": {
-    streak: 12, consistency: 72, goalsCompleted: 4, journalEntries: 61, checklistAvg: 59,
-    heatmap: Array.from({ length: 90 }, () => Math.floor(Math.random() * 7)),
-    goals: [{ title: "Rotina fitness", progress: 75 }, { title: "Leitura 12 livros", progress: 42 }, { title: "Reserva emergência", progress: 100 }, { title: "MVP produto", progress: 68 }],
-  },
+const AREA_META: Record<string, { label: string; icon: any; color: string }> = {
+  health: { label: "Saúde", icon: Heart, color: "text-rose-500" },
+  mind: { label: "Mente", icon: Brain, color: "text-violet-500" },
+  productivity: { label: "Produtividade", icon: Target, color: "text-blue-500" },
+  finances: { label: "Finanças", icon: Wallet, color: "text-emerald-500" },
+  relations: { label: "Relações", icon: Users, color: "text-amber-500" },
+  purpose: { label: "Propósito", icon: Compass, color: "text-cyan-500" },
 }
 
-const MOOD_EMOJIS = ["😰", "😟", "😐", "🙂", "😄"]
-const MOCK_MOOD_TIMELINE = [3, 4, 4, 3, 5, 4, 5, 4, 3, 4, 5, 4, 4, 3, 5]
+type ReportData = {
+  streak: number
+  longestStreak: number
+  consistency: number
+  goalsActive: number
+  goalsCompleted: number
+  goalsTotal: number
+  journalEntries: number
+  checklistAvg: number
+  heatmapData: number[]
+  goalProgress: { title: string; progress: number; status: string; category: string }[]
+  moodTimeline: number[]
+  lifeAreas: { area: string; score: number; xp: number; level: number; streak: number }[]
+  daysTracked: number
+} | null
 
-function ConsistencyHeatmap({ data, period }: { data: number[]; period: Period }) {
+function ConsistencyHeatmap({ data }: { data: number[] }) {
+  if (data.length === 0) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        Nenhum dado de checklist registrado ainda. Complete tarefas para ver seu mapa de consistência.
+      </div>
+    )
+  }
+
   const max = Math.max(...data, 1)
-  const cols = period === "7d" ? 7 : period === "30d" ? 10 : 15
-  const rows = Math.ceil(data.length / cols)
+  const cols = Math.min(data.length, 10)
 
   return (
     <div>
@@ -78,6 +83,14 @@ function ConsistencyHeatmap({ data, period }: { data: number[]; period: Period }
 }
 
 function MoodTimeline({ data }: { data: number[] }) {
+  if (data.length === 0) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        Nenhuma entrada no diário. Registre seu humor para ver a tendência.
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-end gap-1.5 h-16">
       {data.map((mood, i) => (
@@ -93,38 +106,79 @@ function MoodTimeline({ data }: { data: number[] }) {
   )
 }
 
-export function NexxaLifeReportsView() {
-  const [period, setPeriod] = useState<Period>("30d")
-  const data = MOCK_DATA[period]
+function LifeAreasGrid({ areas }: { areas: ReportData["lifeAreas"] }) {
+  if (!areas || areas.length === 0) {
+    return (
+      <div className="py-8 text-center text-sm text-muted-foreground">
+        Nenhum score de área registrado. Complete o diagnóstico para ativar a gamificação.
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {areas.map((a) => {
+        const meta = AREA_META[a.area] || { label: a.area, icon: Target, color: "text-primary" }
+        const Icon = meta.icon
+        return (
+          <div key={a.area} className="rounded-2xl border border-border/50 bg-background/70 p-4 text-center space-y-2">
+            <div className={cn("mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-muted/60", meta.color)}>
+              <Icon className="h-5 w-5" />
+            </div>
+            <p className="text-xs font-semibold text-foreground">{meta.label}</p>
+            <p className="text-2xl font-bold tabular-nums text-primary">{Math.round(a.score * 10)}%</p>
+            <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground">
+              <span>Nv.{a.level}</span>
+              <span>·</span>
+              <span>{a.xp} XP</span>
+            </div>
+            <Progress value={a.score * 10} className="h-1.5" />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+export function NexxaLifeReportsView({ data }: { data: ReportData }) {
+  // Handle no data state
+  if (!data) {
+    return (
+      <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+        <PageHeader
+          eyebrow="Insights"
+          title="Relatórios"
+          description="Acompanhe sua evolução, consistência e padrões ao longo do tempo."
+        />
+        <SectionCard variant="highlight">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/20 text-primary">
+              <BarChart3 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Sem dados ainda</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Complete tarefas, registre no diário e crie metas para ver seus relatórios com dados reais.
+              </p>
+            </div>
+          </div>
+        </SectionCard>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
         eyebrow="Insights"
         title="Relatórios"
-        description="Acompanhe sua evolução, consistência e padrões ao longo do tempo."
-        actions={
-          <div className="flex items-center rounded-xl border border-border/60 bg-muted/30 p-0.5">
-            {(["7d", "30d", "90d"] as Period[]).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={cn(
-                  "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-                  period === p ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {PERIOD_LABELS[p]}
-              </button>
-            ))}
-          </div>
-        }
+        description={`${data.daysTracked} dias monitorados · ${data.goalsTotal} metas · ${data.journalEntries} entradas no diário`}
       />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <KpiTile label="Streak atual" value={`${data.streak} dias`} icon={Flame} accent="amber" trend={{ value: 15 }} />
-        <KpiTile label="Consistência" value={`${data.consistency}%`} icon={TrendingUp} accent="teal" trend={{ value: 8 }} />
+        <KpiTile label="Streak atual" value={`${data.streak} dias`} icon={Flame} accent="amber" />
+        <KpiTile label="Consistência" value={`${data.consistency}%`} icon={TrendingUp} accent="teal" />
         <KpiTile label="Metas concluídas" value={data.goalsCompleted} icon={Goal} accent="emerald" />
         <KpiTile label="Entradas no diário" value={data.journalEntries} icon={BookText} accent="violet" />
       </div>
@@ -132,8 +186,8 @@ export function NexxaLifeReportsView() {
       {/* Grid principal */}
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Heatmap */}
-        <SectionCard title="Consistência diária" description={`Tarefas concluídas nos últimos ${PERIOD_LABELS[period]}`}>
-          <ConsistencyHeatmap data={data.heatmap} period={period} />
+        <SectionCard title="Consistência diária" description="Tarefas concluídas nos últimos 30 dias">
+          <ConsistencyHeatmap data={data.heatmapData} />
         </SectionCard>
 
         {/* Checklist avg */}
@@ -147,38 +201,57 @@ export function NexxaLifeReportsView() {
             <p className="text-xs text-muted-foreground">
               {data.checklistAvg >= 70 ? "🔥 Excelente ritmo! Você está acima da meta de 70% de conclusão." :
                data.checklistAvg >= 50 ? "📈 Bom progresso. Pequenos ajustes podem levar ao próximo nível." :
-               "💡 Há espaço para crescer. Revise a quantidade e prioridade das tarefas."}
+               data.checklistAvg > 0 ? "💡 Há espaço para crescer. Revise a quantidade e prioridade das tarefas." :
+               "📋 Comece registrando tarefas no checklist para acompanhar sua consistência."}
             </p>
           </div>
         </SectionCard>
       </div>
 
+      {/* Life Area Scores */}
+      <SectionCard title="Scores por Área da Vida" description="Visão gamificada baseada no seu diagnóstico e comportamento">
+        <LifeAreasGrid areas={data.lifeAreas} />
+      </SectionCard>
+
       {/* Metas do período */}
-      <SectionCard title="Metas — progresso no período" action={
-        <span className="text-xs text-muted-foreground">{data.goals.length} metas</span>
+      <SectionCard title="Metas — progresso atual" action={
+        <span className="text-xs text-muted-foreground">{data.goalsTotal} metas</span>
       }>
-        <div className="space-y-4">
-          {data.goals.map((goal) => (
-            <div key={goal.title} className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">{goal.title}</span>
-                <span className={cn("text-sm font-bold tabular-nums",
-                  goal.progress === 100 ? "text-emerald-500" : "text-primary")}>{goal.progress}%</span>
+        {data.goalProgress.length === 0 ? (
+          <div className="py-6 text-center text-sm text-muted-foreground">
+            Nenhuma meta criada ainda. Crie metas para acompanhar o progresso.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {data.goalProgress.map((goal) => (
+              <div key={goal.title} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">{goal.title}</span>
+                    {goal.status === "completed" && (
+                      <span className="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-2 py-0.5 rounded-full">✓</span>
+                    )}
+                  </div>
+                  <span className={cn("text-sm font-bold tabular-nums",
+                    goal.progress === 100 ? "text-emerald-500" : "text-primary")}>{goal.progress}%</span>
+                </div>
+                <Progress value={goal.progress} className={cn("h-1.5", goal.progress === 100 ? "[&>div]:bg-emerald-500" : "")} />
               </div>
-              <Progress value={goal.progress} className={cn("h-1.5", goal.progress === 100 ? "[&>div]:bg-emerald-500" : "")} />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </SectionCard>
 
       {/* Humor ao longo do tempo */}
-      <SectionCard title="Tendência de humor" description="Como você se sentiu ao longo dos últimos dias">
+      <SectionCard title="Tendência de humor" description="Baseado nas entradas do seu diário">
         <div className="space-y-3">
-          <MoodTimeline data={MOCK_MOOD_TIMELINE} />
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>😰 Difícil</span>
-            <span>😄 Incrível</span>
-          </div>
+          <MoodTimeline data={data.moodTimeline} />
+          {data.moodTimeline.length > 0 && (
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>😰 Difícil</span>
+              <span>😄 Incrível</span>
+            </div>
+          )}
         </div>
       </SectionCard>
 
@@ -189,12 +262,22 @@ export function NexxaLifeReportsView() {
             <BarChart3 className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">Insight do período</p>
+            <p className="text-sm font-semibold text-foreground">Resumo da sua evolução</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Sua consistência está em <strong className="text-foreground">{data.consistency}%</strong> nos últimos {PERIOD_LABELS[period]}.
-              Você completou <strong className="text-foreground">{data.goalsCompleted} meta{data.goalsCompleted !== 1 ? "s" : ""}</strong> e
-              fez <strong className="text-foreground">{data.journalEntries} registros</strong> no diário. Continue assim —
-              o ciclo está funcionando.
+              {data.streak > 0 ? (
+                <>Você está numa sequência de <strong className="text-foreground">{data.streak} dias</strong>. </>
+              ) : (
+                <>Inicie sua sequência completando tarefas diariamente. </>
+              )}
+              {data.goalsCompleted > 0 && (
+                <>Completou <strong className="text-foreground">{data.goalsCompleted} meta{data.goalsCompleted !== 1 ? "s" : ""}</strong>. </>
+              )}
+              {data.journalEntries > 0 && (
+                <>Fez <strong className="text-foreground">{data.journalEntries} registro{data.journalEntries !== 1 ? "s" : ""}</strong> no diário. </>
+              )}
+              {data.consistency > 70 ? "Continue assim — o ciclo está funcionando!" :
+               data.consistency > 40 ? "Bom progresso — mantenha a consistência." :
+               "Cada dia conta. Comece pequeno e seja constante."}
             </p>
           </div>
         </div>

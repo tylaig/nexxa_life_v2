@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, Clock, Video, MapPin, AlignLeft } from "lucide-react"
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
+import { CalendarDays, ChevronLeft, ChevronRight, Plus, Clock, Video, MapPin, AlignLeft, X } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
 import { SectionCard } from "@/components/ui/section-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { addAgendaEvent } from "@/lib/db/actions"
 
 type EventType = "focus" | "meeting" | "personal" | "health"
 
@@ -112,9 +114,6 @@ function TimelineView({ events }: { events: AgendaEvent[] }) {
           <div key={hour} className="border-b border-border/30 border-dashed" style={{ height: HOUR_HEIGHT }} />
         ))}
 
-        {/* Current Time Indicator (if today) */}
-        {/* We would need to pass isToday and current time, simplified for now */}
-
         {/* Events */}
         {events.map((event) => {
           const startMins = parseTimeToMinutes(event.time)
@@ -166,8 +165,140 @@ function TimelineView({ events }: { events: AgendaEvent[] }) {
   )
 }
 
+// ─── Modal de criação de evento ───────────────────────────────
+function CreateEventModal({ open, onClose, onCreated, defaultDate }: { open: boolean; onClose: () => void; onCreated: () => void; defaultDate: Date }) {
+  const dateStr = defaultDate.toISOString().split("T")[0]
+  const [title, setTitle] = useState("")
+  const [date, setDate] = useState(dateStr)
+  const [startTime, setStartTime] = useState("09:00")
+  const [endTime, setEndTime] = useState("10:00")
+  const [type, setType] = useState<EventType>("focus")
+  const [saving, setSaving] = useState(false)
+
+  React.useEffect(() => {
+    setDate(defaultDate.toISOString().split("T")[0])
+  }, [defaultDate])
+
+  if (!open) return null
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title.trim()) return
+    setSaving(true)
+    try {
+      await addAgendaEvent({ title: title.trim(), date, startTime, endTime, type })
+      setTitle("")
+      setStartTime("09:00")
+      setEndTime("10:00")
+      onCreated()
+      onClose()
+    } catch (err) {
+      console.error("Error creating event:", err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const eventTypes: { value: EventType; label: string; dot: string }[] = [
+    { value: "focus", label: "Foco", dot: "bg-teal-500" },
+    { value: "meeting", label: "Reunião", dot: "bg-blue-500" },
+    { value: "personal", label: "Pessoal", dot: "bg-violet-500" },
+    { value: "health", label: "Saúde", dot: "bg-emerald-500" },
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+      <div className="w-full max-w-lg mx-4 rounded-3xl border border-border bg-background p-6 shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-bold text-foreground">Novo Evento</h2>
+          <button onClick={onClose} className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Título *</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ex: Deep work — projeto X"
+              className="w-full h-11 rounded-xl border border-border bg-muted/30 px-4 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              autoFocus
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Data</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Início</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Fim</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full h-11 rounded-xl border border-border bg-muted/30 px-3 text-sm text-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Tipo</label>
+            <div className="flex flex-wrap gap-2">
+              {eventTypes.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setType(t.value)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all border",
+                    type === t.value
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+                  )}
+                >
+                  <span className={cn("h-2 w-2 rounded-full", t.dot)} />
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1 h-11 rounded-xl">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={!title.trim() || saving} className="flex-1 h-11 rounded-xl shadow-md">
+              {saving ? "Salvando..." : "Criar evento"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export function NexxaLifeAgendaView({ events: rawEvents }: { events: any[] }) {
+  const router = useRouter()
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [showCreate, setShowCreate] = useState(false)
 
   // Map DB data to UI shape
   const allEvents: AgendaEvent[] = rawEvents.map((e: any) => ({
@@ -183,9 +314,6 @@ export function NexxaLifeAgendaView({ events: rawEvents }: { events: any[] }) {
   const formattedDate = selectedDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })
   const isToday = selectedDate.toDateString() === new Date().toDateString()
 
-  // For testing UI locally when empty, let's inject a fake event if the list is completely empty AND we are in dev mode
-  // But since we are connected to DB, we'll let it be empty and let AI populate it.
-
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <PageHeader
@@ -193,7 +321,7 @@ export function NexxaLifeAgendaView({ events: rawEvents }: { events: any[] }) {
         title="Sua Agenda"
         description={`${formattedDate}${isToday ? " · Hoje" : ""}`}
         actions={
-          <Button size="sm" className="h-9 gap-2 rounded-xl px-4 shadow-sm hover:shadow-md transition-shadow">
+          <Button size="sm" className="h-9 gap-2 rounded-xl px-4 shadow-sm hover:shadow-md transition-shadow" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4" /> Novo evento
           </Button>
         }
@@ -244,8 +372,8 @@ export function NexxaLifeAgendaView({ events: rawEvents }: { events: any[] }) {
             <EmptyState
               icon={CalendarDays}
               title="Sua agenda está vazia"
-              description="Você não possui nenhum evento planejado para este dia. Peça para a IA organizar sua rotina!"
-              action={{ label: "Adicionar primeiro evento", href: "#" }}
+              description="Você não possui nenhum evento planejado para este dia. Crie um novo evento!"
+              action={{ label: "Adicionar primeiro evento", onClick: () => setShowCreate(true) }}
               className="m-8 border-dashed py-12"
             />
           ) : (
@@ -255,6 +383,8 @@ export function NexxaLifeAgendaView({ events: rawEvents }: { events: any[] }) {
           )}
         </SectionCard>
       </div>
+
+      <CreateEventModal open={showCreate} onClose={() => setShowCreate(false)} onCreated={() => router.refresh()} defaultDate={selectedDate} />
     </div>
   )
 }

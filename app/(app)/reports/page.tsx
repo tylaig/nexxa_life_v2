@@ -1,12 +1,14 @@
 import { AppTopbar } from "@/components/app-shell/app-topbar"
-import { reportsHero } from "@/components/nexxa-life/reports-content"
 import { NexxaLifeReportsView } from "@/components/nexxa-life/nexxa-life-reports-view"
+import { getReportData } from "@/lib/db/actions"
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  const data = await getReportData()
+
   return (
     <>
-      <AppTopbar title={reportsHero.title} subtitle={reportsHero.description} />
-      <NexxaLifeReportsView />
+      <AppTopbar title="Relatórios" subtitle="Acompanhe sua evolução com dados reais" />
+      <NexxaLifeReportsView data={data} />
     </>
   )
 }
